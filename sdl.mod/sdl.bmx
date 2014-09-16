@@ -29,12 +29,12 @@ ModuleInfo "License: zlib/libpng"
 ModuleInfo "History: 1.00"
 ModuleInfo "History: Initial Release."
 
-?win32x86
-ModuleInfo "LD_OPTS: -F%PWD%/lib/win32x86"
+?win32
+ModuleInfo "LD_OPTS: -L%PWD%/lib/win32x86"
 Import "include/win32x86/*.h"
 
 ?win32x64
-ModuleInfo "LD_OPTS: -F%PWD%/lib/win32x64"
+ModuleInfo "LD_OPTS: -L%PWD%/lib/win32x64"
 Import "include/win32x64/*.h"
 
 ?macos
@@ -56,7 +56,15 @@ Import "include/linuxx64/*.h"
 
 Import "include/*.h
 
-?Not macos
+?win32
+Import "-lSDL2main"
+Import "-lSDL2"
+Import "-limm32" ' required in BlitzMax/lib
+Import "-lole32"
+Import "-loleaut32"
+Import "-lshell32"
+Import "-lversion" ' required in BlitzMax/lib
+?linux
 Import "-lSDL2"
 ?macos
 Import "-framework SDL2"
