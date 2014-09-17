@@ -243,7 +243,7 @@ void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 			return;
 		case SDL_MOUSEBUTTONDOWN:
 		case SDL_MOUSEBUTTONUP:
-			bbSDLSystemEmitEvent( (event->type == SDL_MOUSEBUTTONDOWN) ? BBEVENT_MOUSEDOWN : BBEVENT_MOUSEUP,source,5-event->button.button,0,event->button.x,event->button.y,&bbNullObject );
+			bbSDLSystemEmitEvent( (event->type == SDL_MOUSEBUTTONDOWN) ? BBEVENT_MOUSEDOWN : BBEVENT_MOUSEUP,source,event->button.button,0,event->button.x,event->button.y,&bbNullObject );
 			return;
 		case SDL_MOUSEWHEEL:
 			bbSDLSystemEmitEvent( BBEVENT_MOUSEWHEEL,source,(event->wheel.y < 0) ? -1 : 1,0,0,0,&bbNullObject );
