@@ -49,7 +49,7 @@ Type TSDLGraphics Extends TGraphics
 	
 	Method Close()
 		If Not _context Return
-		'bbSDLGraphicsClose( _context )
+		bbSDLGraphicsClose( _context )
 		_context=0
 	End Method
 	
@@ -132,6 +132,7 @@ Type TSDLSystemDriver Extends TSystemDriver
 
 	Method New()
 		SDL_Init(SDL_INIT_VIDEO)
+		OnEnd(bbSDLExit)
 	End Method
 
 	Method Poll()
@@ -139,7 +140,7 @@ Type TSDLSystemDriver Extends TSystemDriver
 	End Method
 	
 	Method Wait()
-		' TODO
+		bmx_SDL_WaitEvent()
 	End Method
 
 	Method Emit( osevent:Byte Ptr,source:Object )

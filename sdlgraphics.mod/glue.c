@@ -59,7 +59,9 @@ int bbSDLGraphicsGraphicsModes( int display, int *imodes,int maxcount );
 void bbSDLGraphicsFlip( int sync );
 void bbSDLGraphicsSetGraphics( BBSDLContext *context );
 void bbSDLGraphicsGetSettings( BBSDLContext *context, int * width,int * height,int * depth,int * hertz,int * flags);
+void bbSDLGraphicsClose( BBSDLContext *context );
 void bmx_SDL_Poll();
+void bmx_SDL_WaitEvent();
 
 static BBSDLContext *_currentContext;
 
@@ -182,6 +184,12 @@ void bbSDLGraphicsGetSettings( BBSDLContext *context, int * width,int * height,i
 	}
 }
 
+void bbSDLExit(){
+	bbSDLGraphicsClose( _currentContext );
+	_currentContext=0;
+}
+
+
 
 /* System stuff */
 
@@ -258,6 +266,14 @@ void bmx_SDL_Poll() {
 		bmx_SDL_EmitSDLEvent(&event, &bbNullObject);
 	}
 }
+
+void bmx_SDL_WaitEvent() {
+	SDL_Event event;
+	if (SDL_WaitEvent(&event)) {
+		bmx_SDL_EmitSDLEvent(&event, &bbNullObject);
+	}
+}
+
 
 int mapkey(SDL_Scancode scancode) {
 	switch(scancode) {

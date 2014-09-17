@@ -56,6 +56,7 @@ Extern
 	Function bbSDLGraphicsClose( context:Byte Ptr )	
 	Function bbSDLGraphicsSetGraphics( context:Byte Ptr )
 	Function bbSDLGraphicsFlip( sync:Int )
+	Function bbSDLExit()
 	
 	Function SDL_GetNumVideoDisplays:Int()
 	
@@ -70,6 +71,7 @@ Extern
 	Function bmx_SDL_GetDisplayhertz:Int(display:Int)
 
 	Function bmx_SDL_Poll()
+	Function bmx_SDL_WaitEvent()
 	
 End Extern
 
