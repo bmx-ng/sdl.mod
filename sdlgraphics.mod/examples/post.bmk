@@ -18,7 +18,7 @@
 		if sys.FileType(folder .. "/" .. framework) == 0 then
 
 			# assumes Sparkle.framework.zip is in the module folder.
-			zip = utils.ModulePath("pub.sdl") .. "/lib/macos/" .. framework .. ".zip"
+			zip = utils.ModulePath("sdl.sdl") .. "/lib/macos/" .. framework .. ".zip"
 		
 			os.execute("unzip -qq " .. zip .. " -d " .. folder)
 	
