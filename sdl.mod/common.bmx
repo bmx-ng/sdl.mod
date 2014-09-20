@@ -21,6 +21,8 @@
 '
 SuperStrict
 
+Import BRL.Stream
+
 Extern
 
 	Function SDL_Init:Int(flags:Int)
@@ -29,6 +31,14 @@ Extern
 	Function SDL_WasInit:Int(flags:Int)
 	Function SDL_Quit()
 
+	Function SDL_GetError:String()="bmx_SDL_GetError"
+
+	Function bmx_SDL_AllocRW_stream:Byte Ptr(stream:TStream)
+	
+	Function SDL_CreateMutex:Byte Ptr()
+	Function SDL_LockMutex(mutex:Byte Ptr)
+	Function SDL_UnlockMutex(mutex:Byte Ptr)
+	
 End Extern
 
 

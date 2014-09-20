@@ -54,7 +54,7 @@ Import "include/linuxx64/*.h"
 
 ?
 
-Import "include/*.h
+Import "include/*.h"
 
 ?win32
 Import "-lSDL2main"
@@ -74,3 +74,27 @@ Import "-ldl"
 
 
 Import "common.bmx"
+
+Import "glue.c"
+
+Function _sdl_rwops_seek:Int(stream:TStream, pos:Int, whence:Int)
+	If whence = 1 Then
+		pos = stream.Pos() + pos
+	Else If whence = 2 Then
+		pos = stream.Size() + pos
+	End If
+	Return stream.seek(pos)
+End Function
+
+Function _sdl_rwops_read:Int(stream:TStream, buf:Byte Ptr, count:Int)
+	Return stream.read(buf, count)
+End Function
+
+Function _sdl_rwops_write:Int(stream:TStream, buf:Byte Ptr, count:Int)
+	Return stream.write(buf, count)
+End Function
+
+Function _sdl_rwops_close:Int(stream:TStream)
+	Return stream.close()
+End Function
+
