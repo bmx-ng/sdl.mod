@@ -36,8 +36,7 @@ ModuleInfo "History: 1.05 Release"
 ModuleInfo "History: Added checks to prevent invalid textures deletes"
 
 Import BRL.Max2D
-Import SDL.SDLGraphics
-Import Pub.OpenGL
+Import SDL.GLSDLGraphics
 
 Private
 
