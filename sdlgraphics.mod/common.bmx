@@ -62,16 +62,16 @@ Extern
 	
 	
 	' system stuff
-	Function SDL_ShowCursor(visible:Int)
+'	Function SDL_ShowCursor(visible:Int)
 	Function bmx_SDL_WarpMouseInWindow(x:Int, y:Int)
 	
-	Function bmx_SDL_GetDisplayWidth:Int(display:Int)
-	Function bmx_SDL_GetDisplayHeight:Int(display:Int)
-	Function bmx_SDL_GetDisplayDepth:Int(display:Int)
-	Function bmx_SDL_GetDisplayhertz:Int(display:Int)
+'	Function bmx_SDL_GetDisplayWidth:Int(display:Int)
+'	Function bmx_SDL_GetDisplayHeight:Int(display:Int)
+'	Function bmx_SDL_GetDisplayDepth:Int(display:Int)
+'	Function bmx_SDL_GetDisplayhertz:Int(display:Int)
 
-	Function bmx_SDL_Poll()
-	Function bmx_SDL_WaitEvent()
+'	Function bmx_SDL_Poll()
+'	Function bmx_SDL_WaitEvent()
 	
 End Extern
 

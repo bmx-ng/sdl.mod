@@ -23,8 +23,7 @@ Strict
 
 Module SDL.SDLGraphics
 
-Import SDL.SDL
-Import BRL.System
+Import SDL.SDLSystem
 Import BRL.Graphics
 
 Import "common.bmx"
@@ -122,79 +121,12 @@ Function SDLGraphics:TGraphics( width:Int,height:Int,depth:Int=0,hertz:Int=60,fl
 	Return Graphics( width,height,depth,hertz,flags )
 End Function
 	
+SDL_Init(SDL_INIT_VIDEO)
+
+' cleanup context on exit
+OnEnd(bbSDLExit)
+' set mouse warp function
+_sdl_WarpMouse = bmx_SDL_WarpMouseInWindow
+
 SetGraphicsDriver SDLGraphicsDriver()
 
-
-
-
-
-Type TSDLSystemDriver Extends TSystemDriver
-
-	Method New()
-		SDL_Init(SDL_INIT_VIDEO)
-		OnEnd(bbSDLExit)
-	End Method
-
-	Method Poll()
-		bmx_SDL_Poll()
-	End Method
-	
-	Method Wait()
-		bmx_SDL_WaitEvent()
-	End Method
-
-	Method Emit( osevent:Byte Ptr,source:Object )
-		' TODO
-	End Method
-
-	Method SetMouseVisible( visible )
-		SDL_ShowCursor(visible)
-	End Method
-
-	Method MoveMouse( x,y )
-		bmx_SDL_WarpMouseInWindow(x, y)
-	End Method
-
-	Method Notify( text$,serious )
-		' TODO
-	End Method
-	
-	Method Confirm( text$,serious )
-		' TODO
-	End Method
-	
-	Method Proceed( text$,serious )
-		' TODO
-	End Method
-
-	Method RequestFile$( text$,exts$,save,file$ )
-		' TODO
-	End Method
-	
-	Method RequestDir$( text$,path$ )
-		' TODO
-	End Method
-
-	Method OpenURL( url$ )
-		' TODO
-	End Method
-
-	Method DesktopWidth:Int()
-		Return bmx_SDL_GetDisplayWidth(0)
-	End Method
-	
-	Method DesktopHeight:Int()
-		Return bmx_SDL_GetDisplayHeight(0)
-	End Method
-	
-	Method DesktopDepth:Int()
-		Return bmx_SDL_GetDisplayDepth(0)
-	End Method
-	
-	Method DesktopHertz:Int()
-		Return bmx_SDL_GetDisplayhertz(0)
-	End Method
-
-End Type
-
-Driver = New TSDLSystemDriver
