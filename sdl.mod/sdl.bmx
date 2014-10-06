@@ -29,7 +29,7 @@ ModuleInfo "License: zlib/libpng"
 ModuleInfo "History: 1.00"
 ModuleInfo "History: Initial Release."
 
-?win32
+?win32x86
 ModuleInfo "LD_OPTS: -L%PWD%/lib/win32x86"
 Import "include/win32x86/*.h"
 
