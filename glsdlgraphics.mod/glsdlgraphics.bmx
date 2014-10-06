@@ -2,8 +2,8 @@ Strict
 
 Module SDL.GLSDLGraphics
 
-ModuleInfo "Version: 1.15"
-ModuleInfo "Author: Mark Sibly, Simon Armstrong"
+ModuleInfo "Version: 1.00"
+ModuleInfo "Author: Mark Sibly, Simon Armstrong, Bruce A Henderson"
 ModuleInfo "License: zlib/libpng"
 ModuleInfo "Copyright: Blitz Research Ltd"
 
@@ -12,6 +12,9 @@ ModuleInfo "History: Port to SDL backend, based on snippets from BRL.GLGraphics.
 
 Import SDL.SDLGraphics
 Import BRL.Pixmap
+?win32
+Import Pub.Glew
+?
 Import Pub.OpenGL
 
 Private
