@@ -26,8 +26,8 @@
 #include <brl.mod/blitz.mod/blitz.h>
 
 int sdl_sdl__sdl_rwops_seek(BBObject *, int, int);
-int sdl_sdl__sdl_rwops_read(BBObject *, void *, int);
-int sdl_sdl__sdl_rwops_write(BBObject *, void *, int);
+BBLONG sdl_sdl__sdl_rwops_read(BBObject *, void *, BBLONG);
+BBLONG sdl_sdl__sdl_rwops_write(BBObject *, void *, BBLONG);
 int sdl_sdl__sdl_rwops_close(BBObject *);
 
 void bmx_SDL_FreeRW_stream(SDL_RWops * ops);
@@ -40,15 +40,15 @@ BBString * bmx_SDL_GetError() {
 
 
 Sint64 bmx_SDL_RWops_seek(struct SDL_RWops * context, Sint64 offset, int whence) {
-	return sdl_sdl__sdl_rwops_seek(context->hidden.unknown.data1, (int)offset, whence);
+	return sdl_sdl__sdl_rwops_seek(context->hidden.unknown.data1, offset, whence);
 }
 
 size_t bmx_SDL_RWops_read(struct SDL_RWops * context, void *ptr, size_t size, size_t maxnum) {
-	return sdl_sdl__sdl_rwops_read(context->hidden.unknown.data1, ptr, (int)(size * maxnum)) / size;
+	return sdl_sdl__sdl_rwops_read(context->hidden.unknown.data1, ptr, (size * maxnum)) / size;
 }
 
 size_t bmx_SDL_RWops_write(struct SDL_RWops * context, const void *ptr, size_t size, size_t num) {
-  return sdl_sdl__sdl_rwops_write(context->hidden.unknown.data1, ptr, (int)(size * num)) / size;
+  return sdl_sdl__sdl_rwops_write(context->hidden.unknown.data1, ptr, (size * num)) / size;
 }
 
 int bmx_SDL_RWops_close(struct SDL_RWops *context) {

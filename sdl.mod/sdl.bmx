@@ -77,20 +77,20 @@ Import "common.bmx"
 
 Import "glue.c"
 
-Function _sdl_rwops_seek:Int(stream:TStream, pos:Int, whence:Int)
-	If whence = 1 Then
-		pos = stream.Pos() + pos
-	Else If whence = 2 Then
-		pos = stream.Size() + pos
-	End If
-	Return stream.seek(pos)
+Function _sdl_rwops_seek:Int(stream:TStream, pos:Long, whence:Int)
+	'If whence = 1 Then
+	'	pos = stream.Pos() + pos
+	'Else If whence = 2 Then
+	'	pos = stream.Size() + pos
+	'End If
+	Return stream.seek(pos, whence)
 End Function
 
-Function _sdl_rwops_read:Int(stream:TStream, buf:Byte Ptr, count:Int)
+Function _sdl_rwops_read:Long(stream:TStream, buf:Byte Ptr, count:Long)
 	Return stream.read(buf, count)
 End Function
 
-Function _sdl_rwops_write:Int(stream:TStream, buf:Byte Ptr, count:Int)
+Function _sdl_rwops_write:Long(stream:TStream, buf:Byte Ptr, count:Long)
 	Return stream.write(buf, count)
 End Function
 
