@@ -52,7 +52,7 @@ void bmx_sdl_timer_fire( int id, BBObject * obj, int ticks ) {
 }
 
 SDL_TimerID bmx_sdl_timer_start( float hertz, BBObject * timer ) {
-	SDL_TimerID t = SDL_AddTimer((int)hertz, bmx_sdl_timer_ontick, timer);
+	SDL_TimerID t = SDL_AddTimer(1000/((hertz != 0)?hertz:1), bmx_sdl_timer_ontick, timer);
 	
 	if (!t) {
 		return 0;
