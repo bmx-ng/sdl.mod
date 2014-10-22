@@ -12,9 +12,7 @@ ModuleInfo "History: Port to SDL backend, based on snippets from BRL.GLGraphics.
 
 Import SDL.SDLGraphics
 Import BRL.Pixmap
-?win32
 Import Pub.Glew
-?
 Import Pub.OpenGL
 
 Private
