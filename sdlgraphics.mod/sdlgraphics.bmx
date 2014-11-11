@@ -23,6 +23,10 @@ Strict
 
 Module SDL.SDLGraphics
 
+?linuxarm
+ModuleInfo "LD_OPTS: -L/opt/vc/lib"
+?
+
 Import SDL.SDLSystem
 Import BRL.Graphics
 
@@ -100,8 +104,8 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 End Type
 
 Rem
-bbdoc: Get SDL graphics driver
-returns: An SDL graphics driver
+bbdoc: Get SDL Graphics driver
+returns: An SDL Graphics driver
 about:
 The returned driver can be used with #SetGraphicsDriver
 End Rem
@@ -111,10 +115,10 @@ Function SDLGraphicsDriver:TSDLGraphicsDriver()
 End Function
 
 Rem
-bbdoc: Create SDL graphics
-returns: An SDL graphics object
+bbdoc: Create SDL Graphics
+returns: An SDL Graphics Object
 about:
-This is a convenience function that allows you to easily create an SDL graphics context.
+This is a convenience Function that allows you to easily Create an SDL Graphics context.
 End Rem
 Function SDLGraphics:TGraphics( width:Int,height:Int,depth:Int=0,hertz:Int=60,flags:Int=GRAPHICS_BACKBUFFER|GRAPHICS_DEPTHBUFFER )
 	SetGraphicsDriver SDLGraphicsDriver()

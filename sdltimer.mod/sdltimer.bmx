@@ -54,6 +54,7 @@ Import "../../sdl.mod/sdl.mod/include/linuxx86/*.h"
 Import "../../sdl.mod/sdl.mod/include/linuxx64/*.h"
 
 ?linuxarm
+Import "../../sdl.mod/sdl.mod/include/linuxarm/*.h"
 
 ?
 
