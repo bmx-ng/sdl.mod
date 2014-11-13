@@ -39,7 +39,6 @@ Const GL_CLAMP_TO_BORDER = $812D
 
 Global ix#, iy#, jx#, jy#
 Global color4ub:Byte[4]
-Global color4f#[4]
 
 Global state_blend
 Global state_boundtex
@@ -219,6 +218,7 @@ Function DefaultVShaderSource:String()
 	str :+ "void main(void) {~n"
 	str :+ "	gl_Position=u_pmatrix*vec4(vertex_pos, -1.0, 1.0);~n"
 	str :+ "	v4_col=vertex_col;~n"
+	str :+ "    gl_PointSize = 1.0;~n"
 	str :+ "}"
 	
 	Return str
@@ -673,6 +673,9 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 	Field vert_array:Float Ptr = Float Ptr( MemAlloc( 4 * BATCHSIZE * 3 ) )
 	Field uv_array:Float Ptr = Float Ptr( MemAlloc( 4 * BATCHSIZE * 2 ) )
 	Field col_array:Float Ptr = Float Ptr( MemAlloc( 4 * BATCHSIZE * 4 ) )
+	
+	' colo(u)rs
+	Field color4f:Float Ptr = Float Ptr( MemAlloc( 4 * 4 ) )
 
 	' constants for primitive_id rendering
 
@@ -718,11 +721,8 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	Method Create:TGL2Max2DDriver()
 
-		'?Not linuxarm
 		If Not SDLGraphicsDriver() Then Return Null
-		'?linuxarm
-		'If Not EGLGraphicsDriver() Then Return Null
-		'?
+
 		Return Self
 
 	End Method
@@ -730,35 +730,22 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 	'graphics driver overrides
 	Method GraphicsModes:TGraphicsMode[]()
 
-		'?Not linuxarm
 		Return SDLGraphicsDriver().GraphicsModes()
-		'?linuxarm
-		'Return EGLGraphicsDriver().GraphicsModes()
-		'?
 
 	End Method
 
 	Method AttachGraphics:TMax2DGraphics( widget:Byte Ptr, flags )
 
-		Local g:TSDLGraphics = Null
-		'?Not linuxarm
-		g = SDLGraphicsDriver().AttachGraphics( widget, flags )
-		'?linuxarm
-		'g = EGLGraphicsDriver().AttachGraphics( widget, flags )
-		'?
+		Local g:TSDLGraphics = SDLGraphicsDriver().AttachGraphics( widget, flags )
+
 		If g Then Return TMax2DGraphics.Create( g, Self )
 
 	End Method
 	
 	Method CreateGraphics:TMax2DGraphics( width, height, depth, hertz, flags )
 
-		Local g:TSDLGraphics = Null
-
-		'?Not linuxarm
-		g = SDLGraphicsDriver().CreateGraphics( width, height, depth, hertz, flags )
-		'?linuxarm
-		'g = EGLGraphicsDriver().CreateGraphics( width, height, depth, hertz, flags )
-		'?
+		Local g:TSDLGraphics = SDLGraphicsDriver().CreateGraphics( width, height, depth, hertz, flags )
+		
 		If g Then Return TMax2DGraphics.Create( g, Self )
 
 	End Method
@@ -767,11 +754,9 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 		If Not g
 			TMax2DGraphics.ClearCurrent
-			'?Not linuxarm
+
 			SDLGraphicsDriver().SetGraphics Null
-			'?linuxarm
-			'EGLGraphicsDriver().SetGraphics Null
-			'?
+
 			Return
 		EndIf
 
@@ -780,11 +765,8 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		Assert t And TSDLGraphics( t._graphics )
 		?
 
-		'?Not linuxarm
 		SDLGraphicsDriver().SetGraphics t._graphics
-		'?linuxarm
-		'EGLGraphicsDriver().SetGraphics t._graphics
-		'?
+
 		ResetGLContext t
 		t.MakeCurrent
 
@@ -820,11 +802,8 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 	Method Flip( sync )
 
 		Flush()
-		'?Not linuxarm
+
 		SDLGraphicsDriver().Flip sync
-		'?linuxarm
-		'EGLGraphicsDriver().Flip sync
-		'?
 
 	End Method
 
@@ -1188,12 +1167,6 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		For Local i:Int = 0 Until BATCHSIZE
 			Local i4 = i * 4
 			Local i6 = i * 6
-'			QUAD_INDS[i6    ] = i4 + 3
-'			QUAD_INDS[i6 + 1] = i4 + 2
-'			QUAD_INDS[i6 + 2] = i4
-'			QUAD_INDS[i6 + 3] = i4 + 1
-'			QUAD_INDS[i6 + 4] = i4
-'			QUAD_INDS[i6 + 5] = i4 + 2
 			QUAD_INDS[i6    ] = i4
 			QUAD_INDS[i6 + 1] = i4 + 1
 			QUAD_INDS[i6 + 2] = i4 + 2
