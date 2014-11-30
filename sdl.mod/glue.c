@@ -82,3 +82,7 @@ void bmx_SDL_FreeRW_stream(SDL_RWops * ops) {
 		SDL_FreeRW(ops);
 	}
 }
+
+BBString * bmx_SDL_GetPlatform() {
+	return BBStringFromUTF8String(SDL_GetPlatform());
+}

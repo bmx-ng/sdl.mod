@@ -39,6 +39,22 @@ Extern
 	Function SDL_LockMutex(mutex:Byte Ptr)
 	Function SDL_UnlockMutex(mutex:Byte Ptr)
 	
+	Function SDL_GetPlatform:String()="bmx_SDL_GetPlatform"
+	
+	Function SDL_GetCPUCacheLineSize:Int()
+	Function SDL_GetCPUCount:Int()
+	Function SDL_GetSystemRAM:Int()
+	Function SDL_HasAVX:Int()
+	Function SDL_HasAVX2:Int()
+	Function SDL_HasAltiVec:Int()
+	Function SDL_HasMMX:Int()
+	Function SDL_HasRDTSC:Int()
+	Function SDL_HasSSE:Int()
+	Function SDL_HasSSE2:Int()
+	Function SDL_HasSSE3:Int()
+	Function SDL_HasSSE41:Int()
+	Function SDL_HasSSE42:Int()
+
 End Extern
 
 
