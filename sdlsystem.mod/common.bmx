@@ -58,6 +58,12 @@ Extern
 
 	Function bmx_SDL_Poll()
 	Function bmx_SDL_WaitEvent()
+
+	Function MouseState:Int(x:Int Ptr, y:Int Ptr)="SDL_GetMouseState"
 	
+	Function bmx_SDL_ShowSimpleMessageBox:Int(text:String, _appTitle:String, serious:Int)
+	Function bmx_SDL_ShowMessageBox_confirm:Int(text:String, _appTitle:String, serious:Int)
+	Function bmx_SDL_ShowMessageBox_proceed:Int(text:String, _appTitle:String, serious:Int)
+
 End Extern
 

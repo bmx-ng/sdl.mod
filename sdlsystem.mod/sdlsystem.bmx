@@ -26,7 +26,6 @@ Module SDL.SDLSystem
 
 Import SDL.SDL
 Import BRL.System
-Import brl.standardio
 
 Import "common.bmx"
 
@@ -65,15 +64,19 @@ Type TSDLSystemDriver Extends TSystemDriver
 	End Method
 
 	Method Notify( text$,serious )
-		' TODO
+		Local res:Int = bmx_SDL_ShowSimpleMessageBox(text, AppTitle, serious)
+		' failed to display message box?
+		If res Then
+			WriteStdout text+"~r~n"
+		End If
 	End Method
 	
 	Method Confirm( text$,serious )
-		' TODO
+		Return bmx_SDL_ShowMessageBox_confirm(text, AppTitle, serious)
 	End Method
 	
 	Method Proceed( text$,serious )
-		' TODO
+		Return bmx_SDL_ShowMessageBox_proceed(text, AppTitle, serious)
 	End Method
 
 	Method RequestFile$( text$,exts$,save,file$ )

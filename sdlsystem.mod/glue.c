@@ -1,3 +1,4 @@
+#include "SDL.h"
 #include "SDL_events.h"
 #include "SDL_keyboard.h"
 
@@ -323,5 +324,65 @@ int mapmods(int keymods) {
 	}
 
 	return mod;
+}
+
+
+int bmx_SDL_ShowSimpleMessageBox(BBString * text, BBString * appTitle, int serious) {
+	int flags = (serious) ? SDL_MESSAGEBOX_WARNING : SDL_MESSAGEBOX_INFORMATION;
+	char * t = bbStringToUTF8String(appTitle);
+	char * s = bbStringToUTF8String(text);
+	int ret = SDL_ShowSimpleMessageBox(flags, t, s, NULL);
+	bbMemFree(s);
+	bbMemFree(s);
+	return ret;
+}
+
+int bmx_SDL_ShowMessageBox_confirm(BBString * text, BBString * appTitle, int serious) {
+
+	char * t = bbStringToUTF8String(appTitle);
+	char * s = bbStringToUTF8String(text);
+
+	SDL_MessageBoxButtonData buttons[] = {
+		{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, "no" },
+		{ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "yes" }
+	};
+	
+	SDL_MessageBoxData messageboxdata = {
+        (serious) ? SDL_MESSAGEBOX_WARNING : SDL_MESSAGEBOX_INFORMATION,
+        NULL, t, s, SDL_arraysize(buttons), buttons, NULL
+    };
+
+	int buttonid;
+	SDL_ShowMessageBox(&messageboxdata, &buttonid);
+	if (buttonid == 1) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+int bmx_SDL_ShowMessageBox_proceed(BBString * text, BBString * appTitle, int serious) {
+
+	char * t = bbStringToUTF8String(appTitle);
+	char * s = bbStringToUTF8String(text);
+
+	SDL_MessageBoxButtonData buttons[] = {
+		{                                       0, 0, "no" },
+		{ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "yes" },
+		{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "cancel" }
+	};
+	
+	SDL_MessageBoxData messageboxdata = {
+        (serious) ? SDL_MESSAGEBOX_WARNING : SDL_MESSAGEBOX_INFORMATION,
+        NULL, t, s, SDL_arraysize(buttons), buttons, NULL
+    };
+
+	int buttonid;
+	SDL_ShowMessageBox(&messageboxdata, &buttonid);
+	switch (buttonid) {
+		case 0: return 0;
+		case 1: return 1;
+	}
+	return -1;
 }
 
