@@ -333,7 +333,7 @@ int bmx_SDL_ShowSimpleMessageBox(BBString * text, BBString * appTitle, int serio
 	char * s = bbStringToUTF8String(text);
 	int ret = SDL_ShowSimpleMessageBox(flags, t, s, NULL);
 	bbMemFree(s);
-	bbMemFree(s);
+	bbMemFree(t);
 	return ret;
 }
 
@@ -351,6 +351,9 @@ int bmx_SDL_ShowMessageBox_confirm(BBString * text, BBString * appTitle, int ser
         (serious) ? SDL_MESSAGEBOX_WARNING : SDL_MESSAGEBOX_INFORMATION,
         NULL, t, s, SDL_arraysize(buttons), buttons, NULL
     };
+
+	bbMemFree(s);
+	bbMemFree(t);
 
 	int buttonid;
 	SDL_ShowMessageBox(&messageboxdata, &buttonid);
@@ -376,6 +379,9 @@ int bmx_SDL_ShowMessageBox_proceed(BBString * text, BBString * appTitle, int ser
         (serious) ? SDL_MESSAGEBOX_WARNING : SDL_MESSAGEBOX_INFORMATION,
         NULL, t, s, SDL_arraysize(buttons), buttons, NULL
     };
+
+	bbMemFree(s);
+	bbMemFree(t);
 
 	int buttonid;
 	SDL_ShowMessageBox(&messageboxdata, &buttonid);
