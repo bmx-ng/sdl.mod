@@ -50,10 +50,10 @@ Import "include/linuxx86/*.h"
 ModuleInfo "LD_OPTS: -L%PWD%/lib/linuxx64"
 
 Import "include/linuxx64/*.h"
-?linuxarm
-ModuleInfo "LD_OPTS: -L%PWD%/lib/linuxarm"
+?raspberrypi
+ModuleInfo "LD_OPTS: -L%PWD%/lib/raspberrypi"
 
-Import "include/linuxarm/*.h"
+Import "include/raspberrypi/*.h"
 ?
 
 Import "include/*.h"

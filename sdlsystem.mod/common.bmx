@@ -36,7 +36,8 @@ Import "../../sdl.mod/sdl.mod/include/linuxx86/*.h"
 ?linuxx64
 Import "../../sdl.mod/sdl.mod/include/linuxx64/*.h"
 
-?linuxarm
+?raspberrypi
+Import "../../sdl.mod/sdl.mod/include/raspberrypi/*.h"
 
 ?
 
