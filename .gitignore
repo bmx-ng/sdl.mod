@@ -5,3 +5,5 @@
 *x64.a
 *.x64.i
 *.bak
+*.arm.a
+*.arm.i
