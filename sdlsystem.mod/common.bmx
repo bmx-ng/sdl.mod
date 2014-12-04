@@ -39,9 +39,14 @@ Import "../../sdl.mod/sdl.mod/include/linuxx64/*.h"
 ?raspberrypi
 Import "../../sdl.mod/sdl.mod/include/raspberrypi/*.h"
 
+?android
+Import "../../sdl.mod/sdl.mod/SDL/include/*.h"
 ?
 
+?Not android
 Import "../../sdl.mod/sdl.mod/include/*.h"
+?
+
 
 Import "glue.c"
 

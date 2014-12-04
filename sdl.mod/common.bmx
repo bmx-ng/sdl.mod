@@ -23,6 +23,10 @@ SuperStrict
 
 Import BRL.Stream
 
+?android
+Import "source.bmx"
+?
+
 Extern
 
 	Function SDL_Init:Int(flags:Int)

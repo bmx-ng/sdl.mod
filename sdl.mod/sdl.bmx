@@ -54,9 +54,15 @@ Import "include/linuxx64/*.h"
 ModuleInfo "LD_OPTS: -L%PWD%/lib/raspberrypi"
 
 Import "include/raspberrypi/*.h"
+?android
+ModuleInfo "CC_OPTS: -DGL_GLEXT_PROTOTYPES"
+
+Import "SDL/include/*.h"
 ?
 
+?Not android
 Import "include/*.h"
+?
 
 ?win32
 Import "-lSDL2main"
@@ -66,7 +72,11 @@ Import "-lole32"
 Import "-loleaut32"
 Import "-lshell32"
 Import "-lversion" ' required in BlitzMax/lib
-?linux
+?linuxx86
+Import "-lSDL2"
+?linuxx64
+Import "-lSDL2"
+?raspberrypi
 Import "-lSDL2"
 ?macos
 Import "-framework SDL2"
