@@ -3,12 +3,12 @@
 SuperStrict
 
 Framework brl.standardio
-Import SDL.SDLAudio
+Import SDL.SDLMixerAudio
 
-SetAudioDriver("SDLAudio")
+SetAudioDriver("SDLMixerAudio")
 
 Local sound:TSound = LoadSound("media/I Wish (You Were Mine).ogg", SOUND_STREAM)
-
+DebugStop
 If sound Then
 	Print "Sound loaded"
 Else

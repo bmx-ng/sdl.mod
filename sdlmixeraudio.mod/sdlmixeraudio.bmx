@@ -21,7 +21,7 @@
 '
 Strict
 
-Module SDL.SDLAudio
+Module SDL.SDLMixerAudio
 
 Import SDL.SDL
 Import BRL.Audio
@@ -62,7 +62,7 @@ Import "common.bmx"
 
 Private
 
-Global _driver:TSDLAudioDriver
+Global _driver:TSDLMixerAudioDriver
 
 Public
 
@@ -82,12 +82,12 @@ Const MIX_DEFAULT_FORMAT:Int = AUDIO_S16MSB
 Const MIX_DEFAULT_FORMAT:Int = AUDIO_S16
 ?
 
-New TSDLAudioDriver
+New TSDLMixerAudioDriver
 
-Type TSDLAudioDriver Extends TAudioDriver
+Type TSDLMixerAudioDriver Extends TAudioDriver
 
 	Method Name$()
-		Return "SDLAudio"
+		Return "SDLMixerAudio"
 	End Method
 	
 	Method Startup()
@@ -99,7 +99,7 @@ Type TSDLAudioDriver Extends TAudioDriver
 		
 		_driver = Self
 		
-		TSDLChannel._Init()
+		TSDLMixerChannel._Init()
 
 		Return True
 	End Method
@@ -112,16 +112,16 @@ Type TSDLAudioDriver Extends TAudioDriver
 	End Method
 	
 	Method AllocChannel:TChannel()
-		Return TSDLChannel._pop()
+		Return TSDLMixerChannel._pop()
 	End Method
 
 	Method LoadSound:TSound( url:Object, flags:Int = 0)
-		Return TSDLSound.Load(url, flags)
+		Return TSDLMixerSound.Load(url, flags)
 	End Method
 	
 End Type
 
-Type TSDLSound Extends TSound
+Type TSDLMixerSound Extends TSound
 
 	Field audioPtr:Byte Ptr
 	Field isStream:Int
@@ -132,10 +132,10 @@ Type TSDLSound Extends TSound
 
 		If isStream Then
 			' return allocated channel for music - we don't need it.
-			If TSDLChannel(alloced_channel) Then
-				TSDLChannel._push(TSDLChannel(alloced_channel))
+			If TSDLMixerChannel(alloced_channel) Then
+				TSDLMixerChannel._push(TSDLMixerChannel(alloced_channel))
 			End If
-			channel = New TSDLMusic
+			channel = New TSDLMixerMusic
 			If loop Then
 				Mix_PlayMusic(audioPtr, -1)
 			Else
@@ -148,13 +148,13 @@ Type TSDLSound Extends TSound
 		channel = alloced_channel
 		' get a new channel if required
 		If Not channel Then
-			channel = TSDLChannel._pop()
+			channel = TSDLMixerChannel._pop()
 		End If
 		
 		If loop Then
-			Mix_PlayChannelTimed(TSDLChannel(channel).id, audioPtr, -1, -1)
+			Mix_PlayChannelTimed(TSDLMixerChannel(channel).id, audioPtr, -1, -1)
 		Else
-			Mix_PlayChannelTimed(TSDLChannel(channel).id, audioPtr, 0, -1)
+			Mix_PlayChannelTimed(TSDLMixerChannel(channel).id, audioPtr, 0, -1)
 		End If
 		
 		Return channel
@@ -165,11 +165,11 @@ Type TSDLSound Extends TSound
 		
 		If isStream Then
 			' return allocated channel for music - we don't need it.
-			If TSDLChannel(alloced_channel) Then
-				TSDLChannel._push(TSDLChannel(alloced_channel))
+			If TSDLMixerChannel(alloced_channel) Then
+				TSDLMixerChannel._push(TSDLMixerChannel(alloced_channel))
 			End If
-			channel = New TSDLMusic
-			TSDLMusic(channel).cuedSound = Self
+			channel = New TSDLMixerMusic
+			TSDLMixerMusic(channel).cuedSound = Self
 			Return channel
 		End If
 
@@ -177,17 +177,17 @@ Type TSDLSound Extends TSound
 		channel = alloced_channel
 		' get a new channel if required
 		If Not channel Then
-			channel = TSDLChannel._pop()
+			channel = TSDLMixerChannel._pop()
 		End If
 
-		TSDLChannel(channel).cuedSound = Self
+		TSDLMixerChannel(channel).cuedSound = Self
 
 		Return channel		
 	End Method
 	
 	Function Load:TSound( url:Object, loop_flag:Int )
 		Local stream:TStream
-		Local sound:TSDLSound
+		Local sound:TSDLMixerSound
 
 		If String(url) Then
 			stream = ReadStream(url)
@@ -196,7 +196,7 @@ Type TSDLSound Extends TSound
 		End If
 		
 		If stream Then
-			sound = New TSDLSound
+			sound = New TSDLMixerSound
 			If loop_flag & SOUND_STREAM Then
 				sound.isStream = True
 				sound.audioPtr = Mix_LoadMUS_RW(bmx_SDL_AllocRW_stream(stream), True)
@@ -225,16 +225,16 @@ Type TSDLSound Extends TSound
 
 End Type
 
-Type TSDLChannel Extends TChannel
+Type TSDLMixerChannel Extends TChannel
 
 	Field id:Int
 	Field popped:Int
-	Field cuedSound:TSDLSound
+	Field cuedSound:TSDLMixerSound
 	
 	Global maxChannels:Int = 0
 	
 	Global channels:TList = New TList
-	Global chanArray:TSDLChannel[0]
+	Global chanArray:TSDLMixerChannel[0]
 	
 	Global sdlMutex:Byte Ptr
 	
@@ -249,7 +249,7 @@ Type TSDLChannel Extends TChannel
 		chanArray = chanArray[..maxChannels + count]
 
 		For Local i:Int = 0 Until count
-			Local channel:TSDLChannel = New TSDLChannel
+			Local channel:TSDLMixerChannel = New TSDLMixerChannel
 			channel.id = maxChannels
 			channels.AddLast(channel)
 
@@ -263,7 +263,7 @@ Type TSDLChannel Extends TChannel
 	
 	' pop channel from stack
 	' create more channels if required.
-	Function _pop:TSDLChannel()
+	Function _pop:TSDLMixerChannel()
 		SDL_LockMutex(sdlMutex)
 
 		If channels.IsEmpty() Then
@@ -271,7 +271,7 @@ Type TSDLChannel Extends TChannel
 			_AddChannels(4)
 		End If
 		
-		Local channel:TSDLChannel = TSDLChannel(channels.First())
+		Local channel:TSDLMixerChannel = TSDLMixerChannel(channels.First())
 		channel.popped = True
 
 		SDL_UnlockMutex(sdlMutex)
@@ -280,7 +280,7 @@ Type TSDLChannel Extends TChannel
 	End Function
 
 	' add channel to stack
-	Function _push(channel:TSDLChannel)
+	Function _push(channel:TSDLMixerChannel)
 		If channel.popped Then
 			SDL_LockMutex(sdlMutex)
 
@@ -343,9 +343,9 @@ Type TSDLChannel Extends TChannel
 
 End Type
 
-Type TSDLMusic Extends TChannel
+Type TSDLMixerMusic Extends TChannel
 
-	Field cuedSound:TSDLSound
+	Field cuedSound:TSDLMixerSound
 
 	Method Stop()
 		Mix_HaltMusic()
