@@ -277,6 +277,18 @@ int mapkey(SDL_Scancode scancode) {
 			return KEY_LALT;
 		case SDL_SCANCODE_RALT:
 			return KEY_RALT;
+		case SDL_SCANCODE_AC_BACK:
+			return KEY_BROWSER_BACK;
+		case SDL_SCANCODE_AC_FORWARD:
+			return KEY_BROWSER_FORWARD;
+		case SDL_SCANCODE_AC_HOME:
+			return KEY_BROWSER_HOME;
+		case SDL_SCANCODE_AC_REFRESH:
+			return KEY_BROWSER_REFRESH;
+		case SDL_SCANCODE_AC_SEARCH:
+			return KEY_BROWSER_SEARCH;
+		case SDL_SCANCODE_AC_STOP:
+			return KEY_BROWSER_STOP;
 		case SDL_SCANCODE_GRAVE:
 			return KEY_TILDE;
 		case SDL_SCANCODE_MINUS:
