@@ -21,6 +21,9 @@
 '
 SuperStrict
 
+Rem
+bbdoc: SDL Core
+End Rem
 Module SDL.SDL
 
 ModuleInfo "Version: 1.00"
@@ -89,12 +92,82 @@ Import "common.bmx"
 
 Import "glue.c"
 
+
+Type TSDLStream Extends TStream
+
+	Field filePtr:Byte Ptr
+
+	Method Pos:Long()
+		Return SDL_RWtell(filePtr)
+	End Method
+
+	Method Size:Long()
+		Return SDL_RWsize(filePtr)
+	End Method
+
+	Method Seek:Long( pos:Long, whence:Int = SEEK_SET_ )
+		Return SDL_RWseek(filePtr, pos, whence)
+	End Method
+
+	Method Read:Long( buf:Byte Ptr,count:Long )
+		Return SDL_RWread(filePtr, buf, count, 1)
+	End Method
+
+	Method Write:Long( buf:Byte Ptr,count:Long )
+		Return SDL_RWwrite(filePtr, buf, count, 1)
+	End Method
+
+	Method Close:Int()
+		If filePtr Then
+			SDL_RWclose(filePtr)
+			filePtr = Null
+		End If
+	End Method
+
+	Method Delete()
+		Close()
+	End Method
+
+	Function Create:TSDLStream( file:String, readable:Int, writeable:Int )
+		Local stream:TSDLStream=New TSDLStream
+		Local Mode:String
+
+		If readable And writeable
+			Mode="r+b"
+		Else If writeable
+			Mode="wb"
+		Else
+			Mode="rb"
+		EndIf
+
+		Local f:Byte Ptr = file.ToUTF8String()		
+		stream.filePtr = SDL_RWFromFile(f, Mode)
+		MemFree(f)
+		
+		If Not stream.filePtr Then
+			Return Null
+		End If
+		
+		Return stream
+	End Function
+
+End Type
+
+Function CreateSDLStream:TSDLStream( file:String, readable:Int, writeable:Int )
+	Return TSDLStream.Create( file, readable, writeable )
+End Function
+
+Type TSDLStreamFactory Extends TStreamFactory
+
+	Method CreateStream:TStream( url:Object, proto$, path$, readable:Int, writeable:Int )
+		If proto="sdl" Then
+			Return TSDLStream.Create( path, readable, writeable )
+		End If
+	End Method
+	
+End Type
+
 Function _sdl_rwops_seek:Int(stream:TStream, pos:Long, whence:Int)
-	'If whence = 1 Then
-	'	pos = stream.Pos() + pos
-	'Else If whence = 2 Then
-	'	pos = stream.Size() + pos
-	'End If
 	Return stream.seek(pos, whence)
 End Function
 
