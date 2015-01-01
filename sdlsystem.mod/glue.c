@@ -48,6 +48,7 @@ int bmx_SDL_GetDisplayhertz(int display) {
 void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 	int data;
 	int mods;
+	SDL_DisplayMode mode;
 	switch (event->type) {
 		case SDL_QUIT:
 			bbSDLSystemEmitEvent(BBEVENT_APPTERMINATE, source, 0, 0, 0, 0, &bbNullObject);
@@ -82,6 +83,15 @@ void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 					brl_event_EmitEvent( event->user.data1 );
 					return;
 			}
+		case SDL_FINGERMOTION:
+			SDL_GetWindowDisplayMode(SDL_GL_GetCurrentWindow(), &mode);
+			bbSDLSystemEmitEvent( BBEVENT_TOUCHMOVE, source, event->tfinger.fingerId, 0, event->tfinger.x * mode.w, event->tfinger.y * mode.h, &bbNullObject);
+			return;
+		case SDL_FINGERDOWN:
+		case SDL_FINGERUP:
+			SDL_GetWindowDisplayMode(SDL_GL_GetCurrentWindow(), &mode);
+			bbSDLSystemEmitEvent( (event->type == SDL_FINGERDOWN) ? BBEVENT_TOUCHDOWN : BBEVENT_TOUCHUP, source, event->tfinger.fingerId, 0, event->tfinger.x * mode.w, event->tfinger.y * mode.h, &bbNullObject );
+			return;
 	}	
 	
 }
