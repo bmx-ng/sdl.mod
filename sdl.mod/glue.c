@@ -84,5 +84,29 @@ void bmx_SDL_FreeRW_stream(SDL_RWops * ops) {
 }
 
 BBString * bmx_SDL_GetPlatform() {
-	return BBStringFromUTF8String(SDL_GetPlatform());
+	return bbStringFromUTF8String(SDL_GetPlatform());
+}
+
+BBLONG bmx_SDL_RWsize(SDL_RWops* context) {
+	return SDL_RWsize(context);
+}
+
+BBLONG bmx_SDL_RWseek(SDL_RWops* context, BBLONG offset, int whence) {
+	return SDL_RWseek(context, offset, whence);
+}
+
+BBLONG bmx_SDL_RWtell(SDL_RWops* context) {
+	return SDL_RWtell(context);
+}
+
+BBLONG bmx_SDL_RWread(SDL_RWops* context, void * ptr, BBLONG size, BBLONG maxnum) {
+	return SDL_RWread(context, ptr, size, maxnum);
+}
+
+BBLONG bmx_SDL_RWwrite(SDL_RWops* context, const void* ptr, BBLONG size, BBLONG num) {
+	return SDL_RWwrite(context, ptr, size, num);
+}
+
+int bmx_SDL_RWclose(SDL_RWops* context) {
+	return SDL_RWclose(context);
 }

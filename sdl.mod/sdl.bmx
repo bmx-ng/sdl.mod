@@ -98,28 +98,28 @@ Type TSDLStream Extends TStream
 	Field filePtr:Byte Ptr
 
 	Method Pos:Long()
-		Return SDL_RWtell(filePtr)
+		Return bmx_SDL_RWtell(filePtr)
 	End Method
 
 	Method Size:Long()
-		Return SDL_RWsize(filePtr)
+		Return bmx_SDL_RWsize(filePtr)
 	End Method
 
 	Method Seek:Long( pos:Long, whence:Int = SEEK_SET_ )
-		Return SDL_RWseek(filePtr, pos, whence)
+		Return bmx_SDL_RWseek(filePtr, pos, whence)
 	End Method
 
 	Method Read:Long( buf:Byte Ptr,count:Long )
-		Return SDL_RWread(filePtr, buf, count, 1)
+		Return bmx_SDL_RWread(filePtr, buf, count, 1)
 	End Method
 
 	Method Write:Long( buf:Byte Ptr,count:Long )
-		Return SDL_RWwrite(filePtr, buf, count, 1)
+		Return bmx_SDL_RWwrite(filePtr, buf, count, 1)
 	End Method
 
 	Method Close:Int()
 		If filePtr Then
-			SDL_RWclose(filePtr)
+			bmx_SDL_RWclose(filePtr)
 			filePtr = Null
 		End If
 	End Method

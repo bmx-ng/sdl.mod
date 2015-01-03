@@ -60,12 +60,12 @@ Extern
 	Function SDL_HasSSE42:Int()
 
 	Function SDL_RWFromFile:Byte Ptr(file:Byte Ptr, _mode$z)
-	Function SDL_RWtell:Long(handle:Byte Ptr)
-	Function SDL_RWsize:Long(handle:Byte Ptr)
-	Function SDL_RWseek:Long(handle:Byte Ptr, offset:Long, whence:Int)
-	Function SDL_RWread:Long(handle:Byte Ptr, buffer:Byte Ptr, size:Long, num:Long)
-	Function SDL_RWwrite:Long(handle:Byte Ptr, buffer:Byte Ptr, size:Long, num:Long)
-	Function SDL_RWclose:Int(handle:Byte Ptr)
+	Function bmx_SDL_RWtell:Long(handle:Byte Ptr)
+	Function bmx_SDL_RWsize:Long(handle:Byte Ptr)
+	Function bmx_SDL_RWseek:Long(handle:Byte Ptr, offset:Long, whence:Int)
+	Function bmx_SDL_RWread:Long(handle:Byte Ptr, buffer:Byte Ptr, size:Long, num:Long)
+	Function bmx_SDL_RWwrite:Long(handle:Byte Ptr, buffer:Byte Ptr, size:Long, num:Long)
+	Function bmx_SDL_RWclose:Int(handle:Byte Ptr)
 	
 End Extern
 
