@@ -8,7 +8,7 @@
 
 /* System stuff */
 
-void brl_event_EmitEvent( BBObject *event );
+int brl_event_EmitEvent( BBObject *event );
 BBObject *brl_event_CreateEvent( int id,BBObject *source,int data,int mods,int x,int y,BBObject *extra );
 
 void bbSDLSystemEmitEvent( int id,BBObject *source,int data,int mods,int x,int y,BBObject *extra ){
