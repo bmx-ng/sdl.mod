@@ -25,6 +25,8 @@ Import BRL.Stream
 
 ?android
 Import "source.bmx"
+?emscripten
+Import "source.bmx"
 ?
 
 Extern

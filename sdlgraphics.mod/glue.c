@@ -22,6 +22,7 @@
 */
 
 #include "SDL_video.h"
+#include "SDL_mouse.h"
 
 #include <brl.mod/blitz.mod/blitz.h>
 

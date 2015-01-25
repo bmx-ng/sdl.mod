@@ -23,7 +23,7 @@ Strict
 
 Module SDL.SDLGraphics
 
-?linuxarm
+?raspberrypi
 ModuleInfo "LD_OPTS: -L/opt/vc/lib"
 ?
 

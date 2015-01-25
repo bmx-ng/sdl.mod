@@ -61,10 +61,15 @@ Import "include/raspberrypi/*.h"
 ModuleInfo "CC_OPTS: -DGL_GLEXT_PROTOTYPES"
 
 Import "SDL/include/*.h"
+?emscripten
+ModuleInfo "CC_OPTS: -DUSING_GENERATED_CONFIG_H"
+
+Import "include/emscripten/*.h"
+Import "SDL/include/*.h"
 ?
 
 ?Not android
-Import "include/*.h"
+'Import "include/*.h"
 ?
 
 ?win32

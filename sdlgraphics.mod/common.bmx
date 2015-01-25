@@ -42,12 +42,16 @@ Import "../../sdl.mod/sdl.mod/include/linuxx64/*.h"
 Import "../../sdl.mod/sdl.mod/include/raspberrypi/*.h"
 
 ?android
-Import "../../sdl.mod/sdl.mod/SDL/include/*.h"
+Import "../../sdl.mod/sdl.mod/include/android/*.h"
+
+?emscripten
+Import "../../sdl.mod/sdl.mod/include/emscripten/*.h"
+
 ?
 
-?Not android
+'?Not android
 Import "../../sdl.mod/sdl.mod/include/*.h"
-?
+'?
 
 Import "glue.c"
 
