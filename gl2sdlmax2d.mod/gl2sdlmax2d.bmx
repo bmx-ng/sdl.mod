@@ -19,10 +19,10 @@ ModuleInfo "History: Initial version."
 Import brl.Max2D
 Import SDL.SDLGraphics
 Import brl.StandardIO
-?Not linuxarm
+?Not opengles
 Import pub.glew
 Import Pub.OpenGL
-?linuxarm
+?opengles
 Import Pub.OpenGLES
 ?
 
@@ -149,16 +149,12 @@ Function UploadTex( pixmap:TPixmap, flags )
 
 	Local mip_level
 	Repeat
-		'?linuxarm
+
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, pixmap.width, pixmap.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Null )
 		For Local y = 0 Until pixmap.height
 			Local row:Byte Ptr = pixmap.pixels + ( y * pixmap.width ) * 4
 			glTexSubImage2D( GL_TEXTURE_2D, 0, 0, y, pixmap.width, 1, GL_RGBA, GL_UNSIGNED_BYTE, row )
 		Next
-		'?Not linuxarm
-		'glPixelStorei( GL_UNPACK_ROW_LENGTH, pixmap.pitch / BytesPerPixel[pixmap.format] )
-		'glTexSubImage2D( GL_TEXTURE_2D, mip_level, 0, 0, pixmap.width, pixmap.height, GL_RGBA, GL_UNSIGNED_BYTE, pixmap.pixels )
-		'?
 
 		If Not ( flags & MIPMAPPEDIMAGE ) Exit
 		If pixmap.width > 1 And pixmap.height > 1
@@ -173,11 +169,6 @@ Function UploadTex( pixmap:TPixmap, flags )
 		mip_level :+ 1
 	Forever
 
-	'
-	'?Not linuxarm
-	'glPixelStorei( GL_UNPACK_ROW_LENGTH, 0 )
-	'?
-
 End Function
 
 Function AdjustTexSize( width Var, height Var )
@@ -188,10 +179,9 @@ Function AdjustTexSize( width Var, height Var )
 	Repeat
 		Local t
 		glTexImage2D( GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Null )
-		?Not linuxarm
+		?Not opengles
 		glGetTexLevelParameteriv( GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, Varptr t )
-		'glGetTexLevelParameteriv( GL_PROXY_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, Varptr t )
-		?linuxarm
+		?opengles
 		Return
 		?
 		If t Return
@@ -206,9 +196,9 @@ Function DefaultVShaderSource:String()
 
 	Local str:String = ""
 
-	?linuxarm	
+	?opengles	
 	str :+ "#version 100~n"
-	?Not linuxarm
+	?Not opengles
 	str :+ "#version 120~n"
 	?
 	str :+ "attribute vec2 vertex_pos;~n"
@@ -229,14 +219,14 @@ Function DefaultFShaderSource:String()
 
 	Local str:String = ""
 	
-	?linuxarm	
+	?opengles	
 	str :+ "#version 100~n"
 	str :+ "precision mediump float;~n"
 	str :+ "varying vec4 v4_col;~n"
 	str :+ "void main(void) {~n"
 	str :+ "	gl_FragColor=vec4(v4_col);~n"
 	str :+ "}~n"
-	?Not linuxarm
+	?Not opengles
 	str :+ "#version 120~n"
 	str :+ "varying vec4 v4_col;~n"
 	str :+ "void main(void) {~n"
@@ -252,9 +242,9 @@ Function DefaultTextureVShaderSource:String()
 
 	Local str:String = ""
 
-	?linuxarm
+	?opengles
 	str :+ "#version 100~n"
-	?Not linuxarm
+	?Not opengles
 	str :+ "#version 120~n"
 	?
 	str :+ "attribute vec2 vertex_pos;~n"
@@ -277,7 +267,7 @@ Function DefaultTextureFShaderSource:String()
 
 	Local str:String = ""
 
-	?linuxarm	
+	?opengles	
 	str :+ "#version 100~n"
 	str :+ "precision mediump float;~n"
 	str :+ "uniform sampler2D u_texture0;~n"
@@ -288,7 +278,7 @@ Function DefaultTextureFShaderSource:String()
 	str :+ "	gl_FragColor.rgb=tex.rgb*v4_col.rgb;~n"
 	str :+ "    gl_FragColor.a=tex.a*v4_col.a;~n"
 	str :+ "}~n"
-	?Not linuxarm
+	?Not opengles
 	str :+ "#version 120~n"
 	str :+ "uniform sampler2D u_texture0;~n"
 	str :+ "varying vec4 v4_col;~n"
@@ -657,7 +647,11 @@ End Type
 
 Type TGL2Max2DDriver Extends TMax2DDriver
 
+?Not emscripten
 	Const BATCHSIZE:Int = 32767 ' how many entries that can be stored in batch before a draw call is required
+?emscripten
+	Const BATCHSIZE:Int = 8192  ' how many entries that can be stored in batch before a draw call is required
+?
 
 	' has driver been initialized?
 
@@ -761,7 +755,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		EndIf
 
 		Local t:TMax2DGraphics = TMax2DGraphics( g )
-		?Not linuxarm
+		?Not opengles
 		Assert t And TSDLGraphics( t._graphics )
 		?
 
@@ -1149,7 +1143,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	Method Init()
 
-		?Not linuxarm
+		?Not opengles
 		glewinit()
 		?
 
@@ -1259,7 +1253,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 			activeProgram.EnableData( vert_array, uv_array, col_array, u_pmatrix.grid )
 
 			Select blend_id
-			?Not linuxarm
+			?Not opengles
 			Case MASKBLEND
 				glDisable( GL_BLEND )
 				glEnable( GL_ALPHA_TEST )
@@ -1267,30 +1261,30 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 			?
 			Case SOLIDBLEND
 				glDisable( GL_BLEND )
-				?Not linuxarm
+				?Not opengles
 				glDisable( GL_ALPHA_TEST )
 				?
 			Case ALPHABLEND
 				glEnable( GL_BLEND )
 				glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA )
-				?Not linuxarm
+				?Not opengles
 				glDisable( GL_ALPHA_TEST )
 				?
 			Case LIGHTBLEND
 				glEnable( GL_BLEND )
 				glBlendFunc( GL_SRC_ALPHA, GL_ONE )
-				?Not linuxarm
+				?Not opengles
 				glDisable( GL_ALPHA_TEST )
 				?
 			Case SHADEBLEND
 				glEnable( GL_BLEND )
 				glBlendFunc( GL_DST_COLOR, GL_ZERO )
-				?Not linuxarm
+				?Not opengles
 				glDisable( GL_ALPHA_TEST )
 				?
 			Default
 				glDisable( GL_BLEND )
-				?Not linuxarm
+				?Not opengles
 				glDisable( GL_ALPHA_TEST )
 				?
 			End Select
