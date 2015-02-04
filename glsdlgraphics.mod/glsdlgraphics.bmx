@@ -10,6 +10,8 @@ ModuleInfo "Copyright: Blitz Research Ltd"
 ModuleInfo "History: 1.00"
 ModuleInfo "History: Port to SDL backend, based on snippets from BRL.GLGraphics."
 
+?Not opengles
+
 Import SDL.SDLGraphics
 Import BRL.Pixmap
 Import Pub.Glew
@@ -191,4 +193,4 @@ Function GLDrawText( text$,x,y )
 	EndOrtho
 End Function
 
-
+?

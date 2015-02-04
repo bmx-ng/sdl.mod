@@ -69,7 +69,7 @@ Import "SDL/include/*.h"
 ?
 
 ?Not android
-'Import "include/*.h"
+Import "include/*.h"
 ?
 
 ?win32

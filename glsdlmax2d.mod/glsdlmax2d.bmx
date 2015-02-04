@@ -35,6 +35,8 @@ ModuleInfo "History: Ripped out a bunch of dead code"
 ModuleInfo "History: 1.05 Release"
 ModuleInfo "History: Added checks to prevent invalid textures deletes"
 
+?Not opengles
+
 Import BRL.Max2D
 Import SDL.GLSDLGraphics
 
@@ -537,3 +539,5 @@ End Function
 
 Local driver:TGLMax2DDriver=GLMax2DDriver()
 If driver SetGraphicsDriver driver
+
+?
