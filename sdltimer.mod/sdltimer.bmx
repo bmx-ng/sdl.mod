@@ -53,11 +53,14 @@ Import "../../sdl.mod/sdl.mod/include/linuxx86/*.h"
 ?linuxx64
 Import "../../sdl.mod/sdl.mod/include/linuxx64/*.h"
 
-?linuxarm
-Import "../../sdl.mod/sdl.mod/include/linuxarm/*.h"
-
 ?emscripten
 Import "../../sdl.mod/sdl.mod/include/emscripten/*.h"
+
+?raspberrypi
+Import "../../sdl.mod/sdl.mod/include/raspberrypi/*.h"
+
+?android
+Import "../../sdl.mod/sdl.mod/include/android/*.h"
 
 ?
 
