@@ -61,6 +61,10 @@ Extern
 	' system stuff
 	Function SDL_ShowCursor:Int(visible:Int)
 	
+	' text input
+	Function SDL_StartTextInput()
+	Function SDL_StopTextInput()
+	
 	Function bmx_SDL_GetDisplayWidth:Int(display:Int)
 	Function bmx_SDL_GetDisplayHeight:Int(display:Int)
 	Function bmx_SDL_GetDisplayDepth:Int(display:Int)

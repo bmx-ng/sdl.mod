@@ -48,22 +48,59 @@ int bmx_SDL_GetDisplayhertz(int display) {
 void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 	int data;
 	int mods;
+	int i;
+	BBString * s;
 	SDL_DisplayMode mode;
 	switch (event->type) {
 		case SDL_QUIT:
 			bbSDLSystemEmitEvent(BBEVENT_APPTERMINATE, source, 0, 0, 0, 0, &bbNullObject);
 			return;
 		case SDL_KEYDOWN:
+			i = 0;
+			// some keys are not raised as text input events..
+			// so we will push them ourselves.
+			switch (event->key.keysym.sym) {
+				case SDLK_BACKSPACE:
+					i = 0x08;
+					break;
+				case SDLK_DELETE:
+					i = 0x7f;
+					break;
+				case SDLK_RETURN:
+				case SDLK_RETURN2:
+				case SDLK_KP_ENTER:
+					i = 0x0d;
+					break;
+				case SDLK_ESCAPE:
+					i = 0x1b;
+					break;
+			}
+			// intentional fall-through...
 		case SDL_KEYUP:
 			data = mapkey(event->key.keysym.scancode);
 			mods = mapmods(event->key.keysym.mod);
+
 			if (event->key.repeat) {
 				bbSDLSystemEmitEvent( BBEVENT_KEYREPEAT,source,data,mods,0,0,&bbNullObject );
+				if (i) {
+					bbSDLSystemEmitEvent( BBEVENT_KEYCHAR,source,i,0,0,0,&bbNullObject );
+				}
 				return;
 			}
 			bbSDLSystemEmitEvent( (event->type == SDL_KEYDOWN) ? BBEVENT_KEYDOWN : BBEVENT_KEYUP,source,data,mods,0,0,&bbNullObject );
+			if (i) {
+				bbSDLSystemEmitEvent( BBEVENT_KEYCHAR,source,i,0,0,0,&bbNullObject );
+			}
 			return;
 			break;
+		case SDL_TEXTINPUT:
+			i = 0;
+			s = bbStringFromUTF8String(event->text.text);
+			while (i < s->length) {
+				bbSDLSystemEmitEvent( BBEVENT_KEYCHAR,source,s->buf[i],0,0,0,&bbNullObject );
+				i++;
+			}
+			return;
 		case SDL_MOUSEMOTION:
 			bbSDLSystemEmitEvent( BBEVENT_MOUSEMOVE,source,0,0,event->motion.x,event->motion.y,&bbNullObject );
 			return;
