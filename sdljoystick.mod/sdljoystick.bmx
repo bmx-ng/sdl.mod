@@ -33,8 +33,7 @@ Import BRL.Map
 Import "common.bmx"
 
 Type TSDLJoystickDriver Extends TJoystickDriver
-	Field _succ:TJoystickDriver
-	
+
 	Field joysticks:TIntMap = New TIntMap
 	Field currentPort:Int = -1
 	Field currentJoystick:TSDLJoystick
