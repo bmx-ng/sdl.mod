@@ -177,6 +177,7 @@ Type TSDLJoystickDriver Extends TJoystickDriver
 		End If
 		
 		currentJoystick = joystick
+		currentPort = port
 	End Method
 	
 End Type
