@@ -1,0 +1,33 @@
+# post build script
+#
+#
+
+@define copyDLL
+	if bmk.Platform() == "macos" then
+
+		framework = "SDL2.framework"
+
+		# frameworks folder exists?
+		folder = %exepath% .. "/../Frameworks"
+
+		if sys.FileType(folder) == 0 then
+			sys.CreateDir(folder)
+		end
+	
+		# framework exists?
+		if sys.FileType(folder .. "/" .. framework) == 0 then
+
+			# assumes Sparkle.framework.zip is in the module folder.
+			zip = utils.ModulePath("sdl.sdl") .. "/lib/macos/" .. framework .. ".zip"
+		
+			os.execute("unzip -qq " .. zip .. " -d " .. folder)
+	
+		end
+
+	end	
+
+@end
+
+
+#copy the shared objects
+copyDLL
