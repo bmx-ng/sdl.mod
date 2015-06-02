@@ -245,6 +245,7 @@ Type TVirtualJoystick
 		Local id:Int = buttons.length
 		buttons = buttons[..id + 1]
 		buttons[id] = New TVirtualButton.Create(x, y, radius)
+		buttoncaps :| (1 Shl id)
 		Return id
 	End Method
 
