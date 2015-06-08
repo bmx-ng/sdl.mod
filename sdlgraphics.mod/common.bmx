@@ -54,6 +54,9 @@ Import "../../sdl.mod/sdl.mod/include/*.h"
 '?
 
 Import "glue.c"
+?raspberrypi
+Import "rpi_glue.c"
+?
 
 Extern
 
@@ -73,6 +76,12 @@ Extern
 	' system stuff
 '	Function SDL_ShowCursor(visible:Int)
 	Function bmx_SDL_WarpMouseInWindow(x:Int, y:Int)
+	
+?raspberrypi
+	Function bmx_tvservice_init()
+	Function bmx_tvservice_modes:Int(modes:Byte Ptr, maxcount:Int, withMode:Int)
+	Function bmx_reset_screen()
+?
 	
 '	Function bmx_SDL_GetDisplayWidth:Int(display:Int)
 '	Function bmx_SDL_GetDisplayHeight:Int(display:Int)
@@ -99,3 +108,4 @@ Const SDL_WINDOW_FULLSCREEN_DESKTOP:Int = SDL_WINDOW_FULLSCREEN | $00001000
 Const SDL_WINDOW_FOREIGN:Int = $00000800            ' window Not created by SDL
 Const SDL_WINDOW_ALLOW_HIGHDPI:Int = $00002000       ' window should be created in high-DPI Mode If supported
 
+Const GRAPHICS_RPI_TV_FULLSCREEN:Int = $1000

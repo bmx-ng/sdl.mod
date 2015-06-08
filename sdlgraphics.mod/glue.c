@@ -40,6 +40,7 @@ enum{
 	FLAGS_STENCILBUFFER = 0x10,
 	FLAGS_ACCUMBUFFER   = 0x20,
 	FLAGS_BORDERLESS    = 0x40,
+	FLAGS_RPI_TV_FULLSCREEN = 0x1000,
 	FLAGS_FULLSCREEN    = 0x80000000
 };
 
@@ -59,6 +60,11 @@ void bbSDLGraphicsGetSettings( BBSDLContext *context, int * width,int * height,i
 void bbSDLGraphicsClose( BBSDLContext *context );
 void bmx_SDL_Poll();
 void bmx_SDL_WaitEvent();
+
+#ifdef __RASPBERRYPI__
+void bmx_tvservice_get_closest_mode(int width, int height, int framerate, int * mode, int * group);
+void bmx_tvservice_setmode(int mode, int group, int width, int height);
+#endif
 
 static BBSDLContext *_currentContext;
 
@@ -102,9 +108,24 @@ BBSDLContext *bbSDLGraphicsCreateGraphics( int width,int height,int depth,int hz
 	if (flags & FLAGS_ALPHABUFFER) SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1);
 	if (flags & FLAGS_DEPTHBUFFER) SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	if (flags & FLAGS_STENCILBUFFER) SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
+
+#ifdef __RASPBERRYPI__
+	int rpi_mode;
+	int rpi_group;
 	
+	if (depth && (flags & FLAGS_RPI_TV_FULLSCREEN)) {
+		bmx_tvservice_get_closest_mode(width, height, hz, &rpi_mode, &rpi_group);
+		bmx_tvservice_setmode(rpi_mode, rpi_group, width, height);
+	}
+	SDL_VideoInit(NULL);
+#endif
 	SDL_Window *window = SDL_CreateWindow(appTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		width, height, windowFlags);
+		
+	if (window == NULL) {
+printf("error... %s\n", SDL_GetError());fflush(stdout);
+		return;
+	}
 
 	SDL_GL_SetSwapInterval(-1);
 	
@@ -114,8 +135,12 @@ BBSDLContext *bbSDLGraphicsCreateGraphics( int width,int height,int depth,int hz
 	memset( bbcontext,0,sizeof(BBSDLContext) );
 	bbcontext->mode=mode;	
 	bbcontext->width=width;	
-	bbcontext->height=height;	
+	bbcontext->height=height;
+#ifdef __RASPBERRYPI__
+	bbcontext->depth=16;
+#else
 	bbcontext->depth=24;	
+#endif
 	bbcontext->hertz=hz;
 	bbcontext->flags=flags;
 	bbcontext->sync=-1;	
@@ -184,5 +209,8 @@ void bbSDLGraphicsGetSettings( BBSDLContext *context, int * width,int * height,i
 void bbSDLExit(){
 	bbSDLGraphicsClose( _currentContext );
 	_currentContext=0;
+#ifdef __RASPBERRYPI__
+	SDL_VideoQuit();
+#endif
 }
 

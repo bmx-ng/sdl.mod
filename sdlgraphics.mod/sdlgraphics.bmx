@@ -24,7 +24,14 @@ Strict
 Module SDL.SDLGraphics
 
 ?raspberrypi
+ModuleInfo "CC_OPTS: -D__RASPBERRYPI__"
+ModuleInfo "CC_OPTS: -I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads"
 ModuleInfo "LD_OPTS: -L/opt/vc/lib"
+
+Import "-lvcos"
+Import "-lvchostif"
+Import "-lvchiq_arm"
+Import "-lbcm_host"
 ?
 
 Import SDL.SDLSystem
@@ -60,20 +67,42 @@ Type TSDLGraphics Extends TGraphics
 	
 End Type
 
+Type TSDLGraphicsMode Extends TGraphicsMode
+?raspberrypi
+	Field mode:Int
+	Field group:Int
+?
+End Type
+
 Type TSDLGraphicsDriver Extends TGraphicsDriver
+?Not raspberrypi
+	Const MODE_SIZE:Int = 4
+?raspberrypi
+	Const MODE_SIZE:Int = 6
+?
 
 	Method GraphicsModes:TGraphicsMode[]()
-		Local buf:Int[1024*4]
+		Local buf:Int[1024*MODE_SIZE]
+?Not raspberrypi
 		Local count:Int=bbSDLGraphicsGraphicsModes( 0, buf,1024 )
+?raspberrypi
+		Local count:Int = bmx_tvservice_modes(buf, 1024, True)
+?
 		Local modes:TGraphicsMode[count],p:Int Ptr=buf
 		For Local i:Int=0 Until count
-			Local t:TGraphicsMode=New TGraphicsMode
+			Local t:TSDLGraphicsMode=New TSDLGraphicsMode
 			t.width=p[0]
 			t.height=p[1]
 			t.depth=p[2]
 			t.hertz=p[3]
+?raspberrypi
+			t.mode=p[4]
+			t.group=p[5]
+?
 			modes[i]=t
-			p:+4
+
+			p :+ MODE_SIZE
+
 		Next
 		Return modes
 	End Method
@@ -124,11 +153,18 @@ Function SDLGraphics:TGraphics( width:Int,height:Int,depth:Int=0,hertz:Int=60,fl
 	SetGraphicsDriver SDLGraphicsDriver()
 	Return Graphics( width,height,depth,hertz,flags )
 End Function
-	
+
+?Not raspberrypi
 SDL_Init(SDL_INIT_VIDEO)
+?raspberrypi
+bmx_tvservice_init()
+?
 
 ' cleanup context on exit
 OnEnd(bbSDLExit)
+?raspberrypi
+OnEnd(bmx_reset_screen)
+?
 ' set mouse warp function
 _sdl_WarpMouse = bmx_SDL_WarpMouseInWindow
 
