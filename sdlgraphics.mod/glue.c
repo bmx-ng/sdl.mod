@@ -124,7 +124,7 @@ BBSDLContext *bbSDLGraphicsCreateGraphics( int width,int height,int depth,int hz
 		
 	if (window == NULL) {
 printf("error... %s\n", SDL_GetError());fflush(stdout);
-		return;
+		return NULL;
 	}
 
 	SDL_GL_SetSwapInterval(-1);
