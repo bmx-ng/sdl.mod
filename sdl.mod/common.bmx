@@ -27,6 +27,8 @@ Import BRL.Stream
 Import "source.bmx"
 ?emscripten
 Import "source.bmx"
+?raspberrypi
+Import "-lrt"
 ?
 
 Extern
