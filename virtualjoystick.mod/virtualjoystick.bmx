@@ -26,7 +26,7 @@ bbdoc: Virtual Joystick
 End Rem
 Module SDL.VirtualJoystick
 
-Framework SDL.SDL
+Import SDL.SDL
 Import BRL.Event
 Import Pub.Joystick
 Import BRL.Math
