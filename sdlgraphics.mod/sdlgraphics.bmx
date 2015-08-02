@@ -62,6 +62,12 @@ Type TSDLGraphics Extends TGraphics
 		bbSDLGraphicsClose( _context )
 		_context=0
 	End Method
+
+	Method GetHandle:Byte Ptr()
+		If _context Then
+			Return bbSDLGraphicsGetHandle(_context)
+		End If
+	End Method
 	
 	Field _context:Byte Ptr
 	

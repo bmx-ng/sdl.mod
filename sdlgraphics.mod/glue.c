@@ -23,6 +23,7 @@
 
 #include "SDL_video.h"
 #include "SDL_mouse.h"
+#include "SDL_syswm.h"
 
 #include <brl.mod/blitz.mod/blitz.h>
 
@@ -41,6 +42,7 @@ enum{
 	FLAGS_ACCUMBUFFER   = 0x20,
 	FLAGS_BORDERLESS    = 0x40,
 	FLAGS_RPI_TV_FULLSCREEN = 0x1000,
+	FLAGS_DX            = 0x1000000,
 	FLAGS_FULLSCREEN    = 0x80000000
 };
 
@@ -50,6 +52,7 @@ struct BBSDLContext{
 	int mode,width,height,depth,hertz,flags,sync;
 	SDL_Window * window;
 	SDL_GLContext context;
+	SDL_SysWMinfo info;
 };
 
 
@@ -60,6 +63,7 @@ void bbSDLGraphicsGetSettings( BBSDLContext *context, int * width,int * height,i
 void bbSDLGraphicsClose( BBSDLContext *context );
 void bmx_SDL_Poll();
 void bmx_SDL_WaitEvent();
+void * bbSDLGraphicsGetHandle(BBSDLContext *context);
 
 #ifdef __RASPBERRYPI__
 void bmx_tvservice_get_closest_mode(int width, int height, int framerate, int * mode, int * group);
@@ -90,7 +94,11 @@ BBSDLContext *bbSDLGraphicsCreateGraphics( int width,int height,int depth,int hz
 	int mode;
 	char * appTitle = bbStringToUTF8String( bbAppTitle );
 	
-	int windowFlags = SDL_WINDOW_OPENGL;
+	int windowFlags = 0;
+
+	if ((flags & FLAGS_DX) == 0) {
+		windowFlags = SDL_WINDOW_OPENGL;
+	}
 	
 	if (flags & FLAGS_BORDERLESS) windowFlags |= SDL_WINDOW_BORDERLESS;
 	
@@ -104,10 +112,12 @@ BBSDLContext *bbSDLGraphicsCreateGraphics( int width,int height,int depth,int hz
 		mode=MODE_WINDOW;
 	}
 
-	if (flags & FLAGS_BACKBUFFER) SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	if (flags & FLAGS_ALPHABUFFER) SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1);
-	if (flags & FLAGS_DEPTHBUFFER) SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-	if (flags & FLAGS_STENCILBUFFER) SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
+	if ((flags & FLAGS_DX) == 0) {
+		if (flags & FLAGS_BACKBUFFER) SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+		if (flags & FLAGS_ALPHABUFFER) SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1);
+		if (flags & FLAGS_DEPTHBUFFER) SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+		if (flags & FLAGS_STENCILBUFFER) SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
+	}
 
 #ifdef __RASPBERRYPI__
 	int rpi_mode;
@@ -127,9 +137,13 @@ printf("error... %s\n", SDL_GetError());fflush(stdout);
 		return NULL;
 	}
 
-	SDL_GL_SetSwapInterval(-1);
+	SDL_GLContext context = 0;
 	
-	SDL_GLContext context = SDL_GL_CreateContext(window);
+	if ((flags & FLAGS_DX) == 0) {
+		SDL_GL_SetSwapInterval(-1);
+	
+		context = SDL_GL_CreateContext(window);
+	}
 
 	BBSDLContext *bbcontext=(BBSDLContext*)malloc( sizeof(BBSDLContext) );
 	memset( bbcontext,0,sizeof(BBSDLContext) );
@@ -146,6 +160,7 @@ printf("error... %s\n", SDL_GetError());fflush(stdout);
 	bbcontext->sync=-1;	
 	bbcontext->window=window;
 	bbcontext->context=context;
+	SDL_GetWindowWMInfo(window, &bbcontext->info);
 	return bbcontext;
 
 }
@@ -214,3 +229,9 @@ void bbSDLExit(){
 #endif
 }
 
+void * bbSDLGraphicsGetHandle(BBSDLContext *context) {
+#ifdef _WIN32
+	return context->info.info.win.window;
+#endif
+	return 0;
+}

@@ -69,6 +69,7 @@ Extern
 	Function bbSDLGraphicsSetGraphics( context:Byte Ptr )
 	Function bbSDLGraphicsFlip( sync:Int )
 	Function bbSDLExit()
+	Function bbSDLGraphicsGetHandle:Byte Ptr(context:Byte Ptr)
 	
 	Function SDL_GetNumVideoDisplays:Int()
 	
@@ -109,3 +110,4 @@ Const SDL_WINDOW_FOREIGN:Int = $00000800            ' window Not created by SDL
 Const SDL_WINDOW_ALLOW_HIGHDPI:Int = $00002000       ' window should be created in high-DPI Mode If supported
 
 Const GRAPHICS_RPI_TV_FULLSCREEN:Int = $1000
+Const GRAPHICS_WIN32_DX:Int = $1000000
