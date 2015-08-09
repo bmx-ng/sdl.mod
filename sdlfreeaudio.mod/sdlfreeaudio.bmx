@@ -49,12 +49,15 @@ Import "../../sdl.mod/sdl.mod/include/raspberrypi/*.h"
 
 ?android
 Import "../../sdl.mod/sdl.mod/include/android/*.h"
-Import "../../sdl.mod/sdl.mod/SDL/include/*.h"
+
+?ios
+Import "../../sdl.mod/sdl.mod/include/ios/*.h"
+
 ?
 
-?Not android
+'?Not android
 Import "../../sdl.mod/sdl.mod/include/*.h"
-?
+'?
 
 Import "glue.cpp"
 

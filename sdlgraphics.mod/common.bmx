@@ -47,6 +47,9 @@ Import "../../sdl.mod/sdl.mod/include/android/*.h"
 ?emscripten
 Import "../../sdl.mod/sdl.mod/include/emscripten/*.h"
 
+?ios
+Import "../../sdl.mod/sdl.mod/include/ios/*.h"
+
 ?
 
 '?Not android

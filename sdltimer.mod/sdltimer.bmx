@@ -62,6 +62,9 @@ Import "../../sdl.mod/sdl.mod/include/raspberrypi/*.h"
 ?android
 Import "../../sdl.mod/sdl.mod/include/android/*.h"
 
+?ios
+Import "../../sdl.mod/sdl.mod/include/ios/*.h"
+
 ?
 
 Import "../../sdl.mod/sdl.mod/include/*.h"

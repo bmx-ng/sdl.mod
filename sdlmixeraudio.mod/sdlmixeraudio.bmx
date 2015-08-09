@@ -33,7 +33,7 @@ ModuleInfo "LD_OPTS: -L%PWD%/lib/win32x86"
 ?win32x64
 ModuleInfo "LD_OPTS: -L%PWD%/lib/win32x64"
 
-?macos
+?osx
 ModuleInfo "LD_OPTS: -F%PWD%/lib/macos"
 ModuleInfo "LD_OPTS: -Xlinker -rpath -Xlinker @loader_path/../Frameworks"
 
@@ -53,7 +53,7 @@ Import "include/*.h"
 Import "-lSDL2_mixer"
 ?linux
 Import "-lSDL2_mixer"
-?macos
+?osx
 Import "-framework SDL2_mixer"
 ?
 

@@ -40,7 +40,7 @@ Import "include/win32x86/*.h"
 ModuleInfo "LD_OPTS: -L%PWD%/lib/win32x64"
 Import "include/win32x64/*.h"
 
-?macos
+?osx
 ModuleInfo "LD_OPTS: -F%PWD%/lib/macos"
 ModuleInfo "LD_OPTS: -Xlinker -rpath -Xlinker @loader_path/../Frameworks"
 Import "include/macos/*.h"
@@ -67,7 +67,11 @@ ModuleInfo "CC_OPTS: -DUSING_GENERATED_CONFIG_H"
 
 Import "include/emscripten/*.h"
 Import "SDL/include/*.h"
-?
+?ios
+ModuleInfo "CC_OPTS: -fobjc-arc"
+
+Import "include/ios/*.h"
+Import "SDL/include/*.h"
 
 ?Not android
 Import "include/*.h"
@@ -87,7 +91,7 @@ Import "-lSDL2"
 Import "-lSDL2"
 ?raspberrypi
 Import "-lSDL2"
-?macos
+?osx
 Import "-framework SDL2"
 ?linux
 Import "-ldl"
