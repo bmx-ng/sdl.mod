@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2015 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -86,6 +86,7 @@ Android_SuspendScreenSaver(_THIS)
 static void
 Android_DeleteDevice(SDL_VideoDevice * device)
 {
+    SDL_free(device->driverdata);
     SDL_free(device);
 }
 
@@ -187,6 +188,7 @@ Android_VideoInit(_THIS)
 void
 Android_VideoQuit(_THIS)
 {
+    Android_QuitTouch();
 }
 
 /* This function gets called before VideoInit() */
