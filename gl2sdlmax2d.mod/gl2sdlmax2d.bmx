@@ -398,10 +398,10 @@ Type TMatrix
 		grid[00] =  2.0 / ( pr - pl )
 		grid[05] =  2.0 / ( pt - pb )
 		grid[10] = -2.0 / ( pf - pn )
-		grid[15] =  1.0
 		grid[12] = -( ( pr + pl ) / ( pr - pl ) )
 		grid[13] = -( ( pt + pb ) / ( pt - pb ) )
 		grid[14] = -( ( pf + pn ) / ( pf - pn ) )
+		grid[15] =  1.0
 
 	End Method
 	
@@ -798,7 +798,9 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		Flush()
 
 		SDLGraphicsDriver().Flip sync
-
+?ios
+		glViewport(0, 0, GraphicsWidth(), GraphicsHeight())
+?
 	End Method
 
 	Method ToString$()
