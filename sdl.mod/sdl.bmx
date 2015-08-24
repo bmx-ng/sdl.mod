@@ -41,9 +41,16 @@ ModuleInfo "LD_OPTS: -L%PWD%/lib/win32x64"
 Import "include/win32x64/*.h"
 
 ?osx
-ModuleInfo "LD_OPTS: -F%PWD%/lib/macos"
-ModuleInfo "LD_OPTS: -Xlinker -rpath -Xlinker @loader_path/../Frameworks"
+ModuleInfo "CC_OPTS: -mmmx -msse -msse2 -DTARGET_API_MAC_CARBON -DTARGET_API_MAC_OSX"
+
 Import "include/macos/*.h"
+Import "SDL/include/*.h"
+
+Import "-framework AudioUnit"
+Import "-framework CoreAudio"
+Import "-framework IOKit"
+Import "-framework CoreVideo"
+Import "-framework ForceFeedback"
 
 ?linuxx86
 ModuleInfo "LD_OPTS: -L%PWD%/lib/linuxx86"
@@ -73,9 +80,9 @@ ModuleInfo "CC_OPTS: -fobjc-arc"
 Import "include/ios/*.h"
 Import "SDL/include/*.h"
 
-?Not android
-Import "include/*.h"
-?
+'?Not android
+'Import "include/*.h"
+'?
 
 ?win32
 Import "-lSDL2main"
@@ -91,8 +98,8 @@ Import "-lSDL2"
 Import "-lSDL2"
 ?raspberrypi
 Import "-lSDL2"
-?osx
-Import "-framework SDL2"
+'?osx
+'Import "-framework SDL2"
 ?linux
 Import "-ldl"
 ?

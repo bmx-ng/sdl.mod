@@ -29,6 +29,8 @@ Import "source.bmx"
 Import "source.bmx"
 ?ios
 Import "source.bmx"
+?osx
+Import "source.bmx"
 ?raspberrypi
 Import "-lrt"
 ?

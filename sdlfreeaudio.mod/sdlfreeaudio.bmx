@@ -35,7 +35,7 @@ Import "../../sdl.mod/sdl.mod/include/win32x86/*.h"
 ?win32x64
 Import "../../sdl.mod/sdl.mod/include/win32x64/*.h"
 
-?macos
+?osx
 Import "../../sdl.mod/sdl.mod/include/macos/*.h"
 
 ?linuxx86
@@ -55,9 +55,7 @@ Import "../../sdl.mod/sdl.mod/include/ios/*.h"
 
 ?
 
-'?Not android
-Import "../../sdl.mod/sdl.mod/include/*.h"
-'?
+Import "../../sdl.mod/sdl.mod/SDL/include/*.h"
 
 Import "glue.cpp"
 
