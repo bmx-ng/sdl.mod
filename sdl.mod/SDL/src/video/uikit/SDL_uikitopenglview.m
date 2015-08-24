@@ -305,7 +305,6 @@
                 glInvalidateFramebuffer(GL_READ_FRAMEBUFFER, 1, attachments);
             }
         } else {
-printf("swapbuffers...\n");fflush(stdout);
             glResolveMultisampleFramebufferAPPLE();
 
             if (!retainedBacking) {
