@@ -44,7 +44,6 @@ Import "include/win32x64/*.h"
 ModuleInfo "CC_OPTS: -mmmx -msse -msse2 -DTARGET_API_MAC_CARBON -DTARGET_API_MAC_OSX"
 
 Import "include/macos/*.h"
-Import "SDL/include/*.h"
 
 Import "-framework AudioUnit"
 Import "-framework CoreAudio"
@@ -68,22 +67,14 @@ Import "include/raspberrypi/*.h"
 ModuleInfo "CC_OPTS: -DGL_GLEXT_PROTOTYPES"
 
 Import "include/android/*.h"
-Import "SDL/include/*.h"
 ?emscripten
 ModuleInfo "CC_OPTS: -DUSING_GENERATED_CONFIG_H"
 
 Import "include/emscripten/*.h"
-Import "SDL/include/*.h"
 ?ios
 ModuleInfo "CC_OPTS: -fobjc-arc"
 
 Import "include/ios/*.h"
-Import "SDL/include/*.h"
-
-'?Not android
-'Import "include/*.h"
-'?
-
 ?win32
 Import "-lSDL2main"
 Import "-lSDL2"
@@ -98,12 +89,11 @@ Import "-lSDL2"
 Import "-lSDL2"
 ?raspberrypi
 Import "-lSDL2"
-'?osx
-'Import "-framework SDL2"
 ?linux
 Import "-ldl"
 ?
 
+Import "SDL/include/*.h"
 
 Import "common.bmx"
 
