@@ -18,9 +18,6 @@ void bbSDLSystemEmitEvent( int id,BBObject *source,int data,int mods,int x,int y
 int mapkey(SDL_Scancode scancode);
 int mapmods(int keymods);
 
-
-
-
 int bmx_SDL_GetDisplayWidth(int display) {
 	SDL_DisplayMode mode;
 	SDL_GetCurrentDisplayMode(display, &mode);
@@ -449,5 +446,22 @@ int bmx_SDL_ShowMessageBox_proceed(BBString * text, BBString * appTitle, int ser
 		case 1: return 1;
 	}
 	return -1;
+}
+
+int bmx_SDL_EventFilter(void * userdata, SDL_Event * event) {
+	switch (event->type) {
+		case SDL_APP_TERMINATING:
+		case SDL_APP_LOWMEMORY:
+		case SDL_APP_WILLENTERBACKGROUND:
+		case SDL_APP_DIDENTERBACKGROUND:
+		case SDL_APP_WILLENTERFOREGROUND:
+		case SDL_APP_DIDENTERFOREGROUND:
+			return sdl_sdlsystem_TSDLSystemDriver__eventFilter(userdata, event->type);
+	}
+	return 1;
+}
+
+void bmx_SDL_SetEventFilter(BBObject * obj) {
+	SDL_SetEventFilter(bmx_SDL_EventFilter, obj);
 }
 

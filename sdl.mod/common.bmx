@@ -89,3 +89,40 @@ Const SDL_INIT_NOPARACHUTE:Int = $00100000  ' Don't catch fatal signals
 Const SDL_INIT_EVERYTHING:Int = SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS | ..
 	SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER
 	
+Rem
+bbdoc: The application is being terminated by the OS.
+about: Called on iOS in applicationWillTerminate().
+       Called on Android in onDestroy()
+End Rem
+Const SDL_APP_TERMINATING:Int         = $101
+Rem
+bbdoc: The application is low on memory, free memory if possible.
+about: Called on iOS in applicationDidReceiveMemoryWarning().
+       Called on Android in onLowMemory()
+End Rem
+Const SDL_APP_LOWMEMORY:Int           = $102
+Rem
+bbdoc: The application is about to enter the background.
+about: Called on iOS in applicationWillResignActive().
+       Called on Android in onPause()
+End Rem
+Const SDL_APP_WILLENTERBACKGROUND:Int = $103
+Rem
+bbdoc: The application did enter the background and may not get CPU for some time.
+about: Called on iOS in applicationDidEnterBackground().
+       Called on Android in onPause()
+End Rem
+Const SDL_APP_DIDENTERBACKGROUND:Int  = $104
+Rem
+bbdoc: The application is about to enter the foreground.
+about: Called on iOS in applicationWillEnterForeground().
+       Called on Android in onResume()
+End Rem
+Const SDL_APP_WILLENTERFOREGROUND:Int = $105
+Rem
+bbdoc: The application is now interactive.
+about: Called on iOS in applicationDidBecomeActive().
+       Called on Android in onResume()
+End Rem
+Const SDL_APP_DIDENTERFOREGROUND:Int  = $106
+

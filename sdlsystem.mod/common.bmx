@@ -80,5 +80,7 @@ Extern
 	Function bmx_SDL_ShowMessageBox_confirm:Int(text:String, _appTitle:String, serious:Int)
 	Function bmx_SDL_ShowMessageBox_proceed:Int(text:String, _appTitle:String, serious:Int)
 
+	Function bmx_SDL_SetEventFilter(driver:Object)
+	
 End Extern
 

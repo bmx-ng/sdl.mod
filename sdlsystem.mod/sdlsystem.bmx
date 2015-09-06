@@ -39,8 +39,12 @@ Global _sdl_WarpMouse(x:Int, y:Int)
 
 Type TSDLSystemDriver Extends TSystemDriver
 
+	Field _eventFilterCallback:Int(data:Object, event:Int)
+	Field _eventFilterUserData:Object
+
 	Method New()
 		SDL_Init(SDL_INIT_EVENTS)
+		bmx_SDL_SetEventFilter(Self)
 		OnEnd(SDL_Quit)
 	End Method
 
@@ -110,7 +114,19 @@ Type TSDLSystemDriver Extends TSystemDriver
 		Return bmx_SDL_GetDisplayhertz(0)
 	End Method
 
+	Function _eventFilter:Int(driver:TSDLSystemDriver, event:Int)
+		If driver._eventFilterCallback Then
+			Return driver._eventFilterCallback(driver._eventFilterUserData, event)
+		End If
+		Return 1
+	End Function
+	 
 End Type
+
+Function SetEventFilterCallback(callback:Int(data:Object, event:Int), data:Object = Null)
+	TSDLSystemDriver(Driver)._eventFilterCallback = callback
+	TSDLSystemDriver(Driver)._eventFilterUserData = data
+End Function
 
 Driver = New TSDLSystemDriver
 
