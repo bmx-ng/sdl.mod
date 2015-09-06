@@ -10,6 +10,7 @@
 
 int brl_event_EmitEvent( BBObject *event );
 BBObject *brl_event_CreateEvent( int id,BBObject *source,int data,int mods,int x,int y,BBObject *extra );
+int sdl_sdlsystem_TSDLSystemDriver__eventFilter(BBObject * userdata, int eventType);
 
 void bbSDLSystemEmitEvent( int id,BBObject *source,int data,int mods,int x,int y,BBObject *extra ){
 	BBObject *event=brl_event_CreateEvent( id,source,data,mods,x,y,extra );
@@ -43,11 +44,9 @@ int bmx_SDL_GetDisplayhertz(int display) {
 }
 
 void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
-	int data;
-	int mods;
-	int i;
-	BBString * s;
-	SDL_DisplayMode mode;
+	int data = 0;
+	int mods = 0;
+	int i = 0;
 	switch (event->type) {
 		case SDL_QUIT:
 			bbSDLSystemEmitEvent(BBEVENT_APPTERMINATE, source, 0, 0, 0, 0, &bbNullObject);
@@ -91,13 +90,14 @@ void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 			return;
 			break;
 		case SDL_TEXTINPUT:
-			i = 0;
-			s = bbStringFromUTF8String(event->text.text);
-			while (i < s->length) {
-				bbSDLSystemEmitEvent( BBEVENT_KEYCHAR,source,s->buf[i],0,0,0,&bbNullObject );
-				i++;
+			{
+				BBString * s = bbStringFromUTF8String(event->text.text);
+				while (i < s->length) {
+					bbSDLSystemEmitEvent( BBEVENT_KEYCHAR,source,s->buf[i],0,0,0,&bbNullObject );
+					i++;
+				}
+				return;
 			}
-			return;
 		case SDL_MOUSEMOTION:
 			bbSDLSystemEmitEvent( BBEVENT_MOUSEMOVE,source,0,0,event->motion.x,event->motion.y,&bbNullObject );
 			return;
@@ -118,14 +118,20 @@ void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 					return;
 			}
 		case SDL_FINGERMOTION:
-			SDL_GetWindowDisplayMode(SDL_GL_GetCurrentWindow(), &mode);
-			bbSDLSystemEmitEvent( BBEVENT_TOUCHMOVE, source, event->tfinger.fingerId, 0, event->tfinger.x * mode.w, event->tfinger.y * mode.h, &bbNullObject);
-			return;
+			{
+				SDL_DisplayMode mode;
+				SDL_GetWindowDisplayMode(SDL_GL_GetCurrentWindow(), &mode);
+				bbSDLSystemEmitEvent( BBEVENT_TOUCHMOVE, source, event->tfinger.fingerId, 0, event->tfinger.x * mode.w, event->tfinger.y * mode.h, &bbNullObject);
+				return;
+			}
 		case SDL_FINGERDOWN:
 		case SDL_FINGERUP:
-			SDL_GetWindowDisplayMode(SDL_GL_GetCurrentWindow(), &mode);
-			bbSDLSystemEmitEvent( (event->type == SDL_FINGERDOWN) ? BBEVENT_TOUCHDOWN : BBEVENT_TOUCHUP, source, event->tfinger.fingerId, 0, event->tfinger.x * mode.w, event->tfinger.y * mode.h, &bbNullObject );
-			return;
+			{
+				SDL_DisplayMode mode;
+				SDL_GetWindowDisplayMode(SDL_GL_GetCurrentWindow(), &mode);
+				bbSDLSystemEmitEvent( (event->type == SDL_FINGERDOWN) ? BBEVENT_TOUCHDOWN : BBEVENT_TOUCHUP, source, event->tfinger.fingerId, 0, event->tfinger.x * mode.w, event->tfinger.y * mode.h, &bbNullObject );
+				return;
+			}
 	}	
 	
 }

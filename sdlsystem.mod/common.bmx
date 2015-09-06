@@ -65,6 +65,7 @@ Extern
 	' text input
 	Function SDL_StartTextInput()
 	Function SDL_StopTextInput()
+	Function SDL_IsTextInputActive:Int()
 	
 	Function bmx_SDL_GetDisplayWidth:Int(display:Int)
 	Function bmx_SDL_GetDisplayHeight:Int(display:Int)
