@@ -1,4 +1,4 @@
-' Copyright (c) 2014 Bruce A Henderson
+' Copyright (c) 2014-2015 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -75,6 +75,17 @@ Extern
 	Function bmx_SDL_RWwrite:Long(handle:Byte Ptr, buffer:Byte Ptr, size:Long, num:Long)
 	Function bmx_SDL_RWclose:Int(handle:Byte Ptr)
 	
+	Function bmx_SDL_GetBasePath:String()
+	Function bmx_SDL_GetPrefPath:String(org:String, app:String)
+?android
+	Function SDL_AndroidGetExternalStoragePath:Byte Ptr()
+	Function SDL_AndroidGetExternalStorageState:Int()
+	Function SDL_AndroidGetInternalStoragePath:Byte Ptr()
+?
+	Function SDL_HasClipboardText:Int()
+	Function bmx_SDL_GetClipboardText:String()
+	Function SDL_SetClipboardText:Int(text:Byte Ptr)
+	
 End Extern
 
 
@@ -126,3 +137,6 @@ about: Called on iOS in applicationDidBecomeActive().
 End Rem
 Const SDL_APP_DIDENTERFOREGROUND:Int  = $106
 
+
+Const SDL_ANDROID_EXTERNAL_STORAGE_READ:Int = $01
+Const SDL_ANDROID_EXTERNAL_STORAGE_WRITE:Int = $02

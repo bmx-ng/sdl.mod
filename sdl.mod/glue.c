@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2014 Bruce A Henderson
+ Copyright (c) 2014-2015 Bruce A Henderson
 
  This software is provided 'as-is', without any express or implied
  warranty. In no event will the authors be held liable for any damages
@@ -33,6 +33,11 @@ int sdl_sdl__sdl_rwops_close(BBObject *);
 void bmx_SDL_FreeRW_stream(SDL_RWops * ops);
 BBString * bmx_SDL_GetError();
 
+BBString * bmx_SDL_GetBasePath();
+BBString * bmx_SDL_GetPrefPath(BBString * org, BBString * game);
+BBString * bmx_SDL_GetClipboardText();
+
+/* ----------------------------------------------------- */
 
 BBString * bmx_SDL_GetError() {
 	return bbStringFromUTF8String(SDL_GetError());
@@ -109,4 +114,42 @@ BBLONG bmx_SDL_RWwrite(SDL_RWops* context, const void* ptr, BBLONG size, BBLONG 
 
 int bmx_SDL_RWclose(SDL_RWops* context) {
 	return SDL_RWclose(context);
+}
+
+/* ----------------------------------------------------- */
+
+BBString * bmx_SDL_GetBasePath() {
+	BBString * path = &bbEmptyString;
+	char * p = SDL_GetBasePath();
+	if (p) {
+		path = bbStringFromUTF8String(p);
+		SDL_free(p);
+	}
+	return path;
+}
+
+BBString * bmx_SDL_GetPrefPath(BBString * org, BBString * game) {
+	BBString * path = &bbEmptyString;
+	char * o = bbStringToUTF8String(org);
+	char * g = bbStringToUTF8String(game);
+	char * p = SDL_GetPrefPath(o, g);
+	if (p) {
+		path = bbStringFromUTF8String(p);
+		SDL_free(p);
+	}
+	bbMemFree(g);
+	bbMemFree(o);
+	return path;
+}
+
+/* ----------------------------------------------------- */
+
+BBString * bmx_SDL_GetClipboardText() {
+	BBString * text = &bbEmptyString;
+	char * t = SDL_GetClipboardText();
+	if (t) {
+		text = bbStringFromUTF8String(t);
+		SDL_free(t);
+	}
+	return text;
 }

@@ -1,4 +1,4 @@
-' Copyright (c) 2014 Bruce A Henderson
+' Copyright (c) 2014-2015 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -117,11 +117,11 @@ Type TSDLStream Extends TStream
 	End Method
 
 	Method Read:Long( buf:Byte Ptr,count:Long )
-		Return bmx_SDL_RWread(filePtr, buf, count, 1)
+		Return bmx_SDL_RWread(filePtr, buf, 1, count)
 	End Method
 
 	Method Write:Long( buf:Byte Ptr,count:Long )
-		Return bmx_SDL_RWwrite(filePtr, buf, count, 1)
+		Return bmx_SDL_RWwrite(filePtr, buf, 1, count)
 	End Method
 
 	Method Close:Int()
@@ -174,6 +174,8 @@ Type TSDLStreamFactory Extends TStreamFactory
 	
 End Type
 
+New TSDLStreamFactory
+
 Function _sdl_rwops_seek:Int(stream:TStream, pos:Long, whence:Int)
 	Return stream.seek(pos, whence)
 End Function
@@ -190,3 +192,81 @@ Function _sdl_rwops_close:Int(stream:TStream)
 	Return stream.close()
 End Function
 
+Rem
+bbdoc: Get the directory where the application was run from.
+about: This is where the application data directory is.
+This is not necessarily a fast call, though, so you should call this once near startup and save the string if you need it.<br/>
+Mac OS X and iOS Specific Functionality: If the application is in a ".app" bundle, this function returns the Resource directory
+(e.g. MyApp.app/Contents/Resources/). This behaviour can be overridden by adding a property to the Info.plist file. Adding a string key with
+the name SDL_FILESYSTEM_BASE_DIR_TYPE with a supported value will change the behaviour.
+End Rem
+Function GetBasePath:String()
+	Return bmx_SDL_GetBasePath()
+End Function
+
+Rem
+bbdoc: Returns the preferences dir.
+about: This is meant to be where the application can write personal files (Preferences and save games, etc.) that are specific to the application.
+This directory is unique per user and per application. The path will be Null if there is a problem (creating directory failed, etc.)<br/>
+The return path will be guaranteed to end with a path separator ('\' on Windows, '/' on most other platforms).
+You should assume the path returned by this function is the only safe place to write files (and that GetBasePath(), while it might be writable, or even
+the parent of the returned path, aren't where you should be writing things).<br/>
+Both the org and app strings may become part of a directory name, so please follow these rules:<br/>
+* Try to use the same org string (including case-sensitivity) for all your applications that use this function.<br/>
+* Always use a unique app string for each one, and make sure it never changes for an app once you've decided on it.<br/>
+* Only use letters, numbers, and spaces. Avoid punctuation like "Game Name 2: Bad Guy's Revenge!" ... "Game Name 2" is sufficient.
+End Rem
+Function GetPrefPath:String(org:String, app:String)
+	Return bmx_SDL_GetPrefPath(org, app)
+End Function
+?android
+Rem
+bbdoc: Gets the path used for external storage for this application.
+returns: The path used for external storage for this application on success or NULL on failure; call SDL_GetError() for more information.
+about: This path is unique to your application, but is public and can be written to by other applications.
+Your external storage path is typically: /storage/sdcard0/Android/data/your.app.package/files.
+End Rem
+Function AndroidGetExternalStoragePath:String()
+	Return String.FromUTF8String(SDL_AndroidGetExternalStoragePath())
+End Function
+
+Rem
+bbdoc: Gets the current state of external storage.
+about: The current state of external storage, a bitmask of these values: SDL_ANDROID_EXTERNAL_STORAGE_READ, SDL_ANDROID_EXTERNAL_STORAGE_WRITE.
+If external storage is currently unavailable, this will return 0.
+End Rem
+Function AndroidGetExternalStorageState:Int()
+	Return SDL_AndroidGetExternalStorageState()
+End Function
+
+Rem
+bbdoc: Gets the path used for internal storage for this application.
+returns: The path used for internal storage or NULL on failure; call SDL_GetError() for more information.
+about: This path is unique to your application and cannot be written to by other applications.
+Your internal storage path is typically: /data/data/your.app.package/files.
+End Rem
+Function AndroidGetInternalStoragePath:String()
+	Return String.FromUTF8String(SDL_AndroidGetInternalStoragePath())
+End Function
+?
+Rem
+bbdoc: Return a flag indicating whether the clipboard exists and contains a text string that is non-empty.
+End Rem
+Function HasClipboardText:Int()
+	Return SDL_HasClipboardText()
+End Function
+
+Rem
+bbdoc: Returns the clipboard text.
+End Rem
+Function GetClipboardText:String()
+	Return bmx_SDL_GetClipboardText()
+End Function
+
+Rem
+bbdoc: Puts text into the clipboard.
+returns: 0 on success or a negative error code on failure.
+End Rem
+Function SetClipboardText:Int(text:String)
+	Return SDL_SetClipboardText(text.ToUTF8String())
+End Function
