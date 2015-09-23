@@ -31,6 +31,8 @@ Import "source.bmx"
 Import "source.bmx"
 ?osx
 Import "source.bmx"
+?linux
+Import "source.bmx"
 ?raspberrypi
 Import "-lrt"
 ?

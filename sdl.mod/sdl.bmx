@@ -52,11 +52,13 @@ Import "-framework CoreVideo"
 Import "-framework ForceFeedback"
 
 ?linuxx86
-ModuleInfo "LD_OPTS: -L%PWD%/lib/linuxx86"
+ModuleInfo "CC_OPTS: -mmmx -m3dnow -msse -msse2 -DHAVE_LINUX_VERSION_H"
+ModuleInfo "CC_OPTS: -I/usr/include/dbus-1.0 -I/usr/lib/x86_64-linux-gnu/dbus-1.0/include"
 
 Import "include/linuxx86/*.h"
 ?linuxx64
-ModuleInfo "LD_OPTS: -L%PWD%/lib/linuxx64"
+ModuleInfo "CC_OPTS: -mmmx -m3dnow -msse -msse2 -DHAVE_LINUX_VERSION_H"
+ModuleInfo "CC_OPTS: -I/usr/include/dbus-1.0 -I/usr/lib/x86_64-linux-gnu/dbus-1.0/include"
 
 Import "include/linuxx64/*.h"
 ?raspberrypi
@@ -83,10 +85,10 @@ Import "-lole32"
 Import "-loleaut32"
 Import "-lshell32"
 Import "-lversion" ' required in BlitzMax/lib
-?linuxx86
-Import "-lSDL2"
-?linuxx64
-Import "-lSDL2"
+'?linuxx86
+'Import "-lSDL2"
+'?linuxx64
+'Import "-lSDL2"
 ?raspberrypi
 Import "-lSDL2"
 ?linux

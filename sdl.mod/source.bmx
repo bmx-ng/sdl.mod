@@ -423,6 +423,10 @@ Import "SDL/src/video/SDL_stretch.c"
 Import "SDL/src/video/SDL_surface.c"
 Import "SDL/src/video/SDL_video.c"
 
+?Not android
+ ' linux desktop + raspberrypi
+Import "linux_source.bmx"
 ?
+
 
 
