@@ -21,6 +21,7 @@
     distribution.
 */
 
+#include "SDL.h"
 #include "SDL_rwops.h"
 
 #include <brl.mod/blitz.mod/blitz.h>
