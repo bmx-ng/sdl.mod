@@ -150,10 +150,10 @@ Function UploadTex( pixmap:TPixmap, flags )
 	Local mip_level
 	Repeat
 
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, pixmap.width, pixmap.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Null )
+		glTexImage2D( GL_TEXTURE_2D, mip_level, GL_RGBA, pixmap.width, pixmap.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Null )
 		For Local y = 0 Until pixmap.height
 			Local row:Byte Ptr = pixmap.pixels + ( y * pixmap.width ) * 4
-			glTexSubImage2D( GL_TEXTURE_2D, 0, 0, y, pixmap.width, 1, GL_RGBA, GL_UNSIGNED_BYTE, row )
+			glTexSubImage2D( GL_TEXTURE_2D, mip_level, 0, y, pixmap.width, 1, GL_RGBA, GL_UNSIGNED_BYTE, row )
 		Next
 
 		If Not ( flags & MIPMAPPEDIMAGE ) Exit
@@ -176,6 +176,8 @@ Function AdjustTexSize( width Var, height Var )
 	'calc texture size
 	width = Pow2Size( width )
 	height = Pow2Size( height )
+
+	Return ' assume this size is fine...
 	Repeat
 		Local t
 		glTexImage2D( GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Null )
@@ -819,7 +821,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	Method SetBlend( blend )
 
-		state_blend = blend
+		state_blend=blend
 
 	End Method
 
