@@ -15,3 +15,8 @@
 *.arm64v8a.i
 *.js.a
 *.js.i
+*.arm64.a
+*.arm64.i
+*.armv7.a
+*.armv7.i
+*.ios.dev.a
