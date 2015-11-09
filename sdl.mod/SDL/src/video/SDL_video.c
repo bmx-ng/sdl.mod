@@ -1136,9 +1136,31 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
     /* if we are in the process of hiding don't go back to fullscreen */
     if ( window->is_hiding && fullscreen )
         return 0;
-    
+
 #ifdef __MACOSX__
+    /* if the window is going away and no resolution change is necessary,
+     do nothing, or else we may trigger an ugly double-transition
+     */
+    if (window->is_destroying && (window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP)
+        return 0;
+    
+    /* If we're switching between a fullscreen Space and "normal" fullscreen, we need to get back to normal first. */
+    if (fullscreen && ((window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP) && ((window->flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN)) {
+        if (!Cocoa_SetWindowFullscreenSpace(window, SDL_FALSE)) {
+            return -1;
+        }
+    } else if (fullscreen && ((window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN) && ((window->flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP)) {
+        display = SDL_GetDisplayForWindow(window);
+        SDL_SetDisplayModeForDisplay(display, NULL);
+        if (_this->SetWindowFullscreen) {
+            _this->SetWindowFullscreen(_this, window, display, SDL_FALSE);
+        }
+    }
+
     if (Cocoa_SetWindowFullscreenSpace(window, fullscreen)) {
+        if (Cocoa_IsWindowInFullscreenSpace(window) != fullscreen) {
+            return -1;
+        }
         window->last_fullscreen_flags = window->flags;
         return 0;
     }
@@ -1964,6 +1986,7 @@ SDL_RestoreWindow(SDL_Window * window)
 int
 SDL_SetWindowFullscreen(SDL_Window * window, Uint32 flags)
 {
+    Uint32 oldflags;
     CHECK_WINDOW_MAGIC(window, -1);
 
     flags &= FULLSCREEN_MASK;
@@ -1973,10 +1996,17 @@ SDL_SetWindowFullscreen(SDL_Window * window, Uint32 flags)
     }
 
     /* clear the previous flags and OR in the new ones */
+    oldflags = window->flags & FULLSCREEN_MASK;
     window->flags &= ~FULLSCREEN_MASK;
     window->flags |= flags;
 
-    return SDL_UpdateFullscreenMode(window, FULLSCREEN_VISIBLE(window));
+    if (SDL_UpdateFullscreenMode(window, FULLSCREEN_VISIBLE(window)) == 0) {
+        return 0;
+    }
+    
+    window->flags &= ~FULLSCREEN_MASK;
+    window->flags |= oldflags;
+    return -1;
 }
 
 static SDL_Surface *
