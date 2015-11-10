@@ -70,27 +70,27 @@ Type TSDLSystemDriver Extends TSystemDriver
 		End If
 	End Method
 
-	Method Notify( text$,serious )
-		Local res:Int = bmx_SDL_ShowSimpleMessageBox(text, AppTitle, serious)
+	Method Notify( Text$,serious )
+		Local res:Int = bmx_SDL_ShowSimpleMessageBox(Text, AppTitle, serious)
 		' failed to display message box?
 		If res Then
-			WriteStdout text+"~r~n"
+			WriteStdout Text+"~r~n"
 		End If
 	End Method
 	
-	Method Confirm( text$,serious )
-		Return bmx_SDL_ShowMessageBox_confirm(text, AppTitle, serious)
+	Method Confirm( Text$,serious )
+		Return bmx_SDL_ShowMessageBox_confirm(Text, AppTitle, serious)
 	End Method
 	
-	Method Proceed( text$,serious )
-		Return bmx_SDL_ShowMessageBox_proceed(text, AppTitle, serious)
+	Method Proceed( Text$,serious )
+		Return bmx_SDL_ShowMessageBox_proceed(Text, AppTitle, serious)
 	End Method
 
-	Method RequestFile$( text$,exts$,save,file$ )
+	Method RequestFile$( Text$,exts$,save,file$ )
 		' TODO
 	End Method
 	
-	Method RequestDir$( text$,path$ )
+	Method RequestDir$( Text$,path$ )
 		' TODO
 	End Method
 
@@ -123,6 +123,9 @@ Type TSDLSystemDriver Extends TSystemDriver
 	 
 End Type
 
+Rem
+bbdoc: 
+End Rem
 Function SetEventFilterCallback(callback:Int(data:Object, event:Int), data:Object = Null)
 	TSDLSystemDriver(Driver)._eventFilterCallback = callback
 	TSDLSystemDriver(Driver)._eventFilterUserData = data
@@ -130,3 +133,55 @@ End Function
 
 Driver = New TSDLSystemDriver
 
+Rem
+bbdoc: Information about multiple finger gestures.
+End Rem
+Type TSDLMultiGesture
+	Rem
+	bbdoc: The touch device id.
+	End Rem
+	Field touchId:Long
+	Rem
+	bbdoc: The center of the gesture.
+	End Rem
+	Field x:Int
+	Rem
+	bbdoc: The center of the gesture.
+	End Rem
+	Field y:Int
+	Rem
+	bbdoc: The amount that the fingers rotated during this motion.
+	End Rem
+	Field dTheta:Float
+	Rem
+	bbdoc: The amount that the fingers pinched during this motion.
+	End Rem
+	Field dDist:Float
+	Rem
+	bbdoc: The number of fingers used in the gesture.
+	End Rem
+	Field numFingers:Int
+	
+	Global _gestures:TList = New TList
+	
+	Function _getGesture:TSDLMultiGesture(touchId:Long, x:Int, y:Int, dTheta:Float, dDist:Float, numFingers:Int)
+		Local gesture:TSDLMultiGesture = TSDLMultiGesture(_gestures.RemoveFirst())
+		If Not gesture Then
+			gesture = New TSDLMultiGesture
+		End If
+		
+		gesture.touchId = touchId
+		gesture.x = x
+		gesture.y = y
+		gesture.dTheta = dTheta
+		gesture.dDist = dDist
+		gesture.numFingers = numFingers
+		
+		Return gesture
+	End Function
+	
+	Function _freeGesture(gesture:TSDLMultiGesture)
+		_gestures.AddLast(gesture)
+	End Function
+	
+End Type

@@ -11,6 +11,8 @@
 int brl_event_EmitEvent( BBObject *event );
 BBObject *brl_event_CreateEvent( int id,BBObject *source,int data,int mods,int x,int y,BBObject *extra );
 int sdl_sdlsystem_TSDLSystemDriver__eventFilter(BBObject * userdata, int eventType);
+BBObject * sdl_sdlsystem_TSDLMultiGesture__getGesture(BBLONG touchId, int x, int y, float dTheta, float dDist, int numFingers);
+void sdl_sdlsystem_TSDLMultiGesture__freeGesture(BBObject * gesture);
 
 void bbSDLSystemEmitEvent( int id,BBObject *source,int data,int mods,int x,int y,BBObject *extra ){
 	BBObject *event=brl_event_CreateEvent( id,source,data,mods,x,y,extra );
@@ -130,6 +132,17 @@ void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 				SDL_DisplayMode mode;
 				SDL_GetWindowDisplayMode(SDL_GL_GetCurrentWindow(), &mode);
 				bbSDLSystemEmitEvent( (event->type == SDL_FINGERDOWN) ? BBEVENT_TOUCHDOWN : BBEVENT_TOUCHUP, source, event->tfinger.fingerId, 0, event->tfinger.x * mode.w, event->tfinger.y * mode.h, &bbNullObject );
+				return;
+			}
+		case SDL_MULTIGESTURE:
+			{
+				SDL_DisplayMode mode;
+				SDL_GetWindowDisplayMode(SDL_GL_GetCurrentWindow(), &mode);
+				int x = event->mgesture.x * mode.w;
+				int y = event->mgesture.y * mode.h;
+				BBObject * gesture = sdl_sdlsystem_TSDLMultiGesture__getGesture(event->mgesture.touchId, x, y, event->mgesture.dTheta, event->mgesture.dDist, event->mgesture.numFingers);
+				bbSDLSystemEmitEvent(BBEVENT_MULTIGESTURE, source, event->mgesture.touchId, 0, x, y, gesture);
+				sdl_sdlsystem_TSDLMultiGesture__freeGesture(gesture);
 				return;
 			}
 	}	
