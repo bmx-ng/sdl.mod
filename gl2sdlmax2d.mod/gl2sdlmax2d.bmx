@@ -821,7 +821,45 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	Method SetBlend( blend )
 
+		If state_blend = blend Return
 		state_blend=blend
+
+		Select blend
+		?Not opengles
+		Case MASKBLEND
+			glDisable( GL_BLEND )
+			glEnable( GL_ALPHA_TEST )
+			glAlphaFunc( GL_GEQUAL, 0.5 )
+		?
+		Case SOLIDBLEND
+			glDisable( GL_BLEND )
+			?Not opengles
+			glDisable( GL_ALPHA_TEST )
+			?
+		Case ALPHABLEND
+			glEnable( GL_BLEND )
+			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA )
+			?Not opengles
+			glDisable( GL_ALPHA_TEST )
+			?
+		Case LIGHTBLEND
+			glEnable( GL_BLEND )
+			glBlendFunc( GL_SRC_ALPHA, GL_ONE )
+			?Not opengles
+			glDisable( GL_ALPHA_TEST )
+			?
+		Case SHADEBLEND
+			glEnable( GL_BLEND )
+			glBlendFunc( GL_DST_COLOR, GL_ZERO )
+			?Not opengles
+			glDisable( GL_ALPHA_TEST )
+			?
+		Default
+			glDisable( GL_BLEND )
+			?Not opengles
+			glDisable( GL_ALPHA_TEST )
+			?
+		End Select
 
 	End Method
 
