@@ -118,6 +118,11 @@ BBSDLContext *bbSDLGraphicsCreateGraphics( int width,int height,int depth,int hz
 		if (flags & FLAGS_DEPTHBUFFER) SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 		if (flags & FLAGS_STENCILBUFFER) SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
 	}
+#ifdef __ANDROID__
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+#endif
 
 #ifdef __RASPBERRYPI__
 	int rpi_mode;
