@@ -145,6 +145,15 @@ void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 				sdl_sdlsystem_TSDLMultiGesture__freeGesture(gesture);
 				return;
 			}
+		case SDL_WINDOWEVENT:
+			switch (event->window.event) {
+				case SDL_WINDOWEVENT_FOCUS_GAINED:
+					bbSDLSystemEmitEvent(BBEVENT_APPRESUME, source, 0, 0, 0, 0, &bbNullObject);
+					return;
+				case SDL_WINDOWEVENT_FOCUS_LOST:
+					bbSDLSystemEmitEvent(BBEVENT_APPSUSPEND, source, 0, 0, 0, 0, &bbNullObject);
+					return;
+			}
 	}	
 	
 }
