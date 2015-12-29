@@ -69,7 +69,7 @@ Type TD3D9ImageFrame Extends TImageFrame
 		If _texture
 			If _seq=GraphicsSeq
 				If _texture=_bound_texture
-					_d3dDev.SetTexture 0,Null
+					_d3dDev.SetTexture 0,nullBaseTexture9
 					_bound_texture=Null
 				EndIf
 				_d3d9Graphics.ReleaseNow _texture
@@ -339,7 +339,7 @@ Type TD3D9SDLMax2DDriver Extends TMax2dDriver
 		_d3dDev.SetRenderState D3DRS_LIGHTING,False
 		_d3dDev.SetRenderState D3DRS_CULLMODE,D3DCULL_NONE	
 		
-		_d3dDev.SetTexture 0,Null
+		_d3dDev.SetTexture 0,nullBaseTexture9
 		_bound_texture=Null
 
 		_d3dDev.SetFVF D3DFVF_XYZ|D3DFVF_DIFFUSE|D3DFVF_TEX1
