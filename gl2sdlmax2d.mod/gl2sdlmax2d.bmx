@@ -1166,6 +1166,8 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		Local blend = state_blend
 		SetBlend( SOLIDBLEND )
 		Local p:TPixmap = CreatePixmap( w, h, PF_RGBA8888 )
+		' flush everything to ensure there's something to read
+		Flush()
 		glReadPixels( x, GraphicsHeight() - h - y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, p.pixels )
 		p = YFlipPixmap( p )
 		SetBlend( blend )
