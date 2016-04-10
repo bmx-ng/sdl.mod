@@ -114,7 +114,7 @@ Type TSDLSystemDriver Extends TSystemDriver
 		Return bmx_SDL_GetDisplayhertz(0)
 	End Method
 
-	Function _eventFilter:Int(driver:TSDLSystemDriver, event:Int)
+	Function _eventFilter:Int(driver:TSDLSystemDriver, event:Int) { nomangle }
 		If driver._eventFilterCallback Then
 			Return driver._eventFilterCallback(driver._eventFilterUserData, event)
 		End If
@@ -164,7 +164,7 @@ Type TSDLMultiGesture
 	
 	Global _gestures:TList = New TList
 	
-	Function _getGesture:TSDLMultiGesture(touchId:Long, x:Int, y:Int, dTheta:Float, dDist:Float, numFingers:Int)
+	Function _getGesture:TSDLMultiGesture(touchId:Long, x:Int, y:Int, dTheta:Float, dDist:Float, numFingers:Int) { nomangle }
 		Local gesture:TSDLMultiGesture = TSDLMultiGesture(_gestures.RemoveFirst())
 		If Not gesture Then
 			gesture = New TSDLMultiGesture
@@ -180,7 +180,7 @@ Type TSDLMultiGesture
 		Return gesture
 	End Function
 	
-	Function _freeGesture(gesture:TSDLMultiGesture)
+	Function _freeGesture(gesture:TSDLMultiGesture) { nomangle }
 		_gestures.AddLast(gesture)
 	End Function
 	

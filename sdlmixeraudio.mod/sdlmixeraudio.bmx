@@ -321,7 +321,7 @@ Type TSDLMixerChannel Extends TChannel
 	End Method
 
 	Method SetVolume( volume# )
-		Mix_Volume(id, volume * 128)
+		Mix_Volume(id, Int(volume * 128))
 	End Method
 
 	Method SetPan( pan# )
@@ -372,7 +372,7 @@ Type TSDLMixerMusic Extends TChannel
 	End Method
 
 	Method SetVolume( volume# )
-		Mix_VolumeMusic(volume * 128)
+		Mix_VolumeMusic(Int(volume * 128))
 	End Method
 
 	Method SetPan( pan# )
