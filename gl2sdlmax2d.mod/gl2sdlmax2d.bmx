@@ -1098,13 +1098,8 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		Local t:TPixmap = p
 		If t.format <> PF_RGBA8888 Then t = ConvertPixmap( t, PF_RGBA8888 )
 
-		'glPixelZoom( 1, -1 )
-		'glRasterPos2i( 0, 0 )
-		'glBitmap( 0, 0, 0, 0, x, -y, Null )
-		'glPixelStorei( GL_UNPACK_ROW_LENGTH, t.pitch Shr 2 )
-		'glDrawPixels( t.WIDTH, t.HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, t.pixels )
-		'glPixelStorei( GL_UNPACK_ROW_LENGTH, 0 )
-		'glPixelZoom( 1, 1 )
+		Local img:TImage = LoadImage(t)
+		DrawImage img, x, y
 
 		SetBlend( blend )
 
