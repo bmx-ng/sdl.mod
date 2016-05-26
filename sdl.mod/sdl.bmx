@@ -269,6 +269,77 @@ Rem
 bbdoc: Puts text into the clipboard.
 returns: 0 on success or a negative error code on failure.
 End Rem
-Function SetClipboardText:Int(text:String)
-	Return SDL_SetClipboardText(text.ToUTF8String())
+Function SetClipboardText:Int(Text:String)
+	Return SDL_SetClipboardText(Text.ToUTF8String())
+End Function
+
+Rem
+bbdoc: Logs a message with SDL_LOG_CATEGORY_APPLICATION and SDL_LOG_PRIORITY_INFO.
+End Rem
+Function LogAppInfo(Text:String)
+	Local s:Byte Ptr = Text.ToUTF8String()
+	SDL_Log(s)
+	MemFree s
+End Function
+
+Rem
+bbdoc: Logs a message with SDL_LOG_PRIORITY_DEBUG.
+End Rem
+Function LogDebug(category:Int, Text:String)
+	Local s:Byte Ptr = Text.ToUTF8String()
+	SDL_LogDebug(category, s)
+	MemFree s
+End Function
+
+Rem
+bbdoc: Logs a message with SDL_LOG_PRIORITY_ERROR.
+End Rem
+Function LogError(category:Int, Text:String)
+	Local s:Byte Ptr = Text.ToUTF8String()
+	SDL_LogError(category, s)
+	MemFree s
+End Function
+
+Rem
+bbdoc: Logs a message with SDL_LOG_PRIORITY_CRITICAL.
+End Rem
+Function LogCritical(category:Int, Text:String)
+	Local s:Byte Ptr = Text.ToUTF8String()
+	SDL_LogCritical(category, s)
+	MemFree s
+End Function
+
+Rem
+bbdoc: Logs a message with SDL_LOG_PRIORITY_INFO.
+End Rem
+Function LogInfo(category:Int, Text:String)
+	Local s:Byte Ptr = Text.ToUTF8String()
+	SDL_LogInfo(category, s)
+	MemFree s
+End Function
+
+Rem
+bbdoc: Logs a message with SDL_LOG_PRIORITY_VERBOSE.
+End Rem
+Function LogVerbose(category:Int, Text:String)
+	Local s:Byte Ptr = Text.ToUTF8String()
+	SDL_LogVerbose(category, s)
+	MemFree s
+End Function
+
+Rem
+bbdoc: Logs a message with SDL_LOG_PRIORITY_WARN.
+End Rem
+Function LogWarn(category:Int, Text:String)
+	Local s:Byte Ptr = Text.ToUTF8String()
+	SDL_LogWarn(category, s)
+	MemFree s
+End Function
+
+Rem
+bbdoc: Sets the priority of all log categories.
+about: If you are debugging SDL, you might want to call this with SDL_LOG_PRIORITY_WARN.
+End Rem
+Function LogSetAllPriority(priority:Int)
+	SDL_LogSetAllPriority(priority)
 End Function

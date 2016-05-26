@@ -86,8 +86,17 @@ Extern
 ?
 	Function SDL_HasClipboardText:Int()
 	Function bmx_SDL_GetClipboardText:String()
-	Function SDL_SetClipboardText:Int(text:Byte Ptr)
+	Function SDL_SetClipboardText:Int(Text:Byte Ptr)
 	
+	Function SDL_Log(txt:Byte Ptr)
+	Function SDL_LogCritical(category:Int, txt:Byte Ptr)
+	Function SDL_LogInfo(category:Int, txt:Byte Ptr)
+	Function SDL_LogDebug(category:Int, txt:Byte Ptr)
+	Function SDL_LogError(category:Int, txt:Byte Ptr)
+	Function SDL_LogMessage(category:Int, priority:Int, txt:Byte Ptr)
+	Function SDL_LogVerbose(category:Int, txt:Byte Ptr)
+	Function SDL_LogWarn(category:Int, txt:Byte Ptr)
+	Function SDL_LogSetAllPriority(priority:Int)
 End Extern
 
 
@@ -142,3 +151,80 @@ Const SDL_APP_DIDENTERFOREGROUND:Int  = $106
 
 Const SDL_ANDROID_EXTERNAL_STORAGE_READ:Int = $01
 Const SDL_ANDROID_EXTERNAL_STORAGE_WRITE:Int = $02
+
+
+Rem
+bbdoc: Application log category.
+about: Has a default log priority of SDL_LOG_PRIORITY_INFO.
+End Rem
+Const SDL_LOG_CATEGORY_APPLICATION:Int = 0
+Rem
+bbdoc: Error log category.
+about: Has a default log priority of SDL_LOG_PRIORITY_CRITICAL.
+End Rem
+Const SDL_LOG_CATEGORY_ERROR:Int = 1
+Rem
+bbdoc: Assertion log category.
+about: Has a default log priority of SDL_LOG_PRIORITY_WARN.
+End Rem
+Const SDL_LOG_CATEGORY_ASSERT:Int = 2
+Rem
+bbdoc: System log category.
+about: Has a default log priority of SDL_LOG_PRIORITY_CRITICAL.
+End Rem
+Const SDL_LOG_CATEGORY_SYSTEM:Int = 3
+Rem
+bbdoc: Audio log category.
+about: Has a default log priority of SDL_LOG_PRIORITY_CRITICAL.
+End Rem
+Const SDL_LOG_CATEGORY_AUDIO:Int = 4
+Rem
+bbdoc: Video log category.
+about: Has a default log priority of SDL_LOG_PRIORITY_CRITICAL.
+End Rem
+Const SDL_LOG_CATEGORY_VIDEO:Int = 5
+Rem
+bbdoc: Render log category.
+about: Has a default log priority of SDL_LOG_PRIORITY_CRITICAL.
+End Rem
+Const SDL_LOG_CATEGORY_RENDER:Int = 6
+Rem
+bbdoc: Input log category.
+about: Has a default log priority of SDL_LOG_PRIORITY_CRITICAL.
+End Rem
+Const SDL_LOG_CATEGORY_INPUT:Int = 7
+Rem
+bbdoc: Test log category.
+about: Has a default log priority of SDL_LOG_PRIORITY_VERBOSE.
+End Rem
+Const SDL_LOG_CATEGORY_TEST:Int = 8
+Rem
+bbdoc: Application defined starting category.
+about: An application can use subsequent category numbers as required, e.g. SDL_LOG_CATEGORY_CUSTOM + 1, etc.
+End Rem
+Const SDL_LOG_CATEGORY_CUSTOM:Int = 19
+
+Rem
+bbdoc: Verbose log priority.
+End Rem
+Const SDL_LOG_PRIORITY_VERBOSE:Int = 1
+Rem
+bbdoc: Debug log priority.
+End Rem
+Const SDL_LOG_PRIORITY_DEBUG:Int = 2
+Rem
+bbdoc: Info log priority.
+End Rem
+Const SDL_LOG_PRIORITY_INFO:Int = 3
+Rem
+bbdoc: Warn log priority.
+End Rem
+Const SDL_LOG_PRIORITY_WARN:Int = 4
+Rem
+bbdoc: Error log priority.
+End Rem
+Const SDL_LOG_PRIORITY_ERROR:Int = 5
+Rem
+bbdoc: Critical log priority.
+End Rem
+Const SDL_LOG_PRIORITY_CRITICAL:Int = 6
