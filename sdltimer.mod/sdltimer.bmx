@@ -26,17 +26,18 @@ bbdoc: SDL Timer
 End Rem
 Module SDL.SDLTimer
 
-ModuleInfo "Version: 1.00"
-ModuleInfo "Author: Simon Armstrong, Mark Sibly"
+ModuleInfo "Version: 1.01"
+ModuleInfo "Author: Simon Armstrong, Mark Sibly, Bruce A Henderson"
 ModuleInfo "License: zlib/libpng"
 ModuleInfo "Copyright: Blitz Research Ltd"
 ModuleInfo "Modserver: BRL"
 
-ModuleInfo "History: 1.03"
-ModuleInfo "History: Update to use Byte Ptr instead of int."
+ModuleInfo "History: 1.01"
+ModuleInfo "History: Updated to use new factory-based timer."
 
 Import SDL.SDLSystem
 Import BRL.Event
+Import BRL.Timer
 
 ?win32x86
 Import "../../sdl.mod/sdl.mod/include/win32x86/*.h"
@@ -71,6 +72,8 @@ Import "../../sdl.mod/sdl.mod/SDL/include/*.h"
 
 Import "glue.c"
 
+Private
+
 Extern
 Function bmx_sdl_timer_start:Byte Ptr( hertz#,timer:TTimer )
 Function bmx_sdl_timer_stop( handle:Byte Ptr,timer:TTimer )
@@ -81,7 +84,9 @@ Function _TimerFired( timer:TTimer )
 	timer.Fire
 End Function
 
-Type TTimer
+Public
+
+Type TSDLTimer Extends TTimer
 
 	Method Ticks:Int()
 		Return _ticks
@@ -116,7 +121,7 @@ Type TTimer
 	End Method
 	
 	Function Create:TTimer( hertz#,event:TEvent=Null )
-		Local t:TTimer=New TTimer
+		Local t:TSDLTimer =New TSDLTimer
 		Local handle:Byte Ptr=bmx_sdl_timer_start( hertz,t )
 		If Not handle Return Null
 		t._event=event
@@ -131,43 +136,19 @@ Type TTimer
 
 End Type
 
-Rem
-bbdoc: Create a timer
-returns: A new timer object
-about:
-#CreateTimer creates a timer object that 'ticks' @hertz times per second.
+Type TSDLTimerFactory Extends TTimerFactory
+	
+	Method GetName:String()
+		Return "SDLTimer"
+	End Method
+	
+	Method Create:TTimer(hertz#,event:TEvent=Null)
+		Return TSDLTimer.Create( hertz,event )
+	End Method
+		
+End Type
 
-Each time the timer ticks, @event will be emitted using #EmitEvent.
+New TSDLTimerFactory
 
-If @event is Null, an event with an @id equal to EVENT_TIMERTICK and 
-@source equal to the timer object will be emitted instead.
-End Rem
-Function CreateTimer:TTimer( hertz#,event:TEvent=Null )
-	Return TTimer.Create( hertz,event )
-End Function
-
-Rem
-bbdoc: Get timer tick counter
-returns: The number of times @timer has ticked over
-End Rem
-Function TimerTicks:Int( timer:TTimer )
-	Return timer.Ticks()
-End Function
-
-Rem
-bbdoc: Wait until a timer ticks
-returns: The number of ticks since the last call to #WaitTimer
-End Rem
-Function WaitTimer:Int( timer:TTimer )
-	Return timer.Wait()
-End Function
-
-Rem
-bbdoc: Stop a timer
-about:Once stopped, a timer can no longer be used.
-End Rem
-Function StopTimer( timer:TTimer )
-	timer.Stop
-End Function
 
 SDL_InitSubSystem(SDL_INIT_TIMER)
