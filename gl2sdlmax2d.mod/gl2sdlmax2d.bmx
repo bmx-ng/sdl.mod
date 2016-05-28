@@ -682,6 +682,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 	Const PRIMITIVE_TRIANGLE_FAN:Int = 5
 	Const PRIMITIVE_TRIANGLE_STRIP:Int = 6
 	Const PRIMITIVE_TEXTURED_TRIANGLE:Int = 7
+	Const PRIMITIVE_CLS:Int = 8
 
 	' variables for tracking
 
@@ -690,6 +691,9 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 	Field primitive_id:Int
 	Field texture_id:Int
 	Field blend_id:Int
+
+	Field vx:int, vy:int, vw:int, vh:int
+	Field viewport_changed:int = False
 '	Field element_array:Int[BATCHSIZE * 2]
 '	Field element_index:Int
 '	Field vert_buffer:Int
@@ -895,7 +899,9 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 	End Method
 	
 	Method SetViewport( x, y, w, h )
-
+		'skip adjusting something if that viewport was already set
+		if vx = x and vy = y and vw = w and vh = h then return
+		
 		If x = 0 And y = 0 And w = GraphicsWidth() And h = GraphicsHeight()
 			glDisable( GL_SCISSOR_TEST )
 		Else
@@ -903,6 +909,12 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 			glScissor( x, GraphicsHeight() - y - h, w, h )
 		EndIf
 
+		'mark change
+		viewport_changed = True
+		vx = x
+		vy = y
+		vw = w
+		vh = h
 	End Method
 
 	Method SetTransform( xx#, xy#, yx#, yy# )
@@ -915,6 +927,9 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 	End Method
 
 	Method Cls()
+		'render current batch if needed, as this command is immediate
+		'and not added to the batch/queue
+		FlushTest( PRIMITIVE_CLS )
 
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT )
 
@@ -1235,7 +1250,8 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 			If prim_id <> primitive_id Or ..
 			vert_index > BATCHSIZE - 256 Or ..
 			state_blend <> blend_id Or ..
-			tex_id <> texture_id Then
+			tex_id <> texture_id Or ..
+			viewport_changed Then
 				Flush()
 			EndIf
 
@@ -1244,6 +1260,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		texture_id = tex_id
 		blend_id = state_blend
 
+		viewport_changed = False
 	End Method
 	
 	Method Flush()
