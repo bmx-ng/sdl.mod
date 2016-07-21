@@ -683,6 +683,9 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 	Const PRIMITIVE_TRIANGLE_STRIP:Int = 6
 	Const PRIMITIVE_TEXTURED_TRIANGLE:Int = 7
 
+	Const PRIMITIVE_CLS:Int = 8
+	Const PRIMITIVE_VIEWPORT:Int = 9
+
 	' variables for tracking
 
 	Field vert_index:Int
@@ -895,6 +898,8 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 	End Method
 	
 	Method SetViewport( x, y, w, h )
+		'render what has been batched till now
+		FlushTest( PRIMITIVE_VIEWPORT )
 
 		If x = 0 And y = 0 And w = GraphicsWidth() And h = GraphicsHeight()
 			glDisable( GL_SCISSOR_TEST )
@@ -915,6 +920,9 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 	End Method
 
 	Method Cls()
+		'render what has been batched till now - maybe this happens
+		'with an restricted viewport
+		FlushTest( PRIMITIVE_CLS )
 
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT )
 
