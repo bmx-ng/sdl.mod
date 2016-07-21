@@ -105,7 +105,7 @@ Type TD3D9ImageFrame Extends TImageFrame
 		Local usage=0
 		Local pool=D3DPOOL_MANAGED
 		
-		_texture = New IDirect3DTexture9
+		'_texture = New IDirect3DTexture9
 		If _d3dDev.CreateTexture( pow2width,pow2height,levels,usage,format,pool,_texture,Null )<0
 			d3derr "Unable to create texture~n"
 			_texture = Null
@@ -115,7 +115,7 @@ Type TD3D9ImageFrame Extends TImageFrame
 		_d3d9Graphics.AutoRelease _texture
 
 		Local level
-		Local dstsurf:IDirect3DSurface9 = New IDirect3DSurface9
+		Local dstsurf:IDirect3DSurface9' = New IDirect3DSurface9
 		Repeat
 			If _texture.GetSurfaceLevel( level,dstsurf )<0
 				If level=0
@@ -320,13 +320,13 @@ Type TD3D9SDLMax2DDriver Extends TMax2dDriver
 		_d3d9graphics.ValidateSize
 		_d3d9graphics.GetSettings _gw,_gh,_gd,_gr,_gf
 	
-		Local viewport:D3DVIEWPORT9=New D3DVIEWPORT9
-		viewport.SetX(0)
-		viewport.SetY(0)
-		viewport.SetWidth(_gw)
-		viewport.SetHeight(_gh)
-		viewport.SetMinZ(0.0)
-		viewport.SetMaxZ(1.0)
+		Local viewport:D3DVIEWPORT9
+		viewport.X = 0
+		viewport.Y = 0
+		viewport.Width = _gw
+		viewport.Height = _gh
+		viewport.MinZ = 0.0
+		viewport.MaxZ = 1.0
 		_d3dDev.SetViewport viewport
 
 		_d3dDev.SetRenderState D3DRS_ALPHAREF,$80
@@ -546,13 +546,13 @@ Type TD3D9SDLMax2DDriver Extends TMax2dDriver
 	Method DrawPixmap( pixmap:TPixmap,x,y )
 		Local width=pixmap.width,height=pixmap.height
 	
-		Local dstsurf:IDirect3DSurface9 = New IDirect3DSurface9
+		Local dstsurf:IDirect3DSurface9' = New IDirect3DSurface9
 		If _d3dDev.GetRenderTarget( 0,dstsurf )<0
 			d3derr "GetRenderTarget failed~n"
 			Return
 		EndIf
 		
-		Local desc:D3DSURFACE_DESC=New D3DSURFACE_DESC
+		Local desc:D3DSURFACE_DESC
 		If dstsurf.GetDesc( desc )<0
 			d3derr "GetDesc failed~n"
 		EndIf
