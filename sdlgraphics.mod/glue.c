@@ -83,7 +83,7 @@ int bbSDLGraphicsGraphicsModes( int display, int *imodes,int maxcount ) {
 
 		*imodes++=mode.w;
 		*imodes++=mode.h;
-		*imodes++=mode.format;
+		*imodes++=SDL_BITSPERPIXEL(mode.format);
 		*imodes++=mode.refresh_rate;
 	}
 	return count;
