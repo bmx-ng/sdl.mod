@@ -27,35 +27,36 @@ Import SDL.SDL
 Import BRL.Audio
 Import BRL.LinkedList
 
-?win32
-ModuleInfo "LD_OPTS: -L%PWD%/lib/win32x86"
+?deprecated
+'?win32
+'ModuleInfo "LD_OPTS: -L%PWD%/lib/win32x86"
 
-?win32x64
-ModuleInfo "LD_OPTS: -L%PWD%/lib/win32x64"
+'?win32x64
+'ModuleInfo "LD_OPTS: -L%PWD%/lib/win32x64"
 
-?osx
-ModuleInfo "LD_OPTS: -F%PWD%/lib/macos"
-ModuleInfo "LD_OPTS: -Xlinker -rpath -Xlinker @loader_path/../Frameworks"
+'?osx
+'ModuleInfo "LD_OPTS: -F%PWD%/lib/macos"
+'ModuleInfo "LD_OPTS: -Xlinker -rpath -Xlinker @loader_path/../Frameworks"
 
-?linuxx86
-ModuleInfo "LD_OPTS: -L%PWD%/lib/linuxx86"
+'?linuxx86
+'ModuleInfo "LD_OPTS: -L%PWD%/lib/linuxx86"
 
-?linuxx64
-ModuleInfo "LD_OPTS: -L%PWD%/lib/linuxx64"
+'?linuxx64
+'ModuleInfo "LD_OPTS: -L%PWD%/lib/linuxx64"
 
-?linuxarm
+'?linuxarm
 
-?
+'?
 
 Import "include/*.h"
 
-?win32
-Import "-lSDL2_mixer"
-?linux
-Import "-lSDL2_mixer"
-?osx
-Import "-framework SDL2_mixer"
-?
+'?win32
+'Import "-lSDL2_mixer"
+'?linux
+'Import "-lSDL2_mixer"
+'?osx
+'Import "-framework SDL2_mixer"
+'?
 
 Import "common.bmx"
 
@@ -76,11 +77,11 @@ Const AUDIO_U16MSB:Int = $1010  ' As above, but big-endian Byte order
 Const AUDIO_S16MSB:Int = $9010  ' As above, but big-endian Byte order
 Const AUDIO_U16:Int = AUDIO_U16LSB
 Const AUDIO_S16:Int = AUDIO_S16LSB
-?bigendian
-Const MIX_DEFAULT_FORMAT:Int = AUDIO_S16MSB
-?littleendian
-Const MIX_DEFAULT_FORMAT:Int = AUDIO_S16
-?
+'?bigendian
+'Const MIX_DEFAULT_FORMAT:Int = AUDIO_S16MSB
+'?littleendian
+'Const MIX_DEFAULT_FORMAT:Int = AUDIO_S16
+'?
 
 New TSDLMixerAudioDriver
 
@@ -392,3 +393,5 @@ Type TSDLMixerMusic Extends TChannel
 	End Method
 
 End Type
+
+?
