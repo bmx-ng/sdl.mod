@@ -329,7 +329,7 @@ Type TGLImageFrame Extends TImageFrame
 		Local u1# = ( sx + sw ) * uscale
 		Local v1# = ( sy + sh ) * vscale
 
-		_driver.DrawTexture( name, u0, v0, u1, v1, x0, y0, x1, y1, tx, ty )
+		_driver.DrawTexture( name, u0, v0, u1, v1, x0, y0, x1, y1, tx, ty, Self )
 
 	End Method
 	
@@ -672,6 +672,8 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 	
 	' colo(u)rs
 	Field color4f:Float Ptr = Float Ptr( MemAlloc( 4 * 4 ) )
+	
+	Field imgCache:TList = New TList
 
 	' constants for primitive_id rendering
 
@@ -1113,7 +1115,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	End Method
 
-	Method DrawTexture( name, u0#, v0#, u1#, v1#, x0#, y0#, x1#, y1#, tx#, ty# )
+	Method DrawTexture( name, u0#, v0#, u1#, v1#, x0#, y0#, x1#, y1#, tx#, ty#, img:TImageFrame = Null )
 
 		FlushTest( PRIMITIVE_TEXTURED_TRIANGLE, name )
 
@@ -1161,6 +1163,10 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 		vert_index :+ 4
 		quad_index :+ 1
+		
+		If img Then
+			imgCache.AddLast(img)
+		End If
 
 	End Method
 
@@ -1343,6 +1349,8 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 				EnableTex( texture_id )
 				glDrawElements( GL_TRIANGLES, quad_index * 6, GL_UNSIGNED_SHORT, QUAD_INDS )
 				DisableTex()
+
+				imgCache.Clear()
 			Case PRIMITIVE_DOT
 				glDrawArrays( GL_POINTS, 0, vert_index )
 			Case PRIMITIVE_LINE
