@@ -85,8 +85,9 @@ Function DeleteTex( name, seq )
 
 	'add tex to queue
 	If dead_texs.length = n_dead_texs
-		dead_texs = dead_texs[..n_dead_texs + 10]
+		dead_texs = dead_texs[..n_dead_texs + 256]
 	EndIf
+
 	dead_texs[n_dead_texs] = name
 	n_dead_texs :+ 1
 
