@@ -126,7 +126,7 @@ Type TSDLStream Extends TStream
 		Return bmx_SDL_RWwrite(filePtr, buf, 1, count)
 	End Method
 
-	Method Close:Int()
+	Method Close()
 		If filePtr Then
 			bmx_SDL_RWclose(filePtr)
 			filePtr = Null
@@ -190,8 +190,8 @@ Function _sdl_rwops_write:Long(stream:TStream, buf:Byte Ptr, count:Long)
 	Return stream.write(buf, count)
 End Function
 
-Function _sdl_rwops_close:Int(stream:TStream)
-	Return stream.close()
+Function _sdl_rwops_close(stream:TStream)
+	stream.close()
 End Function
 
 Rem
