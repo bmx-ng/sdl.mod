@@ -1,4 +1,4 @@
-' Copyright (c) 2015 Bruce A Henderson
+' Copyright (c) 2015-2018 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -31,6 +31,7 @@ Extern
 	Function SDL_JoystickGetButton:Int(handle:Byte Ptr, button:Int)
 	Function SDL_JoystickGetAxis:Int(handle:Byte Ptr, direction:Int)
 	Function SDL_JoystickClose(handle:Byte Ptr)
+	Function SDL_JoystickIsHaptic:Int(handle:Byte Ptr)
 	
 End Extern
 

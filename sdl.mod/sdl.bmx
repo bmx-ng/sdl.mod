@@ -1,4 +1,4 @@
-' Copyright (c) 2014-2015 Bruce A Henderson
+' Copyright (c) 2014-2018 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -33,11 +33,9 @@ ModuleInfo "History: 1.00"
 ModuleInfo "History: Initial Release."
 
 ?win32x86
-ModuleInfo "LD_OPTS: -L%PWD%/lib/win32x86"
 Import "include/win32x86/*.h"
 
 ?win32x64
-ModuleInfo "LD_OPTS: -L%PWD%/lib/win32x64"
 Import "include/win32x64/*.h"
 
 ?osx
@@ -78,17 +76,14 @@ ModuleInfo "CC_OPTS: -fobjc-arc"
 
 Import "include/ios/*.h"
 ?win32
-Import "-lSDL2main"
-Import "-lSDL2"
+ModuleInfo "CC_OPTS: -DHAVE_XINPUT_GAMEPAD_EX -DHAVE_XINPUT_STATE_EX"
+
 Import "-limm32" ' required in BlitzMax/lib
 Import "-lole32"
 Import "-loleaut32"
 Import "-lshell32"
 Import "-lversion" ' required in BlitzMax/lib
-'?linuxx86
-'Import "-lSDL2"
-'?linuxx64
-'Import "-lSDL2"
+
 ?raspberrypi
 Import "-lSDL2"
 ?linux
@@ -342,4 +337,24 @@ about: If you are debugging SDL, you might want to call this with SDL_LOG_PRIORI
 End Rem
 Function LogSetAllPriority(priority:Int)
 	SDL_LogSetAllPriority(priority)
+End Function
+
+Rem
+bbdoc: Gets the current power supply details.
+returns: One of #SDL_POWERSTATE_UNKNOWN, #SDL_POWERSTATE_ON_BATTERY, #SDL_POWERSTATE_NO_BATTERY, #SDL_POWERSTATE_CHARGING, or #SDL_POWERSTATE_CHARGED.
+about: You should never take a battery status as absolute truth. Batteries (especially failing batteries) are delicate hardware,
+and the values reported here are best estimates based on what that hardware reports. It's not uncommon for older batteries to lose
+stored power much faster than it reports, or completely drain when reporting it has 20 percent left, etc.
+Battery status can change at any time; if you are concerned with power state, you should call this function frequently,
+and perhaps ignore changes until they seem to be stable for a few seconds.
+End Rem
+Function GetPowerInfo:Int(seconds:Int Var, percent:Int Var)
+	Return SDL_GetPowerInfo(Varptr seconds, Varptr percent)
+End Function
+
+Rem
+bbdoc: Gets the human readable name of a pixel format
+End Rem
+Function SDLGetPixelFormatName:String(format:UInt)
+	Return String.FromUTF8String(SDL_GetPixelFormatName(format))
 End Function

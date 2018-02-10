@@ -1,5 +1,53 @@
 SuperStrict
 
+?linux
+Import "SDL/src/loadso/dlopen/SDL_sysloadso.c"
+Import "SDL/src/audio/SDL_audiodev.c"
+Import "SDL/src/audio/alsa/SDL_alsa_audio.c"
+Import "SDL/src/audio/dsp/SDL_dspaudio.c"
+Import "SDL/src/audio/esd/SDL_esdaudio.c"
+Import "SDL/src/audio/nas/SDL_nasaudio.c"
+Import "SDL/src/audio/pulseaudio/SDL_pulseaudio.c"
+Import "SDL/src/core/linux/SDL_dbus.c"
+Import "SDL/src/core/linux/SDL_evdev.c"
+Import "SDL/src/core/linux/SDL_ime.c"
+Import "SDL/src/core/linux/SDL_udev.c"
+Import "SDL/src/core/unix/SDL_poll.c"
+Import "SDL/src/filesystem/unix/SDL_sysfilesystem.c"
+Import "SDL/src/haptic/linux/SDL_syshaptic.c"
+Import "SDL/src/joystick/linux/SDL_sysjoystick.c"
+Import "SDL/src/joystick/steam/SDL_steamcontroller.c"
+Import "SDL/src/power/linux/SDL_syspower.c"
+Import "SDL/src/render/opengl/SDL_render_gl.c"
+Import "SDL/src/render/opengl/SDL_shaders_gl.c"
+Import "SDL/src/render/opengles2/SDL_render_gles2.c"
+Import "SDL/src/thread/pthread/SDL_systhread.c"
+Import "SDL/src/thread/pthread/SDL_syssem.c"
+Import "SDL/src/thread/pthread/SDL_sysmutex.c"
+Import "SDL/src/thread/pthread/SDL_syscond.c"
+Import "SDL/src/thread/pthread/SDL_systls.c"
+Import "SDL/src/timer/unix/SDL_systimer.c"
+Import "SDL/src/video/SDL_egl.c"
+Import "SDL/src/video/x11/SDL_x11clipboard.c"
+Import "SDL/src/video/x11/SDL_x11dyn.c"
+Import "SDL/src/video/x11/SDL_x11events.c"
+Import "SDL/src/video/x11/SDL_x11framebuffer.c"
+Import "SDL/src/video/x11/SDL_x11keyboard.c"
+Import "SDL/src/video/x11/SDL_x11messagebox.c"
+Import "SDL/src/video/x11/SDL_x11modes.c"
+Import "SDL/src/video/x11/SDL_x11mouse.c"
+Import "SDL/src/video/x11/SDL_x11opengl.c"
+Import "SDL/src/video/x11/SDL_x11opengles.c"
+Import "SDL/src/video/x11/SDL_x11shape.c"
+Import "SDL/src/video/x11/SDL_x11touch.c"
+Import "SDL/src/video/x11/SDL_x11video.c"
+Import "SDL/src/video/x11/SDL_x11window.c"
+Import "SDL/src/video/x11/SDL_x11xinput2.c"
+Import "SDL/src/video/x11/edid-parse.c"
+Import "SDL/src/video/x11/imKStoUCS.c"
+
+?
+Rem
 ?linuxx86
 Import "SDL/src/SDL.c"
 Import "SDL/src/SDL_assert.c"
@@ -269,4 +317,4 @@ Import "SDL/src/main/dummy/SDL_dummy_main.c"
 ?raspberrypi
 
 ?
-
+End Rem

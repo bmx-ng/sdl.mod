@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2014-2015 Bruce A Henderson
+ Copyright (c) 2014-2018 Bruce A Henderson
 
  This software is provided 'as-is', without any express or implied
  warranty. In no event will the authors be held liable for any damages
@@ -30,13 +30,6 @@ int sdl_sdl__sdl_rwops_seek(BBObject *, int, int);
 BBLONG sdl_sdl__sdl_rwops_read(BBObject *, void *, BBLONG);
 BBLONG sdl_sdl__sdl_rwops_write(BBObject *, void *, BBLONG);
 int sdl_sdl__sdl_rwops_close(BBObject *);
-
-void bmx_SDL_FreeRW_stream(SDL_RWops * ops);
-BBString * bmx_SDL_GetError();
-
-BBString * bmx_SDL_GetBasePath();
-BBString * bmx_SDL_GetPrefPath(BBString * org, BBString * game);
-BBString * bmx_SDL_GetClipboardText();
 
 /* ----------------------------------------------------- */
 

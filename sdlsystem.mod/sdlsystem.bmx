@@ -1,4 +1,4 @@
-' Copyright (c) 2014 Bruce A Henderson
+' Copyright (c) 2014-2018 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -19,7 +19,7 @@
 '    3. This notice may not be removed or altered from any source
 '    distribution.
 '
-Strict
+SuperStrict
 
 Rem
 bbdoc: SDL System driver
@@ -60,17 +60,17 @@ Type TSDLSystemDriver Extends TSystemDriver
 		' TODO
 	End Method
 
-	Method SetMouseVisible( visible )
+	Method SetMouseVisible( visible:Int )
 		SDL_ShowCursor(visible)
 	End Method
 
-	Method MoveMouse( x,y )
+	Method MoveMouse( x:Int,y:Int )
 		If _sdl_WarpMouse Then
 			_sdl_WarpMouse(x, y)
 		End If
 	End Method
 
-	Method Notify( Text$,serious )
+	Method Notify( Text$,serious:Int )
 		Local res:Int = bmx_SDL_ShowSimpleMessageBox(Text, AppTitle, serious)
 		' failed to display message box?
 		If res Then
@@ -78,15 +78,15 @@ Type TSDLSystemDriver Extends TSystemDriver
 		End If
 	End Method
 	
-	Method Confirm( Text$,serious )
+	Method Confirm:Int( Text$,serious:Int )
 		Return bmx_SDL_ShowMessageBox_confirm(Text, AppTitle, serious)
 	End Method
 	
-	Method Proceed( Text$,serious )
+	Method Proceed:Int( Text$,serious:Int )
 		Return bmx_SDL_ShowMessageBox_proceed(Text, AppTitle, serious)
 	End Method
 
-	Method RequestFile$( Text$,exts$,save,file$ )
+	Method RequestFile$( Text$,exts$,save:Int,file$ )
 		' TODO
 	End Method
 	
@@ -94,7 +94,7 @@ Type TSDLSystemDriver Extends TSystemDriver
 		' TODO
 	End Method
 
-	Method OpenURL( url$ )
+	Method OpenURL:Int( url$ )
 		' TODO
 	End Method
 

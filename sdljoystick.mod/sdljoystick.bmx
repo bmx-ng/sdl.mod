@@ -1,4 +1,4 @@
-' Copyright (c) 2015 Bruce A Henderson
+' Copyright (c) 2015-2018 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -181,12 +181,22 @@ Type TSDLJoystickDriver Extends TJoystickDriver
 	
 End Type
 
+Rem
+bbdoc: 
+End Rem
 Type TSDLJoystick
 	Field joystickPtr:Byte Ptr
 	
 	Method Create:TSDLJoystick(port:Int)
 		joystickPtr = SDL_JoystickOpen(port)
 		Return Self
+	End Method
+	
+	Rem
+	bbdoc: Returns True if the joystick has haptic features.
+	End Rem
+	Method IsHaptic:Int()
+		Return SDL_JoystickIsHaptic(joystickPtr)
 	End Method
 	
 	Method Delete()
