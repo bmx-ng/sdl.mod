@@ -758,6 +758,8 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 			TMax2DGraphics.ClearCurrent
 
 			SDLGraphicsDriver().SetGraphics Null
+			
+			inited = Null
 
 			Return
 		EndIf
