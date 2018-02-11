@@ -120,18 +120,22 @@ Type TSDLSystemDriver Extends TSystemDriver
 		End If
 		Return 1
 	End Function
-	 
+
+	Method Name:String()
+		Return "SDLSystemDriver"
+	End Method
+	
 End Type
 
 Rem
 bbdoc: 
 End Rem
 Function SetEventFilterCallback(callback:Int(data:Object, event:Int), data:Object = Null)
-	TSDLSystemDriver(Driver)._eventFilterCallback = callback
-	TSDLSystemDriver(Driver)._eventFilterUserData = data
+	TSDLSystemDriver(SystemDriver())._eventFilterCallback = callback
+	TSDLSystemDriver(SystemDriver())._eventFilterUserData = data
 End Function
 
-Driver = New TSDLSystemDriver
+InitSystemDriver(New TSDLSystemDriver)
 
 Rem
 bbdoc: Information about multiple finger gestures.
