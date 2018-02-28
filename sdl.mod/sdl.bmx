@@ -76,13 +76,17 @@ ModuleInfo "CC_OPTS: -fobjc-arc"
 
 Import "include/ios/*.h"
 ?win32
-ModuleInfo "CC_OPTS: -DHAVE_XINPUT_GAMEPAD_EX -DHAVE_XINPUT_STATE_EX"
+'
+' Note : If you have XINPUT errors during the build, try uncommenting the following CC_OPTS.
+'        Some versions of MinGW have it, some don't...
+'
+'ModuleInfo "CC_OPTS: -DHAVE_XINPUT_GAMEPAD_EX -DHAVE_XINPUT_STATE_EX"
 
-Import "-limm32" ' required in BlitzMax/lib
+Import "-limm32"
 Import "-lole32"
 Import "-loleaut32"
 Import "-lshell32"
-Import "-lversion" ' required in BlitzMax/lib
+Import "-lversion"
 
 ?raspberrypi
 Import "-lSDL2"
