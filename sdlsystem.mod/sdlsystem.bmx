@@ -29,6 +29,7 @@ Module SDL.SDLSystem
 
 Import SDL.SDL
 Import BRL.System
+Import BRL.LinkedList
 
 Import "common.bmx"
 
