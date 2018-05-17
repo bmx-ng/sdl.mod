@@ -403,7 +403,7 @@ Type TSDLWindow
 	not available by default. Those functions must be loaded at run-time, either with an OpenGL extension-handling
 	library or with #GLGetProcAddress() and its related functions.
 	End Rem
-	Method GLCreateContext:Byte Ptr()
+	Method GLCreateContext:TSDLGLContext()
 		Return TSDLGLContext._create(SDL_GL_CreateContext(windowPtr))
 	End Method
 	
