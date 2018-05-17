@@ -92,7 +92,7 @@ Type TSDLWindow
 	returns: The ID of the window on success or 0 on failure.
 	End Rem
 	Method GetID:UInt()
-		Return SDL_GetWindowPixelFormat(windowPtr)
+		Return SDL_GetWindowID(windowPtr)
 	End Method
 	
 	Rem

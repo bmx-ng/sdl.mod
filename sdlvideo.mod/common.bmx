@@ -84,6 +84,7 @@ Extern
 
 	Function SDL_GetWindowDisplayIndex:Int(handle:Byte Ptr)
 	Function SDL_GetWindowPixelFormat:UInt(handle:Byte Ptr)
+	Function SDL_GetWindowID:UInt(handle:Byte Ptr)
 	Function SDL_SetWindowDisplayMode:Int(handle:Byte Ptr, mode:Byte Ptr)
 	Function SDL_ShowWindow(handle:Byte Ptr)
 	Function SDL_HideWindow(handle:Byte Ptr)
