@@ -35,9 +35,28 @@ Import "-lbcm_host"
 ?
 
 Import SDL.SDLSystem
+Import SDL.SDLVideo
 Import BRL.Graphics
 
 Import "common.bmx"
+
+Private
+Global _currentContext:TGraphicsContext
+Public
+
+Type TGraphicsContext
+	Field mode:Int
+	Field width:Int
+	Field height:Int
+	Field depth:Int
+	Field hertz:Int
+	Field flags:Int
+	Field sync:Int
+	
+	Field window:TSDLWindow
+	Field context:TSDLGLContext
+	Field info:Byte Ptr
+End Type
 
 Type TSDLGraphics Extends TGraphics
 
@@ -48,28 +67,38 @@ Type TSDLGraphics Extends TGraphics
 	
 	Method GetSettings( width:Int Var,height:Int Var,depth:Int Var,hertz:Int Var,flags:Int Var )
 		Assert _context
-		Local w:Int,h:Int,d:Int,r:Int,f:Int
-		bbSDLGraphicsGetSettings _context,w,h,d,r,f
-		width=w
-		height=h
-		depth=d
-		hertz=r
-		flags=f
+		'Local w:Int,h:Int,d:Int,r:Int,f:Int
+		'bbSDLGraphicsGetSettings _context,w,h,d,r,f
+		width=_context.width
+		height=_context.height
+		depth=_context.depth
+		hertz=_context.hertz
+		flags=_context.flags
 	End Method
 	
 	Method Close()
 		If Not _context Return
-		bbSDLGraphicsClose( _context )
-		_context=0
+		'bbSDLGraphicsClose( _context )
+		If _currentContext = _context Then
+			_currentContext = Null
+		End If
+		If _context.context Then
+			_context.context.Free()
+		End If
+		If _context.window Then
+			_context.window.Destroy()
+		End If
+		_context=Null
 	End Method
 
 	Method GetHandle:Byte Ptr()
 		If _context Then
-			Return bbSDLGraphicsGetHandle(_context)
+			' FIXME
+			'Return bbSDLGraphicsGetHandle(_context)
 		End If
 	End Method
 	
-	Field _context:Byte Ptr
+	Field _context:TGraphicsContext
 	
 End Type
 
@@ -121,21 +150,119 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 	
 	Method CreateGraphics:TSDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Int )
 		Local t:TSDLGraphics=New TSDLGraphics
-		t._context=bbSDLGraphicsCreateGraphics( width,height,depth,hertz,flags )
+		t._context=SDLGraphicsCreateGraphics( width,height,depth,hertz,flags )
 		Return t
 	End Method
 	
+	Method SDLGraphicsCreateGraphics:TGraphicsContext(width:Int,height:Int,depth:Int,hertz:Int,flags:Int)
+		Local context:TGraphicsContext = New TGraphicsContext
+
+		Local windowFlags:UInt = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL
+		Local gFlags:UInt
+		
+		If flags & SDL_GRAPHICS_NATIVE Then
+		
+			flags :~ SDL_GRAPHICS_NATIVE
+			
+			gFlags = flags & (SDL_GRAPHICS_BACKBUFFER | SDL_GRAPHICS_ALPHABUFFER | SDL_GRAPHICS_DEPTHBUFFER | SDL_GRAPHICS_STENCILBUFFER | SDL_GRAPHICS_ACCUMBUFFER)
+			
+			flags :~ (SDL_GRAPHICS_BACKBUFFER | SDL_GRAPHICS_ALPHABUFFER | SDL_GRAPHICS_DEPTHBUFFER | SDL_GRAPHICS_STENCILBUFFER | SDL_GRAPHICS_ACCUMBUFFER)
+
+			windowFlags :| flags
+
+			If gFlags & SDL_GRAPHICS_BACKBUFFER Then SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)
+			If gFlags & SDL_GRAPHICS_ALPHABUFFER Then SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1)
+			If gFlags & SDL_GRAPHICS_DEPTHBUFFER Then SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24)
+			If gFlags & SDL_GRAPHICS_STENCILBUFFER Then SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1)
+
+		Else
+
+			If depth Then
+				windowFlags :| SDL_WINDOW_FULLSCREEN
+				' mode = MODE_DISPLAY
+			Else
+				If flags & $80000000 Then
+					windowFlags :| SDL_WINDOW_FULLSCREEN_DESKTOP
+				End If
+				' mode = MODE_WINDOW
+			End If
+
+			gFlags = flags & (GRAPHICS_BACKBUFFER | GRAPHICS_ALPHABUFFER | GRAPHICS_DEPTHBUFFER | GRAPHICS_STENCILBUFFER | GRAPHICS_ACCUMBUFFER)
+
+			If gFlags & GRAPHICS_BACKBUFFER Then SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)
+			If gFlags & GRAPHICS_ALPHABUFFER Then SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1)
+			If gFlags & GRAPHICS_DEPTHBUFFER Then SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24)
+			If gFlags & GRAPHICS_STENCILBUFFER Then SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1)
+		
+		End If
+		
+
+		'End If
+		
+		context.window = TSDLWindow.Create(AppTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, windowFlags)
+		SDL_GL_SetSwapInterval(-1)
+		
+		context.context = context.window.GLCreateContext()
+		
+		context.width = width
+		context.height = height
+		context.depth = depth
+		context.hertz = hertz
+		context.flags = flags
+		
+		AddHook EmitEventHook,GraphicsHook,context,0
+		
+		Return context
+	End Method
+	
 	Method SetGraphics( g:TGraphics )
-		Local context:Byte Ptr
+		Local context:TGraphicsContext
 		Local t:TSDLGraphics=TSDLGraphics( g )
 		If t context=t._context
-		bbSDLGraphicsSetGraphics context
+		'bbSDLGraphicsSetGraphics context
+		If context Then
+			context.window.GLMakeCurrent(context.context)
+		End If
+		_currentContext = context
 	End Method
 	
 	Method Flip( sync:Int )
-		bbSDLGraphicsFlip sync
+		'bbSDLGraphicsFlip sync
+		If Not _currentContext Then
+			Return
+		End If
+		
+		If sync <> _currentContext.sync Then
+			_currentContext.sync = sync
+			_currentContext.context.SetSwapInterval(sync)
+		End If
+		
+		_currentContext.window.GLSwap()
 	End Method
 	
+	Function GraphicsHook:Object( id,data:Object,context:Object )
+		Local ev:TEvent=TEvent(data)
+		If Not ev Return data
+
+		Select ev.id
+			Case EVENT_WINDOWSIZE
+				Local ctxt:TGraphicsContext = TGraphicsContext(context)
+				If ctxt Then
+					If ctxt.window.GetID() = ev.data Then
+						ctxt.width = ev.x
+						ctxt.height = ev.y
+						GraphicsResize(ev.x, ev.y)
+					End If
+				End If
+		End Select
+		
+		Return data
+	End Function
+
+	Method CanResize:Int()
+		Return True
+	End Method
+
 End Type
 
 Rem

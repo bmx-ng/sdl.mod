@@ -94,7 +94,7 @@ Extern
 '	Function bmx_SDL_WaitEvent()
 	
 End Extern
-
+Rem
 Const SDL_WINDOW_FULLSCREEN:Int = $00000001         ' fullscreen window
 Const SDL_WINDOW_OPENGL:Int = $00000002             ' window usable with OpenGL context
 Const SDL_WINDOW_SHOWN:Int = $00000004              ' window is visible
@@ -109,6 +109,14 @@ Const SDL_WINDOW_MOUSE_FOCUS:Int = $00000400        ' window has mouse focus
 Const SDL_WINDOW_FULLSCREEN_DESKTOP:Int = SDL_WINDOW_FULLSCREEN | $00001000
 Const SDL_WINDOW_FOREIGN:Int = $00000800            ' window Not created by SDL
 Const SDL_WINDOW_ALLOW_HIGHDPI:Int = $00002000       ' window should be created in high-DPI Mode If supported
-
+End Rem
 Const GRAPHICS_RPI_TV_FULLSCREEN:Int = $1000
 Const GRAPHICS_WIN32_DX:Int = $1000000
+
+Const SDL_GRAPHICS_BACKBUFFER:Int    = $00800000
+Const SDL_GRAPHICS_ALPHABUFFER:Int   = $01000000
+Const SDL_GRAPHICS_DEPTHBUFFER:Int   = $02000000
+Const SDL_GRAPHICS_STENCILBUFFER:Int = $04000000
+Const SDL_GRAPHICS_ACCUMBUFFER:Int   = $08000000
+
+Const SDL_GRAPHICS_NATIVE:Int        = $40000000

@@ -175,6 +175,9 @@ void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 				case SDL_WINDOWEVENT_FOCUS_LOST:
 					bbSDLSystemEmitEvent(BBEVENT_APPSUSPEND, source, 0, 0, 0, 0, &bbNullObject);
 					return;
+				case SDL_WINDOWEVENT_RESIZED:
+					bbSDLSystemEmitEvent(BBEVENT_WINDOWSIZE, source, event->window.windowID, 0, event->window.data1, event->window.data2, &bbNullObject);
+					return;
 			}
 	}	
 	
