@@ -5,9 +5,7 @@ Import "SDL/src/loadso/dlopen/SDL_sysloadso.c"
 Import "SDL/src/audio/SDL_audiodev.c"
 Import "SDL/src/audio/alsa/SDL_alsa_audio.c"
 Import "SDL/src/audio/dsp/SDL_dspaudio.c"
-Import "SDL/src/audio/esd/SDL_esdaudio.c"
 Import "SDL/src/audio/nas/SDL_nasaudio.c"
-Import "SDL/src/audio/pulseaudio/SDL_pulseaudio.c"
 Import "SDL/src/core/linux/SDL_dbus.c"
 Import "SDL/src/core/linux/SDL_evdev.c"
 Import "SDL/src/core/linux/SDL_ime.c"
@@ -45,7 +43,14 @@ Import "SDL/src/video/x11/SDL_x11window.c"
 Import "SDL/src/video/x11/SDL_x11xinput2.c"
 Import "SDL/src/video/x11/edid-parse.c"
 Import "SDL/src/video/x11/imKStoUCS.c"
-
+?linux And Not raspberrypi
+Import "SDL/src/audio/esd/SDL_esdaudio.c"
+Import "SDL/src/audio/pulseaudio/SDL_pulseaudio.c"
+?raspberrypi
+Import "SDL/src/video/raspberry/SDL_rpievents.c"
+Import "SDL/src/video/raspberry/SDL_rpimouse.c"
+Import "SDL/src/video/raspberry/SDL_rpiopengles.c"
+Import "SDL/src/video/raspberry/SDL_rpivideo.c"
 ?
 Rem
 ?linuxx86
