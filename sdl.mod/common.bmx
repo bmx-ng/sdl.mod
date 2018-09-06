@@ -103,6 +103,8 @@ Extern
 	Function SDL_GetPowerInfo:Int(seconds:Int Ptr, percent:Int Ptr)
 	
 	Function SDL_GetPixelFormatName:Byte Ptr(format:UInt)
+	Function SDL_GetTicks:UInt()
+	
 End Extern
 
 

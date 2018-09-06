@@ -75,6 +75,9 @@ Import "include/emscripten/*.h"
 ModuleInfo "CC_OPTS: -fobjc-arc"
 
 Import "include/ios/*.h"
+
+?nx
+ModuleInfo "LD_OPTS: -L%nx.devkitpro%/portlibs/switch/lib"
 ?win32
 '
 ' Note : If you have XINPUT errors during the build, try uncommenting the following CC_OPTS.
@@ -92,6 +95,8 @@ Import "-lversion"
 Import "-lSDL2"
 ?linux
 Import "-ldl"
+?nx
+Import "-lSDL2"
 ?
 
 Import "SDL/include/*.h"
@@ -362,3 +367,8 @@ End Rem
 Function SDLGetPixelFormatName:String(format:UInt)
 	Return String.FromUTF8String(SDL_GetPixelFormatName(format))
 End Function
+
+Function SDLGetTicks:UInt()
+	Return SDL_GetTicks()
+End Function
+
