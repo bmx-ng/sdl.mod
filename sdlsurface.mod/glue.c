@@ -21,6 +21,7 @@
     distribution.
 */
 #include "SDL_surface.h"
+#include "brl.mod/blitz.mod/blitz.h"
 
 SDL_PixelFormat * bmx_sdl_surface_Format(SDL_Surface * surface) {
 	return surface->format;
@@ -99,6 +100,13 @@ int bmx_sdl_surface_BlitScaled(SDL_Surface * surface, int sx, int sy, int sw, in
 	dr.y = dy;
 	
 	return SDL_BlitScaled(surface, (sw==0 && sh==0 && sx==0 && sy==0) ? NULL : &sr, dest, &dr);
+}
+
+SDL_Surface * bmx_sdl_LoadBMP(BBString * file) {
+	char * f = bbStringToUTF8String(file);
+	SDL_Surface * surface = SDL_LoadBMP(f);
+	bbMemFree(f);
+	return surface;
 }
 
 

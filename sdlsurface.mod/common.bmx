@@ -88,6 +88,8 @@ Extern
 	Function bmx_sdl_surface_Blit:Int(handle:Byte Ptr, sx:Int, sy:Int, sw:Int, sh:Int, dest:Byte Ptr, dx:Int, dy:Int)
 	Function bmx_sdl_surface_BlitScaled:Int(handle:Byte Ptr, sx:Int, sy:Int, sw:Int, sh:Int, dest:Byte Ptr, dx:Int, dy:Int)
 	
+	Function bmx_sdl_LoadBMP:Byte Ptr(file:String)
+	
 End Extern
 
 Rem

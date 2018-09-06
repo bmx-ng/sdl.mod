@@ -86,6 +86,13 @@ Type TSDLSurface
 	End Function
 	
 	Rem
+	bbdoc: Loads a surface from a BMP file.
+	End Rem
+	Function LoadBMP:TSDLSurface(file:String)
+		Return _create(bmx_sdl_LoadBMP(file))
+	End Function
+	
+	Rem
 	bbdoc: Copies the surface to a new surface of the specified format.
 	returns: The new surface, or Null on failure.
 	about: This method is used to optimize images for faster repeat blitting. This is accomplished by converting the original
