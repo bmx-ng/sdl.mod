@@ -74,6 +74,38 @@ void bmx_sdl_haptic_SDLHapticConstant_SetFadeLevel(SDL_HapticConstant * effect, 
 	effect->fade_level = value;
 }
 
+Uint32 bmx_sdl_haptic_SDLHapticConstant_GetLength(SDL_HapticConstant * effect) {
+	return effect->length;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticConstant_GetDelay(SDL_HapticConstant * effect) {
+	return effect->delay;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticConstant_GetButton(SDL_HapticConstant * effect) {
+	return effect->button;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticConstant_GetInterval(SDL_HapticConstant * effect) {
+	return effect->interval;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticConstant_GetAttackLength(SDL_HapticConstant * effect) {
+	return effect->attack_length;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticConstant_GetAttackLevel(SDL_HapticConstant * effect) {
+	return effect->attack_level;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticConstant_GetFadeLength(SDL_HapticConstant * effect) {
+	return effect->fade_length;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticConstant_GetFadeLevel(SDL_HapticConstant * effect) {
+	return effect->fade_level;
+}
+
 // --------------------------------------------------------
 
 SDL_HapticPeriodic * bmx_sdl_haptic_SDLHapticPeriodic_new(int waveType) {
@@ -132,6 +164,38 @@ void bmx_sdl_haptic_SDLHapticPeriodic_SetFadeLength(SDL_HapticPeriodic * effect,
 
 void bmx_sdl_haptic_SDLHapticPeriodic_SetFadeLevel(SDL_HapticPeriodic * effect, Uint16 value) {
 	effect->fade_level = value;
+}
+
+Uint32 bmx_sdl_haptic_SDLHapticPeriodic_GetLength(SDL_HapticPeriodic * effect) {
+	return effect->length;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticPeriodic_GetDelay(SDL_HapticPeriodic * effect) {
+	return effect->delay;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticPeriodic_GetButton(SDL_HapticPeriodic * effect) {
+	return effect->button;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticPeriodic_GetInterval(SDL_HapticPeriodic * effect) {
+	return effect->interval;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticPeriodic_GetAttackLength(SDL_HapticPeriodic * effect) {
+	return effect->attack_length;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticPeriodic_GetAttackLevel(SDL_HapticPeriodic * effect) {
+	return effect->attack_level;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticPeriodic_GetFadeLength(SDL_HapticPeriodic * effect) {
+	return effect->fade_length;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticPeriodic_GetFadeLevel(SDL_HapticPeriodic * effect) {
+	return effect->fade_level;
 }
 
 // --------------------------------------------------------
@@ -198,6 +262,22 @@ void bmx_sdl_haptic_SDLHapticCondition_SetCenter(SDL_HapticCondition * effect, i
 	effect->center[2] = value3;
 }
 
+Uint32 bmx_sdl_haptic_SDLHapticCondition_GetLength(SDL_HapticCondition * effect) {
+	return effect->length;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticCondition_GetDelay(SDL_HapticCondition * effect) {
+	return effect->delay;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticCondition_GetButton(SDL_HapticCondition * effect) {
+	return effect->button;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticCondition_GetInterval(SDL_HapticCondition * effect) {
+	return effect->interval;
+}
+
 // --------------------------------------------------------
 
 SDL_HapticRamp * bmx_sdl_haptic_SDLHapticRamp_new() {
@@ -248,6 +328,38 @@ void bmx_sdl_haptic_SDLHapticRamp_SetFadeLength(SDL_HapticRamp * effect, Uint16 
 
 void bmx_sdl_haptic_SDLHapticRamp_SetFadeLevel(SDL_HapticRamp * effect, Uint16 value) {
 	effect->fade_level = value;
+}
+
+Uint32 bmx_sdl_haptic_SDLHapticRamp_GetLength(SDL_HapticRamp * effect) {
+	return effect->length;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticRamp_GetDelay(SDL_HapticRamp * effect) {
+	return effect->delay;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticRamp_GetButton(SDL_HapticRamp * effect) {
+	return effect->button;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticRamp_GetInterval(SDL_HapticRamp * effect) {
+	return effect->interval;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticRamp_GetAttackLength(SDL_HapticRamp * effect) {
+	return effect->attack_length;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticRamp_GetAttackLevel(SDL_HapticRamp * effect) {
+	return effect->attack_level;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticRamp_GetFadeLength(SDL_HapticRamp * effect) {
+	return effect->fade_length;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticRamp_GetFadeLevel(SDL_HapticRamp * effect) {
+	return effect->fade_level;
 }
 
 // --------------------------------------------------------
@@ -325,6 +437,38 @@ void bmx_sdl_haptic_SDLHapticCustom_SetFadeLength(SDL_HapticCustom * effect, Uin
 
 void bmx_sdl_haptic_SDLHapticCustom_SetFadeLevel(SDL_HapticCustom * effect, Uint16 value) {
 	effect->fade_level = value;
+}
+
+Uint32 bmx_sdl_haptic_SDLHapticCustom_GetLength(SDL_HapticCustom * effect) {
+	return effect->length;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticCustom_GetDelay(SDL_HapticCustom * effect) {
+	return effect->delay;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticCustom_GetButton(SDL_HapticCustom * effect) {
+	return effect->button;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticCustom_GetInterval(SDL_HapticCustom * effect) {
+	return effect->interval;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticCustom_GetAttackLength(SDL_HapticCustom * effect) {
+	return effect->attack_length;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticCustom_GetAttackLevel(SDL_HapticCustom * effect) {
+	return effect->attack_level;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticCustom_GetFadeLength(SDL_HapticCustom * effect) {
+	return effect->fade_length;
+}
+
+Uint16 bmx_sdl_haptic_SDLHapticCustom_GetFadeLevel(SDL_HapticCustom * effect) {
+	return effect->fade_level;
 }
 
 // --------------------------------------------------------

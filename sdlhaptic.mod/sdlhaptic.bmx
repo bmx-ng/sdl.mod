@@ -22,7 +22,7 @@
 SuperStrict
 
 Rem
-bbdoc: 
+bbdoc: Control of haptic (force feedback) devices.
 End Rem
 Module SDL.SDLHaptic
 
@@ -31,7 +31,7 @@ Import SDL.SDLJoystick
 Import "common.bmx"
 
 Rem
-bbdoc: 
+bbdoc: A haptic device.
 End Rem
 Type TSDLHaptic
 
@@ -97,21 +97,22 @@ Type TSDLHaptic
 	End Method
 	
 	Rem
-	bbdoc: 
+	bbdoc: Gets the implementation dependent name of the haptic device.
 	End Rem
 	Function Name:String(device:Int)
 		Return String.FromUTF8String(SDL_HapticName(device))
 	End Function
 	
 	Rem
-	bbdoc: 
+	bbdoc: Gets the index of the haptic device.
 	End Rem
 	Method Index:Int()
 		Return SDL_HapticIndex(hapticPtr)
 	End Method
 	
 	Rem
-	bbdoc: 
+	bbdoc: Checks if the haptic device at the designated index has been opened.
+	returns: Returns True if it has been opened, False if it hasn't or on failure.
 	End Rem
 	Function Opened:Int(device:Int)
 		Return SDL_HapticOpened(device)
@@ -315,12 +316,12 @@ Type TSDLHapticDirection
 End Type
 
 Rem
-bbdoc: 
+bbdoc: A generic template for any haptic effect.
 End Rem
 Type TSDLHapticEffect
 
 	Field effectPtr:Byte Ptr
-
+	
 	Rem
 	bbdoc: 
 	End Rem
@@ -347,6 +348,62 @@ Type TSDLHapticConstant Extends TSDLHapticEffect
 	End Method
 
 	Rem
+	bbdoc: Returns the duration of effect (ms).
+	End Rem
+	Method GetLength:UInt()
+		Return bmx_sdl_haptic_SDLHapticConstant_GetLength(effectPtr)
+	End Method
+
+	Rem
+	bbdoc: Returns the delay before starting effect.
+	End Rem
+	Method GetDelay:Short()
+		Return bmx_sdl_haptic_SDLHapticConstant_GetDelay(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the button that triggers effect.
+	End Rem
+	Method GetButton:Short()
+		Return bmx_sdl_haptic_SDLHapticConstant_GetButton(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns how soon before effect can be triggered again.
+	End Rem
+	Method GetInterval:Short()
+		Return bmx_sdl_haptic_SDLHapticConstant_GetInterval(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the duration of the attack (ms).
+	End Rem
+	Method GetAttackLength:Short()
+		Return bmx_sdl_haptic_SDLHapticConstant_GetAttackLength(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the level at the start of the attack.
+	End Rem
+	Method GetAttackLevel:Short()
+		Return bmx_sdl_haptic_SDLHapticConstant_GetAttackLevel(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the duration of the fade out (ms).
+	End Rem
+	Method GetFadeLength:Short()
+		Return bmx_sdl_haptic_SDLHapticConstant_GetFadeLength(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the level at the end of the fade.
+	End Rem
+	Method GetFadeLevel:Short()
+		Return bmx_sdl_haptic_SDLHapticConstant_GetFadeLevel(effectPtr)
+	End Method
+	
+	Rem
 	bbdoc: Returns the effect direction.
 	about: This instance is owned by the effect, and any changes will apply only to this effect.
 	End Rem
@@ -356,6 +413,7 @@ Type TSDLHapticConstant Extends TSDLHapticEffect
 	
 	Rem
 	bbdoc: Sets the duration of the effect.
+	about: You can pass SDL_HAPTIC_INFINITY to length instead of a 0-32767 value.
 	End Rem
 	Method SetLength(value:UInt)
 		bmx_sdl_haptic_SDLHapticConstant_SetLength(effectPtr, value)
@@ -434,6 +492,62 @@ Type TSDLHapticPeriodic Extends TSDLHapticEffect
 	End Method
 
 	Rem
+	bbdoc: Returns the duration of effect (ms).
+	End Rem
+	Method GetLength:UInt()
+		Return bmx_sdl_haptic_SDLHapticPeriodic_GetLength(effectPtr)
+	End Method
+
+	Rem
+	bbdoc: Returns the delay before starting effect.
+	End Rem
+	Method GetDelay:Short()
+		Return bmx_sdl_haptic_SDLHapticPeriodic_GetDelay(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the button that triggers effect.
+	End Rem
+	Method GetButton:Short()
+		Return bmx_sdl_haptic_SDLHapticPeriodic_GetButton(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns how soon before effect can be triggered again.
+	End Rem
+	Method GetInterval:Short()
+		Return bmx_sdl_haptic_SDLHapticPeriodic_GetInterval(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the duration of the attack (ms).
+	End Rem
+	Method GetAttackLength:Short()
+		Return bmx_sdl_haptic_SDLHapticPeriodic_GetAttackLength(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the level at the start of the attack.
+	End Rem
+	Method GetAttackLevel:Short()
+		Return bmx_sdl_haptic_SDLHapticPeriodic_GetAttackLevel(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the duration of the fade out (ms).
+	End Rem
+	Method GetFadeLength:Short()
+		Return bmx_sdl_haptic_SDLHapticPeriodic_GetFadeLength(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the level at the end of the fade.
+	End Rem
+	Method GetFadeLevel:Short()
+		Return bmx_sdl_haptic_SDLHapticPeriodic_GetFadeLevel(effectPtr)
+	End Method
+	
+	Rem
 	bbdoc: Returns the effect direction.
 	about: This instance is owned by the effect, and any changes will apply only to this effect.
 	End Rem
@@ -443,6 +557,7 @@ Type TSDLHapticPeriodic Extends TSDLHapticEffect
 
 	Rem
 	bbdoc: Sets the duration of the effect.
+	about: You can pass SDL_HAPTIC_INFINITY to length instead of a 0-32767 value.
 	End Rem
 	Method SetLength(value:UInt)
 		bmx_sdl_haptic_SDLHapticPeriodic_SetLength(effectPtr, value)
@@ -548,6 +663,34 @@ Type TSDLHapticCondition Extends TSDLHapticEffect
 	End Method
 
 	Rem
+	bbdoc: Returns the duration of effect (ms).
+	End Rem
+	Method GetLength:UInt()
+		Return bmx_sdl_haptic_SDLHapticCondition_GetLength(effectPtr)
+	End Method
+
+	Rem
+	bbdoc: Returns the delay before starting effect.
+	End Rem
+	Method GetDelay:Short()
+		Return bmx_sdl_haptic_SDLHapticCondition_GetDelay(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the button that triggers effect.
+	End Rem
+	Method GetButton:Short()
+		Return bmx_sdl_haptic_SDLHapticCondition_GetButton(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns how soon before effect can be triggered again.
+	End Rem
+	Method GetInterval:Short()
+		Return bmx_sdl_haptic_SDLHapticCondition_GetInterval(effectPtr)
+	End Method
+
+	Rem
 	bbdoc: Returns the effect direction.
 	about: This instance is owned by the effect, and any changes will apply only to this effect.
 	End Rem
@@ -557,6 +700,7 @@ Type TSDLHapticCondition Extends TSDLHapticEffect
 
 	Rem
 	bbdoc: Sets the duration of the effect.
+	about: You can pass SDL_HAPTIC_INFINITY to length instead of a 0-32767 value.
 	End Rem
 	Method SetLength(value:UInt)
 		bmx_sdl_haptic_SDLHapticCondition_SetLength(effectPtr, value)
@@ -640,6 +784,62 @@ Type TSDLHapticRamp Extends TSDLHapticEffect
 	End Method
 
 	Rem
+	bbdoc: Returns the duration of effect (ms).
+	End Rem
+	Method GetLength:UInt()
+		Return bmx_sdl_haptic_SDLHapticRamp_GetLength(effectPtr)
+	End Method
+
+	Rem
+	bbdoc: Returns the delay before starting effect.
+	End Rem
+	Method GetDelay:Short()
+		Return bmx_sdl_haptic_SDLHapticRamp_GetDelay(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the button that triggers effect.
+	End Rem
+	Method GetButton:Short()
+		Return bmx_sdl_haptic_SDLHapticRamp_GetButton(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns how soon before effect can be triggered again.
+	End Rem
+	Method GetInterval:Short()
+		Return bmx_sdl_haptic_SDLHapticRamp_GetInterval(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the duration of the attack (ms).
+	End Rem
+	Method GetAttackLength:Short()
+		Return bmx_sdl_haptic_SDLHapticRamp_GetAttackLength(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the level at the start of the attack.
+	End Rem
+	Method GetAttackLevel:Short()
+		Return bmx_sdl_haptic_SDLHapticRamp_GetAttackLevel(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the duration of the fade out (ms).
+	End Rem
+	Method GetFadeLength:Short()
+		Return bmx_sdl_haptic_SDLHapticRamp_GetFadeLength(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the level at the end of the fade.
+	End Rem
+	Method GetFadeLevel:Short()
+		Return bmx_sdl_haptic_SDLHapticRamp_GetFadeLevel(effectPtr)
+	End Method
+
+	Rem
 	bbdoc: Returns the effect direction.
 	about: This instance is owned by the effect, and any changes will apply only to this effect.
 	End Rem
@@ -649,6 +849,7 @@ Type TSDLHapticRamp Extends TSDLHapticEffect
 
 	Rem
 	bbdoc: Sets the duration of the effect.
+	about: This effect does not support a duration of SDL_HAPTIC_INFINITY.
 	End Rem
 	Method SetLength(value:UInt)
 		bmx_sdl_haptic_SDLHapticRamp_SetLength(effectPtr, value)
@@ -765,6 +966,62 @@ Type TSDLHapticCustom Extends TSDLHapticEffect
 	End Method
 
 	Rem
+	bbdoc: Returns the duration of effect (ms).
+	End Rem
+	Method GetLength:UInt()
+		Return bmx_sdl_haptic_SDLHapticCustom_GetLength(effectPtr)
+	End Method
+
+	Rem
+	bbdoc: Returns the delay before starting effect.
+	End Rem
+	Method GetDelay:Short()
+		Return bmx_sdl_haptic_SDLHapticCustom_GetDelay(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the button that triggers effect.
+	End Rem
+	Method GetButton:Short()
+		Return bmx_sdl_haptic_SDLHapticCustom_GetButton(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns how soon before effect can be triggered again.
+	End Rem
+	Method GetInterval:Short()
+		Return bmx_sdl_haptic_SDLHapticCustom_GetInterval(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the duration of the attack (ms).
+	End Rem
+	Method GetAttackLength:Short()
+		Return bmx_sdl_haptic_SDLHapticCustom_GetAttackLength(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the level at the start of the attack.
+	End Rem
+	Method GetAttackLevel:Short()
+		Return bmx_sdl_haptic_SDLHapticCustom_GetAttackLevel(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the duration of the fade out (ms).
+	End Rem
+	Method GetFadeLength:Short()
+		Return bmx_sdl_haptic_SDLHapticCustom_GetFadeLength(effectPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the level at the end of the fade.
+	End Rem
+	Method GetFadeLevel:Short()
+		Return bmx_sdl_haptic_SDLHapticCustom_GetFadeLevel(effectPtr)
+	End Method
+
+	Rem
 	bbdoc: Returns the effect direction.
 	about: This instance is owned by the effect, and any changes will apply only to this effect.
 	End Rem
@@ -774,6 +1031,7 @@ Type TSDLHapticCustom Extends TSDLHapticEffect
 
 	Rem
 	bbdoc: Sets the duration of the effect.
+	about: You can pass SDL_HAPTIC_INFINITY to length instead of a 0-32767 value.
 	End Rem
 	Method SetLength(value:UInt)
 		bmx_sdl_haptic_SDLHapticCustom_SetLength(effectPtr, value)
