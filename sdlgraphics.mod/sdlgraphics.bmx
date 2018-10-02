@@ -56,6 +56,7 @@ Type TGraphicsContext
 	Field window:TSDLWindow
 	Field context:TSDLGLContext
 	Field info:Byte Ptr
+	Field data:Object
 End Type
 
 Type TSDLGraphics Extends TGraphics
@@ -159,6 +160,7 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 
 		Local windowFlags:UInt = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL
 		Local gFlags:UInt
+		Local glFlags:UInt = flags & SDL_GRAPHICS_GL
 		
 		If flags & SDL_GRAPHICS_NATIVE Then
 		
@@ -166,14 +168,18 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 			
 			gFlags = flags & (SDL_GRAPHICS_BACKBUFFER | SDL_GRAPHICS_ALPHABUFFER | SDL_GRAPHICS_DEPTHBUFFER | SDL_GRAPHICS_STENCILBUFFER | SDL_GRAPHICS_ACCUMBUFFER)
 			
+			flags :~ SDL_GRAPHICS_GL
+			
 			flags :~ (SDL_GRAPHICS_BACKBUFFER | SDL_GRAPHICS_ALPHABUFFER | SDL_GRAPHICS_DEPTHBUFFER | SDL_GRAPHICS_STENCILBUFFER | SDL_GRAPHICS_ACCUMBUFFER)
 
 			windowFlags :| flags
 
-			If gFlags & SDL_GRAPHICS_BACKBUFFER Then SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)
-			If gFlags & SDL_GRAPHICS_ALPHABUFFER Then SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1)
-			If gFlags & SDL_GRAPHICS_DEPTHBUFFER Then SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24)
-			If gFlags & SDL_GRAPHICS_STENCILBUFFER Then SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1)
+			If glFlags Then
+				If gFlags & SDL_GRAPHICS_BACKBUFFER Then SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)
+				If gFlags & SDL_GRAPHICS_ALPHABUFFER Then SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1)
+				If gFlags & SDL_GRAPHICS_DEPTHBUFFER Then SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24)
+				If gFlags & SDL_GRAPHICS_STENCILBUFFER Then SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1)
+			End If
 
 		Else
 
@@ -189,20 +195,23 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 
 			gFlags = flags & (GRAPHICS_BACKBUFFER | GRAPHICS_ALPHABUFFER | GRAPHICS_DEPTHBUFFER | GRAPHICS_STENCILBUFFER | GRAPHICS_ACCUMBUFFER)
 
-			If gFlags & GRAPHICS_BACKBUFFER Then SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)
-			If gFlags & GRAPHICS_ALPHABUFFER Then SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1)
-			If gFlags & GRAPHICS_DEPTHBUFFER Then SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24)
-			If gFlags & GRAPHICS_STENCILBUFFER Then SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1)
-		
+			If glFlags Then
+				If gFlags & GRAPHICS_BACKBUFFER Then SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)
+				If gFlags & GRAPHICS_ALPHABUFFER Then SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1)
+				If gFlags & GRAPHICS_DEPTHBUFFER Then SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24)
+				If gFlags & GRAPHICS_STENCILBUFFER Then SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1)
+			End If
 		End If
 		
 
 		'End If
 		
 		context.window = TSDLWindow.Create(AppTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, windowFlags)
-		SDL_GL_SetSwapInterval(-1)
+		If glFlags Then
+			SDL_GL_SetSwapInterval(-1)
 		
-		context.context = context.window.GLCreateContext()
+			context.context = context.window.GLCreateContext()
+		End If
 		
 		context.width = width
 		context.height = height
@@ -220,7 +229,7 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 		Local t:TSDLGraphics=TSDLGraphics( g )
 		If t context=t._context
 		'bbSDLGraphicsSetGraphics context
-		If context Then
+		If context And context.context Then
 			context.window.GLMakeCurrent(context.context)
 		End If
 		_currentContext = context
@@ -234,10 +243,14 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 		
 		If sync <> _currentContext.sync Then
 			_currentContext.sync = sync
-			_currentContext.context.SetSwapInterval(sync)
+			If _currentContext.context Then
+				_currentContext.context.SetSwapInterval(sync)
+			End If
 		End If
 		
-		_currentContext.window.GLSwap()
+		If _currentContext.context Then
+			_currentContext.window.GLSwap()
+		End If
 	End Method
 	
 	Function GraphicsHook:Object( id,data:Object,context:Object )

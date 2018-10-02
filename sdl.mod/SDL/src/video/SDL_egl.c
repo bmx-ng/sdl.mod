@@ -44,12 +44,12 @@
 
 #if SDL_VIDEO_DRIVER_RPI
 /* Raspbian places the OpenGL ES/EGL binaries in a non standard path */
-#define DEFAULT_EGL ( vc4 ? "libEGL.so.1" : "/opt/vc/lib/libbrcmEGL.so" )
-#define DEFAULT_OGL_ES2 ( vc4 ? "libGLESv2.so.2" : "/opt/vc/lib/libbrcmGLESv2.so" )
-#define ALT_EGL "/opt/vc/lib/libEGL.so"
-#define ALT_OGL_ES2 "/opt/vc/lib/libGLESv2.so"
-#define DEFAULT_OGL_ES_PVR ( vc4 ? "libGLES_CM.so.1" : "/opt/vc/lib/libbrcmGLESv2.so" )
-#define DEFAULT_OGL_ES ( vc4 ? "libGLESv1_CM.so.1" : "/opt/vc/lib/libbrcmGLESv2.so" )
+#define DEFAULT_EGL ( vc4 ? "libEGL.so.1" : "libbrcmEGL.so" )
+#define DEFAULT_OGL_ES2 ( vc4 ? "libGLESv2.so.2" : "libbrcmGLESv2.so" )
+#define ALT_EGL "libEGL.so"
+#define ALT_OGL_ES2 "libGLESv2.so"
+#define DEFAULT_OGL_ES_PVR ( vc4 ? "libGLES_CM.so.1" : "libbrcmGLESv2.so" )
+#define DEFAULT_OGL_ES ( vc4 ? "libGLESv1_CM.so.1" : "libbrcmGLESv2.so" )
 
 #elif SDL_VIDEO_DRIVER_ANDROID || SDL_VIDEO_DRIVER_VIVANTE
 /* Android */
@@ -446,6 +446,64 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     return 0;
 }
 
+#ifdef DUMP_EGL_CONFIG
+
+#define ATTRIBUTE(_attr) { _attr, #_attr }
+
+typedef struct {
+    EGLint attribute;
+    char const* name;
+} Attribute;
+
+Attribute attributes[] = {
+        ATTRIBUTE( EGL_BUFFER_SIZE ),
+        ATTRIBUTE( EGL_ALPHA_SIZE ),
+        ATTRIBUTE( EGL_BLUE_SIZE ),
+        ATTRIBUTE( EGL_GREEN_SIZE ),
+        ATTRIBUTE( EGL_RED_SIZE ),
+        ATTRIBUTE( EGL_DEPTH_SIZE ),
+        ATTRIBUTE( EGL_STENCIL_SIZE ),
+        ATTRIBUTE( EGL_CONFIG_CAVEAT ),
+        ATTRIBUTE( EGL_CONFIG_ID ),
+        ATTRIBUTE( EGL_LEVEL ),
+        ATTRIBUTE( EGL_MAX_PBUFFER_HEIGHT ),
+        ATTRIBUTE( EGL_MAX_PBUFFER_WIDTH ),
+        ATTRIBUTE( EGL_MAX_PBUFFER_PIXELS ),
+        ATTRIBUTE( EGL_NATIVE_RENDERABLE ),
+        ATTRIBUTE( EGL_NATIVE_VISUAL_ID ),
+        ATTRIBUTE( EGL_NATIVE_VISUAL_TYPE ),
+        ATTRIBUTE( EGL_SAMPLES ),
+        ATTRIBUTE( EGL_SAMPLE_BUFFERS ),
+        ATTRIBUTE( EGL_SURFACE_TYPE ),
+        ATTRIBUTE( EGL_TRANSPARENT_TYPE ),
+        ATTRIBUTE( EGL_TRANSPARENT_BLUE_VALUE ),
+        ATTRIBUTE( EGL_TRANSPARENT_GREEN_VALUE ),
+        ATTRIBUTE( EGL_TRANSPARENT_RED_VALUE ),
+        ATTRIBUTE( EGL_BIND_TO_TEXTURE_RGB ),
+        ATTRIBUTE( EGL_BIND_TO_TEXTURE_RGBA ),
+        ATTRIBUTE( EGL_MIN_SWAP_INTERVAL ),
+        ATTRIBUTE( EGL_MAX_SWAP_INTERVAL ),
+        ATTRIBUTE( EGL_LUMINANCE_SIZE ),
+        ATTRIBUTE( EGL_ALPHA_MASK_SIZE ),
+        ATTRIBUTE( EGL_COLOR_BUFFER_TYPE ),
+        ATTRIBUTE( EGL_RENDERABLE_TYPE ),
+        ATTRIBUTE( EGL_MATCH_NATIVE_PIXMAP ),
+        ATTRIBUTE( EGL_CONFORMANT ),
+};
+
+
+static void dumpconfig(_THIS, EGLConfig config)
+{
+    int attr;
+    for (attr = 0 ; attr<sizeof(attributes)/sizeof(Attribute) ; attr++) {
+        EGLint value;
+        _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display, config, attributes[attr].attribute, &value);
+        SDL_Log("\t%-32s: %10d (0x%08x)\n", attributes[attr].name, value, value);
+    }
+}
+
+#endif /* DUMP_EGL_CONFIG */
+
 int
 SDL_EGL_ChooseConfig(_THIS) 
 {
@@ -502,18 +560,6 @@ SDL_EGL_ChooseConfig(_THIS)
     if (_this->gl_config.multisamplesamples) {
         attribs[i++] = EGL_SAMPLES;
         attribs[i++] = _this->gl_config.multisamplesamples;
-    }
-
-    if (_this->gl_config.framebuffer_srgb_capable) {
-#ifdef EGL_KHR_gl_colorspace
-        if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_gl_colorspace")) {
-            attribs[i++] = EGL_GL_COLORSPACE_KHR;
-            attribs[i++] = EGL_GL_COLORSPACE_SRGB_KHR;
-        } else
-#endif
-        {
-            return SDL_SetError("EGL implementation does not support sRGB system framebuffers");
-        }
     }
 
     attribs[i++] = EGL_RENDERABLE_TYPE;
@@ -582,6 +628,10 @@ SDL_EGL_ChooseConfig(_THIS)
             break; /* we found an exact match! */
         }
     }
+
+#ifdef DUMP_EGL_CONFIG
+    dumpconfig(_this, _this->egl_data->egl_config);
+#endif
     
     return 0;
 }
@@ -775,7 +825,6 @@ SDL_EGL_DeleteContext(_THIS, SDL_GLContext context)
     }
     
     if (egl_context != NULL && egl_context != EGL_NO_CONTEXT) {
-        SDL_EGL_MakeCurrent(_this, NULL, NULL);
         _this->egl_data->eglDestroyContext(_this->egl_data->egl_display, egl_context);
     }
         
@@ -784,6 +833,10 @@ SDL_EGL_DeleteContext(_THIS, SDL_GLContext context)
 EGLSurface *
 SDL_EGL_CreateSurface(_THIS, NativeWindowType nw) 
 {
+    /* max 2 values plus terminator. */
+    EGLint attribs[3];
+    int attr = 0;
+
     EGLSurface * surface;
 
     if (SDL_EGL_ChooseConfig(_this) != 0) {
@@ -803,11 +856,25 @@ SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
         ANativeWindow_setBuffersGeometry(nw, 0, 0, format);
     }
 #endif    
+    if (_this->gl_config.framebuffer_srgb_capable) {
+#ifdef EGL_KHR_gl_colorspace
+        if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_gl_colorspace")) {
+            attribs[attr++] = EGL_GL_COLORSPACE_KHR;
+            attribs[attr++] = EGL_GL_COLORSPACE_SRGB_KHR;
+        } else
+#endif
+        {
+            SDL_SetError("EGL implementation does not support sRGB system framebuffers");
+            return EGL_NO_SURFACE;
+        }
+    }
+
+    attribs[attr++] = EGL_NONE;
     
     surface = _this->egl_data->eglCreateWindowSurface(
             _this->egl_data->egl_display,
             _this->egl_data->egl_config,
-            nw, NULL);
+            nw, &attribs[0]);
     if (surface == EGL_NO_SURFACE) {
         SDL_EGL_SetError("unable to create an EGL window surface", "eglCreateWindowSurface");
     }

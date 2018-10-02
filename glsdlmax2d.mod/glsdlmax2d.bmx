@@ -304,7 +304,7 @@ Type TGLMax2DDriver Extends TMax2DDriver
 	End Method
 	
 	Method CreateGraphics:TMax2DGraphics( width,height,depth,hertz,flags )
-		Local g:TSDLGraphics=SDLGraphicsDriver().CreateGraphics( width,height,depth,hertz,flags )
+		Local g:TSDLGraphics=SDLGraphicsDriver().CreateGraphics( width,height,depth,hertz,flags | SDL_GRAPHICS_GL )
 		If g Return TMax2DGraphics.Create( g,Self )
 	End Method
 	

@@ -76,7 +76,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
         JNIEnv* env, jclass jcls,
-        jint width, jint height, jint format, jfloat rate);
+        jint surfaceWidth, jint surfaceHeight,
+        jint deviceWidth, jint deviceHeight, jint format, jfloat rate);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(
         JNIEnv* env, jclass jcls);
@@ -102,7 +103,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeTouch)(
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeMouse)(
         JNIEnv* env, jclass jcls,
-        jint button, jint action, jfloat x, jfloat y);
+        jint button, jint action, jfloat x, jfloat y, jboolean relative);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeAccel)(
         JNIEnv* env, jclass jcls,
@@ -134,10 +135,18 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetenv)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeEnvironmentVariablesSet)(
         JNIEnv* env, jclass cls);
 
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeOrientationChanged)(
+        JNIEnv* env, jclass cls,
+        jint orientation);
+
 /* Java class SDLInputConnection */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeCommitText)(
         JNIEnv* env, jclass cls,
         jstring text, jint newCursorPosition);
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancodeForUnichar)(
+        JNIEnv* env, jclass cls,
+        jchar chUnicode);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText)(
         JNIEnv* env, jclass cls,
@@ -169,8 +178,8 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat)(
 
 JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
         JNIEnv* env, jclass jcls,
-        jint device_id, jstring device_name, jstring device_desc, jint is_accelerometer,
-        jint nbuttons, jint naxes, jint nhats, jint nballs);
+        jint device_id, jstring device_name, jstring device_desc, jint vendor_id, jint product_id,
+        jboolean is_accelerometer, jint button_mask, jint naxes, jint nhats, jint nballs);
 
 JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick)(
         JNIEnv* env, jclass jcls,
@@ -190,6 +199,7 @@ JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
 /* #define DEBUG_JNI */
 
 static void Android_JNI_ThreadDestroyed(void*);
+static void checkJNIReady(void);
 
 /*******************************************************************************
  This file links the Java side of Android with libsdl
@@ -209,8 +219,14 @@ static jclass mActivityClass;
 /* method signatures */
 static jmethodID midGetNativeSurface;
 static jmethodID midSetActivityTitle;
+static jmethodID midSetWindowStyle;
 static jmethodID midSetOrientation;
 static jmethodID midGetContext;
+static jmethodID midIsTablet;
+static jmethodID midIsAndroidTV;
+static jmethodID midIsChromebook;
+static jmethodID midIsDeXMode;
+static jmethodID midManualBackButton;
 static jmethodID midInputGetInputDeviceIds;
 static jmethodID midSendMessage;
 static jmethodID midShowTextInput;
@@ -221,6 +237,11 @@ static jmethodID midClipboardHasText;
 static jmethodID midOpenAPKExpansionInputStream;
 static jmethodID midGetManifestEnvironmentVariables;
 static jmethodID midGetDisplayDPI;
+static jmethodID midCreateCustomCursor;
+static jmethodID midSetCustomCursor;
+static jmethodID midSetSystemCursor;
+static jmethodID midSupportsRelativeMouse;
+static jmethodID midSetRelativeMouseEnabled;
 
 /* audio manager */
 static jclass mAudioManagerClass;
@@ -242,6 +263,7 @@ static jclass mControllerManagerClass;
 static jmethodID midPollInputDevices;
 static jmethodID midPollHapticDevices;
 static jmethodID midHapticRun;
+static jmethodID midHapticStop;
 
 /* static fields */
 static jfieldID fidSeparateMouseAndTouch;
@@ -301,10 +323,22 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
                                 "getNativeSurface","()Landroid/view/Surface;");
     midSetActivityTitle = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "setActivityTitle","(Ljava/lang/String;)Z");
+    midSetWindowStyle = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "setWindowStyle","(Z)V");
     midSetOrientation = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "setOrientation","(IIZLjava/lang/String;)V");
     midGetContext = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "getContext","()Landroid/content/Context;");
+    midIsTablet = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "isTablet", "()Z");
+    midIsAndroidTV = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "isAndroidTV","()Z");
+    midIsChromebook = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "isChromebook", "()Z");
+    midIsDeXMode = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "isDeXMode", "()Z");
+    midManualBackButton = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "manualBackButton", "()V");
     midInputGetInputDeviceIds = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "inputGetInputDeviceIds", "(I)[I");
     midSendMessage = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
@@ -326,12 +360,21 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
                                 "getManifestEnvironmentVariables", "()Z");
 
     midGetDisplayDPI = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "getDisplayDPI", "()Landroid/util/DisplayMetrics;");
+    midCreateCustomCursor = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "createCustomCursor", "([IIIII)I");
+    midSetCustomCursor = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "setCustomCursor", "(I)Z");
+    midSetSystemCursor = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "setSystemCursor", "(I)Z");
+
+    midSupportsRelativeMouse = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "supportsRelativeMouse", "()Z");
+    midSetRelativeMouseEnabled = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "setRelativeMouseEnabled", "(Z)Z");
+
 
     if (!midGetNativeSurface ||
-       !midSetActivityTitle || !midSetOrientation || !midGetContext || !midInputGetInputDeviceIds ||
+       !midSetActivityTitle || !midSetWindowStyle || !midSetOrientation || !midGetContext || !midIsTablet || !midIsAndroidTV || !midInputGetInputDeviceIds ||
        !midSendMessage || !midShowTextInput || !midIsScreenKeyboardShown ||
        !midClipboardSetText || !midClipboardGetText || !midClipboardHasText ||
-       !midOpenAPKExpansionInputStream || !midGetManifestEnvironmentVariables|| !midGetDisplayDPI) {
+       !midOpenAPKExpansionInputStream || !midGetManifestEnvironmentVariables || !midGetDisplayDPI ||
+       !midCreateCustomCursor || !midSetCustomCursor || !midSetSystemCursor || !midSupportsRelativeMouse || !midSetRelativeMouseEnabled ||
+       !midIsChromebook || !midIsDeXMode || !midManualBackButton) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 
@@ -393,8 +436,10 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv* mEn
                                 "pollHapticDevices", "()V");
     midHapticRun = (*mEnv)->GetStaticMethodID(mEnv, mControllerManagerClass,
                                 "hapticRun", "(II)V");
+    midHapticStop = (*mEnv)->GetStaticMethodID(mEnv, mControllerManagerClass,
+                                "hapticStop", "(I)V");
 
-    if (!midPollInputDevices || !midPollHapticDevices || !midHapticRun) {
+    if (!midPollInputDevices || !midPollHapticDevices || !midHapticRun || !midHapticStop) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLControllerManager.java?");
     }
 
@@ -496,9 +541,18 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
 /* Resize */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
                                     JNIEnv* env, jclass jcls,
-                                    jint width, jint height, jint format, jfloat rate)
+                                    jint surfaceWidth, jint surfaceHeight,
+                                    jint deviceWidth, jint deviceHeight, jint format, jfloat rate)
 {
-    Android_SetScreenResolution(width, height, format, rate);
+    Android_SetScreenResolution(surfaceWidth, surfaceHeight, deviceWidth, deviceHeight, format, rate);
+}
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeOrientationChanged)(
+                                    JNIEnv *env, jclass jcls,
+                                    jint orientation)
+{
+    SDL_VideoDisplay *display = SDL_GetDisplay(0);
+    SDL_SendDisplayEvent(display, SDL_DISPLAYEVENT_ORIENTATION, orientation);
 }
 
 /* Paddown */
@@ -536,14 +590,15 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat)(
 
 JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
                                     JNIEnv* env, jclass jcls,
-                                    jint device_id, jstring device_name, jstring device_desc, jint is_accelerometer,
-                                    jint nbuttons, jint naxes, jint nhats, jint nballs)
+                                    jint device_id, jstring device_name, jstring device_desc,
+                                    jint vendor_id, jint product_id, jboolean is_accelerometer,
+                                    jint button_mask, jint naxes, jint nhats, jint nballs)
 {
     int retval;
     const char *name = (*env)->GetStringUTFChars(env, device_name, NULL);
     const char *desc = (*env)->GetStringUTFChars(env, device_desc, NULL);
 
-    retval = Android_AddJoystick(device_id, name, desc, (SDL_bool) is_accelerometer, nbuttons, naxes, nhats, nballs);
+    retval = Android_AddJoystick(device_id, name, desc, vendor_id, product_id, is_accelerometer ? SDL_TRUE : SDL_FALSE, button_mask, naxes, nhats, nballs);
 
     (*env)->ReleaseStringUTFChars(env, device_name, name);
     (*env)->ReleaseStringUTFChars(env, device_desc, desc);
@@ -668,9 +723,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeTouch)(
 /* Mouse */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeMouse)(
                                     JNIEnv* env, jclass jcls,
-                                    jint button, jint action, jfloat x, jfloat y)
+                                    jint button, jint action, jfloat x, jfloat y, jboolean relative)
 {
-    Android_OnMouse(button, action, x, y);
+    Android_OnMouse(button, action, x, y, relative);
 }
 
 /* Accelerometer */
@@ -903,6 +958,12 @@ void Android_JNI_SetActivityTitle(const char *title)
     (*mEnv)->DeleteLocalRef(mEnv, jtitle);
 }
 
+void Android_JNI_SetWindowStyle(SDL_bool fullscreen)
+{
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    (*mEnv)->CallStaticVoidMethod(mEnv, mActivityClass, midSetWindowStyle, fullscreen ? 1 : 0);
+}
+
 void Android_JNI_SetOrientation(int w, int h, int resizable, const char *hint)
 {
     JNIEnv *mEnv = Android_JNI_GetEnv();
@@ -990,8 +1051,8 @@ static jobject captureBuffer = NULL;
 
 int Android_JNI_OpenAudioDevice(int iscapture, int sampleRate, int is16Bit, int channelCount, int desiredBufferFrames)
 {
-    jboolean audioBufferStereo;
-    int audioBufferFrames;
+    jboolean isStereo;
+    int numBufferFrames;
     jobject jbufobj = NULL;
     jboolean isCopy;
 
@@ -1002,12 +1063,12 @@ int Android_JNI_OpenAudioDevice(int iscapture, int sampleRate, int is16Bit, int 
     }
     Android_JNI_SetupThread();
 
-    audioBufferStereo = channelCount > 1;
+    isStereo = channelCount > 1;
 
     if (iscapture) {
         __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device for capture");
         captureBuffer16Bit = is16Bit;
-        if ((*env)->CallStaticIntMethod(env, mAudioManagerClass, midCaptureOpen, sampleRate, audioBuffer16Bit, audioBufferStereo, desiredBufferFrames) != 0) {
+        if ((*env)->CallStaticIntMethod(env, mAudioManagerClass, midCaptureOpen, sampleRate, is16Bit, isStereo, desiredBufferFrames) != 0) {
             /* Error during audio initialization */
             __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: error on AudioRecord initialization!");
             return 0;
@@ -1015,7 +1076,7 @@ int Android_JNI_OpenAudioDevice(int iscapture, int sampleRate, int is16Bit, int 
     } else {
         __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device for output");
         audioBuffer16Bit = is16Bit;
-        if ((*env)->CallStaticIntMethod(env, mAudioManagerClass, midAudioOpen, sampleRate, audioBuffer16Bit, audioBufferStereo, desiredBufferFrames) != 0) {
+        if ((*env)->CallStaticIntMethod(env, mAudioManagerClass, midAudioOpen, sampleRate, is16Bit, isStereo, desiredBufferFrames) != 0) {
             /* Error during audio initialization */
             __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: error on AudioTrack initialization!");
             return 0;
@@ -1026,14 +1087,14 @@ int Android_JNI_OpenAudioDevice(int iscapture, int sampleRate, int is16Bit, int 
      * Android >= 4.2 due to a "stale global reference" error. So now we allocate this buffer directly from this side. */
 
     if (is16Bit) {
-        jshortArray audioBufferLocal = (*env)->NewShortArray(env, desiredBufferFrames * (audioBufferStereo ? 2 : 1));
+        jshortArray audioBufferLocal = (*env)->NewShortArray(env, desiredBufferFrames * (isStereo ? 2 : 1));
         if (audioBufferLocal) {
             jbufobj = (*env)->NewGlobalRef(env, audioBufferLocal);
             (*env)->DeleteLocalRef(env, audioBufferLocal);
         }
     }
     else {
-        jbyteArray audioBufferLocal = (*env)->NewByteArray(env, desiredBufferFrames * (audioBufferStereo ? 2 : 1));
+        jbyteArray audioBufferLocal = (*env)->NewByteArray(env, desiredBufferFrames * (isStereo ? 2 : 1));
         if (audioBufferLocal) {
             jbufobj = (*env)->NewGlobalRef(env, audioBufferLocal);
             (*env)->DeleteLocalRef(env, audioBufferLocal);
@@ -1054,22 +1115,26 @@ int Android_JNI_OpenAudioDevice(int iscapture, int sampleRate, int is16Bit, int 
     isCopy = JNI_FALSE;
 
     if (is16Bit) {
-        if (!iscapture) {
+        if (iscapture) {
+            numBufferFrames = (*env)->GetArrayLength(env, (jshortArray)captureBuffer);
+        } else {
             audioBufferPinned = (*env)->GetShortArrayElements(env, (jshortArray)audioBuffer, &isCopy);
+            numBufferFrames = (*env)->GetArrayLength(env, (jshortArray)audioBuffer);
         }
-        audioBufferFrames = (*env)->GetArrayLength(env, (jshortArray)audioBuffer);
     } else {
-        if (!iscapture) {
+        if (iscapture) {
+            numBufferFrames = (*env)->GetArrayLength(env, (jbyteArray)captureBuffer);
+        } else {
             audioBufferPinned = (*env)->GetByteArrayElements(env, (jbyteArray)audioBuffer, &isCopy);
+            numBufferFrames = (*env)->GetArrayLength(env, (jbyteArray)audioBuffer);
         }
-        audioBufferFrames = (*env)->GetArrayLength(env, (jbyteArray)audioBuffer);
     }
 
-    if (audioBufferStereo) {
-        audioBufferFrames /= 2;
+    if (isStereo) {
+        numBufferFrames /= 2;
     }
 
-    return audioBufferFrames;
+    return numBufferFrames;
 }
 
 int Android_JNI_GetDisplayDPI(float *ddpi, float *xdpi, float *ydpi)
@@ -1839,6 +1904,11 @@ void Android_JNI_HapticRun(int device_id, int length)
     (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midHapticRun, device_id, length);
 }
 
+void Android_JNI_HapticStop(int device_id)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midHapticStop, device_id);
+}
 
 /* See SDLActivity.java for constants. */
 #define COMMAND_SET_KEEP_SCREEN_ON    5
@@ -1991,6 +2061,36 @@ void *SDL_AndroidGetActivity(void)
 
     /* return SDLActivity.getContext(); */
     return (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
+}
+
+SDL_bool SDL_IsAndroidTablet(void)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsTablet);
+}
+
+SDL_bool SDL_IsAndroidTV(void)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsAndroidTV);
+}
+
+SDL_bool SDL_IsChromebook(void)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsChromebook);
+}
+
+SDL_bool SDL_IsDeXMode(void)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsDeXMode);
+}
+
+void SDL_AndroidBackButton(void)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    return (*env)->CallStaticVoidMethod(env, mActivityClass, midManualBackButton);
 }
 
 const char * SDL_AndroidGetInternalStoragePath(void)
@@ -2146,6 +2246,48 @@ void Android_JNI_GetManifestEnvironmentVariables(void)
         }
     }
 }
+
+int Android_JNI_CreateCustomCursor(SDL_Surface *surface, int hot_x, int hot_y)
+{
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    int custom_cursor = 0;
+    jintArray pixels;
+    pixels = (*mEnv)->NewIntArray(mEnv, surface->w * surface->h);
+    if (pixels) {
+        (*mEnv)->SetIntArrayRegion(mEnv, pixels, 0, surface->w * surface->h, (int *)surface->pixels);
+        custom_cursor = (*mEnv)->CallStaticIntMethod(mEnv, mActivityClass, midCreateCustomCursor, pixels, surface->w, surface->h, hot_x, hot_y);
+        (*mEnv)->DeleteLocalRef(mEnv, pixels);
+    } else {
+        SDL_OutOfMemory();
+    }
+    return custom_cursor;
+}
+
+
+SDL_bool Android_JNI_SetCustomCursor(int cursorID)
+{
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    return (*mEnv)->CallStaticBooleanMethod(mEnv, mActivityClass, midSetCustomCursor, cursorID);
+}
+
+SDL_bool Android_JNI_SetSystemCursor(int cursorID)
+{
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    return (*mEnv)->CallStaticBooleanMethod(mEnv, mActivityClass, midSetSystemCursor, cursorID);
+}
+
+SDL_bool Android_JNI_SupportsRelativeMouse()
+{
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    return (*mEnv)->CallStaticBooleanMethod(mEnv, mActivityClass, midSupportsRelativeMouse);
+}
+
+SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled)
+{
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    return (*mEnv)->CallStaticBooleanMethod(mEnv, mActivityClass, midSetRelativeMouseEnabled, (enabled == 1));
+}
+
 
 #endif /* __ANDROID__ */
 

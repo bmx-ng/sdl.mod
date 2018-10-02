@@ -33,10 +33,16 @@ ModuleInfo "History: 1.00"
 ModuleInfo "History: Initial Release."
 
 ?win32x86
+ModuleInfo "CC_OPTS: -mmmx -msse -msse2"
+
 Import "include/win32x86/*.h"
+Import "-lsetupapi"
 
 ?win32x64
+ModuleInfo "CC_OPTS: -mmmx -msse -msse2"
+
 Import "include/win32x64/*.h"
+Import "-lsetupapi"
 
 ?osx
 ModuleInfo "CC_OPTS: -mmmx -msse -msse2 -DTARGET_API_MAC_CARBON -DTARGET_API_MAC_OSX"
