@@ -134,7 +134,7 @@ Type TSDLRenderer
 	bbdoc: Draws a line on the current rendering target.
 	End Rem
 	Method DrawLine:Int(x1:Int, y1:Int, x2:Int, y2:Int)
-		Return SDL_RenderDrawLine(rendererPtr, x1, x2, y1, y2)
+		Return SDL_RenderDrawLine(rendererPtr, x1, y1, x2, y2)
 	End Method
 	
 	Rem
