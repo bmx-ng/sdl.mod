@@ -96,6 +96,14 @@ SDL_DisplayMode * bmx_sdl_video_GetCurrentDisplayMode(int index) {
 	}
 }
 
+BBString * bmx_sdl_video_SDL_GetCurrentVideoDriver() {
+	if (!SDL_GetCurrentVideoDriver()) {
+		return &bbEmptyString;
+	} else {
+		return bbStringFromUTF8String(SDL_GetCurrentVideoDriver());
+	}
+}
+
 // --------------------------------------------------------
 
 SDL_DisplayMode * bmx_sdl_video_DisplayMode_new(Uint32 format, int width, int height, int refreshRate) {

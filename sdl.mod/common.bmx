@@ -47,7 +47,8 @@ Extern
 	Function SDL_WasInit:Int(flags:Int)
 	Function SDL_Quit()
 
-	Function SDL_GetError:String()="bmx_SDL_GetError"
+	Function bmx_SDL_GetError:String()
+	Function SDL_ClearError()
 
 	Function bmx_SDL_AllocRW_stream:Byte Ptr(stream:TStream)
 	

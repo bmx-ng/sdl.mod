@@ -22,7 +22,7 @@
 SuperStrict
 
 Rem
-bbdoc: 
+bbdoc: SDL Sensor
 End Rem
 Module SDL.SDLSensor
 
@@ -32,7 +32,7 @@ Import SDL.SDL
 Import "common.bmx"
 
 Rem
-bbdoc: 
+bbdoc: A Sensor
 End Rem
 Type TSDLSensor
 

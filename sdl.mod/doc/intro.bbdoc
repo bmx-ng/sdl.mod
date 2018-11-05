@@ -1,0 +1,9 @@
+Simple DirectMedia Layer is a cross-platform development library designed to provide low level access to audio,
+keyboard, mouse, joystick, and graphics hardware via OpenGL and Direct3D.
+
+SDL is a wrapper around operating-system-specific functions that a game needs to access.
+
+It provides a common framework for accessing these functions for multiple operating systems (cross-platform).  SDL provides support for 2D pixel operations,
+sound, file access, event handling, timing and threading. It is often used to complement OpenGL by setting up the graphical output an
+providing mouse and keyboard input, since OpenGL comprises only rendering.
+

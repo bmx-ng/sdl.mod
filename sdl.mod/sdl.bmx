@@ -111,7 +111,11 @@ Import "common.bmx"
 
 Import "glue.c"
 
-
+Rem
+bbdoc: An SDL-based data stream type.
+about: #TSDLStream extends #TStream to provide methods for reading and writing various types of values
+to and from an SDL-based Read/Write stream.
+End Rem
 Type TSDLStream Extends TStream
 
 	Field filePtr:Byte Ptr
@@ -172,7 +176,11 @@ Type TSDLStream Extends TStream
 
 End Type
 
-Function CreateSDLStream:TSDLStream( file:String, readable:Int, writeable:Int )
+Rem
+bbdoc: Opens an SDL stream for reading/writing.
+returns: A stream object.
+End Rem
+Function OpenSDLStream:TSDLStream( file:String, readable:Int, writeable:Int )
 	Return TSDLStream.Create( file, readable, writeable )
 End Function
 
@@ -193,7 +201,7 @@ Function _sdl_rwops_seek:Int(stream:TStream, pos:Long, whence:Int)
 End Function
 
 Function _sdl_rwops_read:Long(stream:TStream, buf:Byte Ptr, count:Long)
-	Return stream.read(buf, count)
+	Return stream.Read(buf, count)
 End Function
 
 Function _sdl_rwops_write:Long(stream:TStream, buf:Byte Ptr, count:Long)
@@ -210,9 +218,9 @@ about: This is where the application data directory is.
 This is not necessarily a fast call, though, so you should call this once near startup and save the string if you need it.<br/>
 Mac OS X and iOS Specific Functionality: If the application is in a ".app" bundle, this function returns the Resource directory
 (e.g. MyApp.app/Contents/Resources/). This behaviour can be overridden by adding a property to the Info.plist file. Adding a string key with
-the name SDL_FILESYSTEM_BASE_DIR_TYPE with a supported value will change the behaviour.
+the name #SDL_FILESYSTEM_BASE_DIR_TYPE with a supported value will change the behaviour.
 End Rem
-Function GetBasePath:String()
+Function SDLGetBasePath:String()
 	Return bmx_SDL_GetBasePath()
 End Function
 
@@ -228,50 +236,50 @@ Both the org and app strings may become part of a directory name, so please foll
 * Always use a unique app string for each one, and make sure it never changes for an app once you've decided on it.<br/>
 * Only use letters, numbers, and spaces. Avoid punctuation like "Game Name 2: Bad Guy's Revenge!" ... "Game Name 2" is sufficient.
 End Rem
-Function GetPrefPath:String(org:String, app:String)
+Function SDLGetPrefPath:String(org:String, app:String)
 	Return bmx_SDL_GetPrefPath(org, app)
 End Function
 ?android
 Rem
 bbdoc: Gets the path used for external storage for this application.
-returns: The path used for external storage for this application on success or NULL on failure; call SDL_GetError() for more information.
+returns: The path used for external storage for this application on success or NULL on failure; call #SDLGetError() for more information.
 about: This path is unique to your application, but is public and can be written to by other applications.
 Your external storage path is typically: /storage/sdcard0/Android/data/your.app.package/files.
 End Rem
-Function AndroidGetExternalStoragePath:String()
+Function SDLAndroidGetExternalStoragePath:String()
 	Return String.FromUTF8String(SDL_AndroidGetExternalStoragePath())
 End Function
 
 Rem
 bbdoc: Gets the current state of external storage.
-about: The current state of external storage, a bitmask of these values: SDL_ANDROID_EXTERNAL_STORAGE_READ, SDL_ANDROID_EXTERNAL_STORAGE_WRITE.
+about: The current state of external storage, a bitmask of these values: #SDL_ANDROID_EXTERNAL_STORAGE_READ, #SDL_ANDROID_EXTERNAL_STORAGE_WRITE.
 If external storage is currently unavailable, this will return 0.
 End Rem
-Function AndroidGetExternalStorageState:Int()
+Function SDLAndroidGetExternalStorageState:Int()
 	Return SDL_AndroidGetExternalStorageState()
 End Function
 
 Rem
 bbdoc: Gets the path used for internal storage for this application.
-returns: The path used for internal storage or NULL on failure; call SDL_GetError() for more information.
+returns: The path used for internal storage or NULL on failure; call #SDLGetError() for more information.
 about: This path is unique to your application and cannot be written to by other applications.
 Your internal storage path is typically: /data/data/your.app.package/files.
 End Rem
-Function AndroidGetInternalStoragePath:String()
+Function SDLAndroidGetInternalStoragePath:String()
 	Return String.FromUTF8String(SDL_AndroidGetInternalStoragePath())
 End Function
 ?
 Rem
 bbdoc: Return a flag indicating whether the clipboard exists and contains a text string that is non-empty.
 End Rem
-Function HasClipboardText:Int()
+Function SDLHasClipboardText:Int()
 	Return SDL_HasClipboardText()
 End Function
 
 Rem
 bbdoc: Returns the clipboard text.
 End Rem
-Function GetClipboardText:String()
+Function SDLGetClipboardText:String()
 	Return bmx_SDL_GetClipboardText()
 End Function
 
@@ -279,68 +287,68 @@ Rem
 bbdoc: Puts text into the clipboard.
 returns: 0 on success or a negative error code on failure.
 End Rem
-Function SetClipboardText:Int(Text:String)
+Function SDLSetClipboardText:Int(Text:String)
 	Return SDL_SetClipboardText(Text.ToUTF8String())
 End Function
 
 Rem
-bbdoc: Logs a message with SDL_LOG_CATEGORY_APPLICATION and SDL_LOG_PRIORITY_INFO.
+bbdoc: Logs a message with #SDL_LOG_CATEGORY_APPLICATION and #SDL_LOG_PRIORITY_INFO.
 End Rem
-Function LogAppInfo(Text:String)
+Function SDLLogAppInfo(Text:String)
 	Local s:Byte Ptr = Text.ToUTF8String()
 	SDL_Log(s)
 	MemFree s
 End Function
 
 Rem
-bbdoc: Logs a message with SDL_LOG_PRIORITY_DEBUG.
+bbdoc: Logs a message with #SDL_LOG_PRIORITY_DEBUG.
 End Rem
-Function LogDebug(category:Int, Text:String)
+Function SDLLogDebug(category:Int, Text:String)
 	Local s:Byte Ptr = Text.ToUTF8String()
 	SDL_LogDebug(category, s)
 	MemFree s
 End Function
 
 Rem
-bbdoc: Logs a message with SDL_LOG_PRIORITY_ERROR.
+bbdoc: Logs a message with #SDL_LOG_PRIORITY_ERROR.
 End Rem
-Function LogError(category:Int, Text:String)
+Function SDLLogError(category:Int, Text:String)
 	Local s:Byte Ptr = Text.ToUTF8String()
 	SDL_LogError(category, s)
 	MemFree s
 End Function
 
 Rem
-bbdoc: Logs a message with SDL_LOG_PRIORITY_CRITICAL.
+bbdoc: Logs a message with #SDL_LOG_PRIORITY_CRITICAL.
 End Rem
-Function LogCritical(category:Int, Text:String)
+Function SDLLogCritical(category:Int, Text:String)
 	Local s:Byte Ptr = Text.ToUTF8String()
 	SDL_LogCritical(category, s)
 	MemFree s
 End Function
 
 Rem
-bbdoc: Logs a message with SDL_LOG_PRIORITY_INFO.
+bbdoc: Logs a message with #SDL_LOG_PRIORITY_INFO.
 End Rem
-Function LogInfo(category:Int, Text:String)
+Function SDLLogInfo(category:Int, Text:String)
 	Local s:Byte Ptr = Text.ToUTF8String()
 	SDL_LogInfo(category, s)
 	MemFree s
 End Function
 
 Rem
-bbdoc: Logs a message with SDL_LOG_PRIORITY_VERBOSE.
+bbdoc: Logs a message with #SDL_LOG_PRIORITY_VERBOSE.
 End Rem
-Function LogVerbose(category:Int, Text:String)
+Function SDLLogVerbose(category:Int, Text:String)
 	Local s:Byte Ptr = Text.ToUTF8String()
 	SDL_LogVerbose(category, s)
 	MemFree s
 End Function
 
 Rem
-bbdoc: Logs a message with SDL_LOG_PRIORITY_WARN.
+bbdoc: Logs a message with #SDL_LOG_PRIORITY_WARN.
 End Rem
-Function LogWarn(category:Int, Text:String)
+Function SDLLogWarn(category:Int, Text:String)
 	Local s:Byte Ptr = Text.ToUTF8String()
 	SDL_LogWarn(category, s)
 	MemFree s
@@ -348,9 +356,9 @@ End Function
 
 Rem
 bbdoc: Sets the priority of all log categories.
-about: If you are debugging SDL, you might want to call this with SDL_LOG_PRIORITY_WARN.
+about: If you are debugging SDL, you might want to call this with #SDL_LOG_PRIORITY_WARN.
 End Rem
-Function LogSetAllPriority(priority:Int)
+Function SDLLogSetAllPriority(priority:Int)
 	SDL_LogSetAllPriority(priority)
 End Function
 
@@ -363,7 +371,7 @@ stored power much faster than it reports, or completely drain when reporting it 
 Battery status can change at any time; if you are concerned with power state, you should call this function frequently,
 and perhaps ignore changes until they seem to be stable for a few seconds.
 End Rem
-Function GetPowerInfo:Int(seconds:Int Var, percent:Int Var)
+Function SDLGetPowerInfo:Int(seconds:Int Var, percent:Int Var)
 	Return SDL_GetPowerInfo(Varptr seconds, Varptr percent)
 End Function
 
@@ -374,7 +382,26 @@ Function SDLGetPixelFormatName:String(format:UInt)
 	Return String.FromUTF8String(SDL_GetPixelFormatName(format))
 End Function
 
+Rem
+bbdoc: Gets the number of milliseconds since the SDL library initialization.
+returns: A value representing the number of milliseconds since the SDL library initialized.
+about: This value wraps if the program runs for more than ~49 days.
+End Rem
 Function SDLGetTicks:UInt()
 	Return SDL_GetTicks()
 End Function
 
+Rem
+bbdoc: Retrieves a message about the last error that occurred.
+returns: A message with information about the specific error that occurred, or an empty string if there hasn't been an error message set since the last call to #SDLClearError(). The message is only applicable when an SDL function has signaled an error. You must check the return values of SDL function calls to determine when to appropriately call #SDLGetError().
+End Rem
+Function SDLGetError:String()
+	Return bmx_SDL_GetError()
+End Function
+
+Rem
+bbdoc: Clears any previous error message.
+End Rem
+Function SDLClearError()
+	SDL_ClearError()
+End Function

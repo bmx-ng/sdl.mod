@@ -323,7 +323,7 @@ Type TSDLHapticEffect
 	Field effectPtr:Byte Ptr
 	
 	Rem
-	bbdoc: 
+	bbdoc: Frees the effect.
 	End Rem
 	Method Free()
 		If effectPtr Then
@@ -343,6 +343,9 @@ bbdoc: A constant effect applies a constant force to the joystick in the specifi
 End Rem
 Type TSDLHapticConstant Extends TSDLHapticEffect
 	
+	Rem
+	bbdoc: Creates a new instance of the effect.
+	End Rem
 	Method New()
 		effectPtr = bmx_sdl_haptic_SDLHapticConstant_new()
 	End Method
@@ -484,7 +487,7 @@ End Rem
 Type TSDLHapticPeriodic Extends TSDLHapticEffect
 
 	Rem
-	bbdoc: 
+	bbdoc: Creates a new instance of the effect.
 	about: @waveType one of #SDL_HAPTIC_SINE, #SDL_HAPTIC_LEFTRIGHT, #SDL_HAPTIC_TRIANGLE, #SDL_HAPTIC_SAWTOOTHUP or #SDL_HAPTIC_SAWTOOTHDOWN.
 	End Rem
 	Method New(waveType:Int)
@@ -651,12 +654,13 @@ Type TSDLHapticPeriodic Extends TSDLHapticEffect
 End Type
 
 Rem
-bbdoc: 
+bbdoc: A template for a condition effect.
 End Rem
 Type TSDLHapticCondition Extends TSDLHapticEffect
 
 	Rem
-	bbdoc: @effectType one of #SDL_HAPTIC_SPRING, #SDL_HAPTIC_DAMPER, #SDL_HAPTIC_INERTIA, #SDL_HAPTIC_FRICTION
+	bbdoc: Creates a new instance of the effect.
+	about: @effectType one of #SDL_HAPTIC_SPRING, #SDL_HAPTIC_DAMPER, #SDL_HAPTIC_INERTIA, #SDL_HAPTIC_FRICTION
 	End Rem
 	Method New(effectType:Int)
 		effectPtr = bmx_sdl_haptic_SDLHapticCondition_new(effectType)
@@ -775,10 +779,16 @@ Type TSDLHapticCondition Extends TSDLHapticEffect
 End Type
 
 Rem
-bbdoc: 
+bbdoc: A template for a ramp effect.
+about: The ramp effect starts at start strength and ends at end strength.
+It augments in linear fashion. If you use attack and fade with a ramp the effects get added to the ramp effect
+making the effect become quadratic instead of linear.
 End Rem
 Type TSDLHapticRamp Extends TSDLHapticEffect
 
+	Rem
+	bbdoc: Creates a new instance of the effect.
+	End Rem
 	Method New()
 		effectPtr = bmx_sdl_haptic_SDLHapticRamp_new()
 	End Method
@@ -926,6 +936,9 @@ about: One motor is high frequency, the other is low frequency.
 End Rem
 Type TSDLHapticLeftRight Extends TSDLHapticEffect
 
+	Rem
+	bbdoc: Creates a new instance of the effect.
+	End Rem
 	Method New()
 		effectPtr = bmx_sdl_haptic_SDLHapticLeftRight_new()
 	End Method
@@ -961,6 +974,9 @@ If channels is 1, the effect is rotated using the defined direction. Otherwise i
 End Rem
 Type TSDLHapticCustom Extends TSDLHapticEffect
 
+	Rem
+	bbdoc: Creates a new instance of the effect.
+	End Rem
 	Method New()
 		effectPtr = bmx_sdl_haptic_SDLHapticCustom_new()
 	End Method

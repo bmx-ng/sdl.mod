@@ -63,6 +63,7 @@ Extern
 	Function bmx_sdl_video_GetDisplayMode:Byte Ptr(index:Int, modeIndex:Int)
 	Function bmx_sdl_video_GetDesktopDisplayMode:Byte Ptr(index:Int)
 	Function bmx_sdl_video_GetCurrentDisplayMode:Byte Ptr(index:Int)
+	Function bmx_sdl_video_SDL_GetCurrentVideoDriver:String()
 
 	Function SDL_GetNumVideoDisplays:Int()
 	Function SDL_GetDisplayName:Byte Ptr(index:Int)
@@ -85,7 +86,7 @@ Extern
 	Function SDL_GetWindowDisplayIndex:Int(handle:Byte Ptr)
 	Function SDL_GetWindowPixelFormat:UInt(handle:Byte Ptr)
 	Function SDL_GetWindowID:UInt(handle:Byte Ptr)
-	Function SDL_SetWindowDisplayMode:Int(handle:Byte Ptr, mode:Byte Ptr)
+	Function SDL_SetWindowDisplayMode:Int(handle:Byte Ptr, Mode:Byte Ptr)
 	Function SDL_ShowWindow(handle:Byte Ptr)
 	Function SDL_HideWindow(handle:Byte Ptr)
 	Function SDL_RaiseWindow(handle:Byte Ptr)

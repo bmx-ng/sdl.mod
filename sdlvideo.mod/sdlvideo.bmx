@@ -22,7 +22,7 @@
 SuperStrict
 
 Rem
-bbdoc: 
+bbdoc: SDL Video
 End Rem
 Module SDL.SDLVideo
 
@@ -67,8 +67,8 @@ Type TSDLWindow
 	about: This only affects the display mode used when the window is fullscreen. To change the window size when the window is not fullscreen,
 	use #SetSize().
 	End Rem
-	Method SetDisplayMode:Int(mode:TSDLDisplayMode)
-		Return SDL_SetWindowDisplayMode(windowPtr, mode.modePtr)
+	Method SetDisplayMode:Int(Mode:TSDLDisplayMode)
+		Return SDL_SetWindowDisplayMode(windowPtr, Mode.modePtr)
 	End Method
 	
 	Rem
@@ -577,7 +577,7 @@ Type TSDLGLContext
 End Type
 
 Rem
-bbdoc: 
+bbdoc: Represents an indexed video display.
 End Rem
 Type TSDLDisplay
 
@@ -745,10 +745,11 @@ End Type
 
 
 Rem
-bbdoc: 
+bbdoc: Returns the list of built-in video drivers.
+about: The video drivers are presented in the order in which they are normally checked during initialization.
 End Rem
 Function SDLGetVideoDrivers:String[]()
-	Return bmx_sdl_video_GetVideoDrivers:String[]()
+	Return bmx_sdl_video_GetVideoDrivers()
 End Function
 
 Rem
@@ -769,13 +770,16 @@ Function SDLVideoQuit()
 End Function
 
 Rem
-bbdoc: 
+bbdoc: Gets the name of the currently initialized video driver.
+returns: The name of the current video driver or NULL if no driver has been initialized.
 End Rem
 Function SDLGetCurrentVideoDriver:String()
+	Return bmx_sdl_video_SDL_GetCurrentVideoDriver()
 End Function
 
 Rem
-bbdoc: Gets the number of video drivers compiled into SDL
+bbdoc: Gets the number of available video displays.
+returns: A number >= 1 or a negative error code on failure. Call #SDLGetError() for more information.
 End Rem
 Function SDLGetNumVideoDisplays:Int()
 	Return SDL_GetNumVideoDisplays()
@@ -790,7 +794,8 @@ Function SDLGetGrabbedWindow:TSDLWindow()
 End Function
 
 Rem
-bbdoc: Returns whether the screensaver is currently enabled (default off).
+bbdoc: Returns whether the screensaver is currently enabled (Default off).
+about: The screensaver is disabled by default since SDL 2.0.2. Before SDL 2.0.2 the screensaver was enabled by default.
 End Rem
 Function SDLIsScreenSaverEnabled:Int()
 	Return SDL_IsScreenSaverEnabled()
@@ -805,6 +810,7 @@ End Function
 
 Rem
 bbdoc: Prevents the screen from being blanked by a screensaver.
+about: If you disable the screensaver, it is automatically re-enabled when SDL quits.
 End Rem
 Function SDLDisableScreenSaver()
 	SDL_DisableScreenSaver()
