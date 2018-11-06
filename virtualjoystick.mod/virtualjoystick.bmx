@@ -219,7 +219,7 @@ Type TVirtualJoystick
 	End Method
 	
 	Rem
-	bbdoc: 
+	bbdoc: Creates a new virtual joystick instance, using the specified configuration.
 	End Rem
 	Method Create:TVirtualJoystick(name:String, x:Int, y:Int, stickRadius:Int, knobRadius:Int, flags:Int = VS_AXIS_XY)
 		Self.name = name
@@ -240,6 +240,7 @@ Type TVirtualJoystick
 	
 	Rem
 	bbdoc: Adds a button at the specified location.
+	returns: The button id.
 	End Rem
 	Method AddButton:Int(x:Int, y:Int, radius:Int)
 		Local id:Int = buttons.length
@@ -329,24 +330,41 @@ Type TVirtualJoystick
 		End Select
 	End Method
 	
+	Rem
+	bbdoc: Reports the horizontal position of the joystick.
+	returns: Zero if the joystick is centered, -1 if Left, 1 if Right or a value in between.
+	End Rem
 	Method GetX:Float()
 		If flags & VS_AXIS_X Then
 			Return Float(xPos - centerX) / radius
 		End If
 	End Method
 	
+	Rem
+	bbdoc: Reports the vertical position of the joystick.
+	returns: Zero if the joystick is centered, -1.0 if Up, 1.0 if Down or a value in between.
+	End Rem
 	Method GetY:Float()
 		If flags & VS_AXIS_Y Then
 			Return Float(yPos - centerY) / radius
 		End If
 	End Method
 	
+	Rem
+	bbdoc: Test the status of a joystick button.
+	returns: #True if the button is pressed.
+	End Rem
 	Method ButtonDown:Int(button:Int)
 		If button < buttons.length Then
 			Return buttons[button].down
 		End If
 	End Method
 	
+	Rem
+	bbdoc: Checks for a joystick button press.
+	returns: Number of times @button has been hit.
+	about: The returned value represents the number of the times @button has been hit since the last call to #ButtonHit with the same specified @button.
+	End Rem
 	Method ButtonHit:Int(button:Int)
 		If button < buttons.length Then
 			Return buttons[button].Hit()

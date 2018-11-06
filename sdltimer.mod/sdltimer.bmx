@@ -86,12 +86,23 @@ End Function
 
 Public
 
+Rem
+bbdoc: An SDL implementation of a #TTimer.
+End Rem
 Type TSDLTimer Extends TTimer
 
+	Rem
+	bbdoc: Gets timer tick counter.
+	returns: The number of times the timer has ticked over
+	End Rem
 	Method Ticks:Int()
 		Return _ticks
 	End Method
 	
+	Rem
+	bbdoc: Stops the timer
+	about: Once stopped, the timer can no longer be used.
+	End Rem
 	Method Stop()
 		If Not _handle Return
 		bmx_sdl_timer_stop _handle,Self
@@ -109,6 +120,10 @@ Type TSDLTimer Extends TTimer
 		EndIf
 	End Method
 
+	Rem
+	bbdoc: Waits until the timer ticks.
+	returns: The number of ticks since the last call to #Wait.
+	End Rem
 	Method Wait:Int()
 		If Not _handle Return 0
 		Local n:Int
