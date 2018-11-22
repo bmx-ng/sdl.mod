@@ -30,6 +30,8 @@ Import "source.bmx"
 ?ios
 Import "source.bmx"
 ?osx
+Import "-framework AudioToolbox"
+Import "-framework Metal"
 Import "source.bmx"
 ?linux
 Import "source.bmx"

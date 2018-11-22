@@ -33,6 +33,8 @@ int sdl_sdl__sdl_rwops_close(BBObject *);
 
 /* ----------------------------------------------------- */
 
+void bmx_SDL_FreeRW_stream(struct SDL_RWops * ops);
+
 BBString * bmx_SDL_GetError() {
 	return bbStringFromUTF8String(SDL_GetError());
 }
@@ -51,7 +53,7 @@ size_t bmx_SDL_RWops_write(struct SDL_RWops * context, const void *ptr, size_t s
 }
 
 int bmx_SDL_RWops_close(struct SDL_RWops *context) {
-	sdl_sdl__sdl_rwops_close(context->hidden.unknown.data1);
+	sdl_sdl__sdl_rwops_close((BBObject * )context->hidden.unknown.data1);
 	bmx_SDL_FreeRW_stream(context);
 	return 0;
 }
@@ -74,7 +76,7 @@ SDL_RWops * bmx_SDL_AllocRW_stream(BBObject * stream) {
 	return ops;
 }
 
-void bmx_SDL_FreeRW_stream(SDL_RWops * ops) {
+void bmx_SDL_FreeRW_stream(struct SDL_RWops * ops) {
 	if (ops) {
 		BBRELEASE(ops->hidden.unknown.data1);
 		
@@ -86,27 +88,27 @@ BBString * bmx_SDL_GetPlatform() {
 	return bbStringFromUTF8String(SDL_GetPlatform());
 }
 
-BBLONG bmx_SDL_RWsize(SDL_RWops* context) {
+BBLONG bmx_SDL_RWsize(struct SDL_RWops* context) {
 	return SDL_RWsize(context);
 }
 
-BBLONG bmx_SDL_RWseek(SDL_RWops* context, BBLONG offset, int whence) {
+BBLONG bmx_SDL_RWseek(struct SDL_RWops* context, BBLONG offset, int whence) {
 	return SDL_RWseek(context, offset, whence);
 }
 
-BBLONG bmx_SDL_RWtell(SDL_RWops* context) {
+BBLONG bmx_SDL_RWtell(struct SDL_RWops* context) {
 	return SDL_RWtell(context);
 }
 
-BBLONG bmx_SDL_RWread(SDL_RWops* context, void * ptr, BBLONG size, BBLONG maxnum) {
+BBLONG bmx_SDL_RWread(struct SDL_RWops* context, void * ptr, BBLONG size, BBLONG maxnum) {
 	return SDL_RWread(context, ptr, size, maxnum);
 }
 
-BBLONG bmx_SDL_RWwrite(SDL_RWops* context, const void* ptr, BBLONG size, BBLONG num) {
+BBLONG bmx_SDL_RWwrite(struct SDL_RWops* context, const void* ptr, BBLONG size, BBLONG num) {
 	return SDL_RWwrite(context, ptr, size, num);
 }
 
-int bmx_SDL_RWclose(SDL_RWops* context) {
+int bmx_SDL_RWclose(struct SDL_RWops* context) {
 	return SDL_RWclose(context);
 }
 
