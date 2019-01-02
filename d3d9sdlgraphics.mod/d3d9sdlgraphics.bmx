@@ -121,6 +121,7 @@ End Function
 Function ResetD3DDevice()
 	If _d3dOccQuery
 		_d3dOccQuery.Release_
+		_d3dOccQuery = Null
 	Else
 		'_d3dOccQuery = New IDirect3DQuery9
 	End If

@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2014-2018 Bruce A Henderson
+ Copyright (c) 2014-2019 Bruce A Henderson
 
  This software is provided 'as-is', without any express or implied
  warranty. In no event will the authors be held liable for any damages
@@ -21,6 +21,7 @@
     distribution.
 */
 #include "SDL_video.h"
+#include "SDL_syswm.h"
 
 #include "brl.mod/blitz.mod/blitz.h"
 
@@ -167,6 +168,40 @@ void bmx_sdl_video_SetWindowTitle(SDL_Window * window, BBString * title) {
 	char * t = bbStringToUTF8String(title);
 	SDL_SetWindowTitle(window, t);
 	bbMemFree(t);
+}
+
+void * bmx_sdl_video_GetWindowHandle(SDL_Window * window) {
+	struct SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	if (SDL_GetWindowWMInfo(window, &info)) {
+		switch (info.subsystem) {
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
+			case SDL_SYSWM_WINDOWS:
+				return info.info.win.window;
+#endif
+#ifdef SDL_VIDEO_DRIVER_X11
+			case SDL_SYSWM_X11:
+				return info.info.x11.window;
+#endif
+#ifdef SDL_VIDEO_DRIVER_DIRECTFB
+			case SDL_SYSWM_DIRECTFB:
+				return info.info.dfb.window;
+#endif
+#ifdef SDL_VIDEO_DRIVER_COCOA
+			case SDL_SYSWM_COCOA:
+				return info.info.cocoa.window;
+#endif
+#ifdef SDL_VIDEO_DRIVER_UIKIT
+			case SDL_SYSWM_UIKIT:
+				return info.info.uikit.window;
+#endif
+#ifdef SDL_VIDEO_DRIVER_ANDROID
+			case SDL_SYSWM_ANDROID:
+				return info.info.android.window;
+#endif
+		}
+	}
+	return NULL;
 }
 
 // --------------------------------------------------------

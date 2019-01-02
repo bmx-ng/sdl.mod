@@ -25,6 +25,7 @@
 #include "SDL_endian.h"
 #include "SDL_hints.h"
 #include "SDL_log.h"
+#include "SDL_mutex.h"
 #include "SDL_thread.h"
 #include "SDL_timer.h"
 #include "SDL_joystick.h"
@@ -54,6 +55,7 @@ struct joystick_hwdata
     SDL_HIDAPI_DeviceDriver *driver;
     void *context;
 
+    SDL_mutex *mutex;
     hid_device *dev;
 };
 
@@ -306,6 +308,7 @@ HIDAPI_UpdateDiscovery()
     }
 
 #if defined(__WIN32__)
+#if 0 /* just let the usual SDL_PumpEvents loop dispatch these, fixing bug 4286. --ryan. */
     /* We'll only get messages on the same thread that created the window */
     if (SDL_ThreadID() == SDL_HIDAPI_discovery.m_nThreadID) {
         MSG msg;
@@ -317,6 +320,7 @@ HIDAPI_UpdateDiscovery()
         }
     }
 #endif
+#endif /* __WIN32__ */
 
 #if defined(__MACOSX__)
     if (SDL_HIDAPI_discovery.m_notificationPort) {
@@ -930,6 +934,12 @@ HIDAPI_JoystickGetDeviceName(int device_index)
     return HIDAPI_GetJoystickByIndex(device_index)->name;
 }
 
+static int
+HIDAPI_JoystickGetDevicePlayerIndex(int device_index)
+{
+    return -1;
+}
+
 static SDL_JoystickGUID
 HIDAPI_JoystickGetDeviceGUID(int device_index)
 {
@@ -959,6 +969,7 @@ HIDAPI_JoystickOpen(SDL_Joystick * joystick, int device_index)
         SDL_free(hwdata);
         return SDL_SetError("Couldn't open HID device %s", device->path);
     }
+    hwdata->mutex = SDL_CreateMutex();
 
     if (!device->driver->Init(joystick, hwdata->dev, device->vendor_id, device->product_id, &hwdata->context)) {
         hid_close(hwdata->dev);
@@ -975,7 +986,12 @@ HIDAPI_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
     SDL_HIDAPI_DeviceDriver *driver = hwdata->driver;
-    return driver->Rumble(joystick, hwdata->dev, hwdata->context, low_frequency_rumble, high_frequency_rumble, duration_ms);
+    int result;
+
+    SDL_LockMutex(hwdata->mutex);
+    result = driver->Rumble(joystick, hwdata->dev, hwdata->context, low_frequency_rumble, high_frequency_rumble, duration_ms);
+    SDL_UnlockMutex(hwdata->mutex);
+    return result;
 }
 
 static void
@@ -983,7 +999,13 @@ HIDAPI_JoystickUpdate(SDL_Joystick * joystick)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
     SDL_HIDAPI_DeviceDriver *driver = hwdata->driver;
-    if (!driver->Update(joystick, hwdata->dev, hwdata->context)) {
+    SDL_bool succeeded;
+
+    SDL_LockMutex(hwdata->mutex);
+    succeeded = driver->Update(joystick, hwdata->dev, hwdata->context);
+    SDL_UnlockMutex(hwdata->mutex);
+    
+    if (!succeeded) {
         SDL_HIDAPI_Device *device;
         for (device = SDL_HIDAPI_devices; device; device = device->next) {
             if (device->instance_id == joystick->instance_id) {
@@ -1002,6 +1024,7 @@ HIDAPI_JoystickClose(SDL_Joystick * joystick)
     driver->Quit(joystick, hwdata->dev, hwdata->context);
 
     hid_close(hwdata->dev);
+    SDL_DestroyMutex(hwdata->mutex);
     SDL_free(hwdata);
     joystick->hwdata = NULL;
 }
@@ -1033,6 +1056,7 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver =
     HIDAPI_JoystickGetCount,
     HIDAPI_JoystickDetect,
     HIDAPI_JoystickGetDeviceName,
+    HIDAPI_JoystickGetDevicePlayerIndex,
     HIDAPI_JoystickGetDeviceGUID,
     HIDAPI_JoystickGetDeviceInstanceID,
     HIDAPI_JoystickOpen,

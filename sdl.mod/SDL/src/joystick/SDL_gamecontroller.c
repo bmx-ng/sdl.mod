@@ -111,7 +111,6 @@ struct _SDL_GameController
     SDL_Joystick *joystick; /* underlying joystick device */
     int ref_count;
 
-    SDL_JoystickGUID guid;
     const char *name;
     int num_bindings;
     SDL_ExtendedGameControllerBind *bindings;
@@ -203,13 +202,14 @@ static void UpdateEventsForDeviceRemoval()
 {
     int i, num_events;
     SDL_Event *events;
+    SDL_bool isstack;
 
     num_events = SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, SDL_CONTROLLERDEVICEADDED, SDL_CONTROLLERDEVICEADDED);
     if (num_events <= 0) {
         return;
     }
 
-    events = SDL_stack_alloc(SDL_Event, num_events);
+    events = SDL_small_alloc(SDL_Event, num_events, &isstack);
     if (!events) {
         return;
     }
@@ -220,7 +220,7 @@ static void UpdateEventsForDeviceRemoval()
     }
     SDL_PeepEvents(events, num_events, SDL_ADDEVENT, 0, 0);
 
-    SDL_stack_free(events);
+    SDL_small_free(events, isstack);
 }
 
 static SDL_bool HasSameOutput(SDL_ExtendedGameControllerBind *a, SDL_ExtendedGameControllerBind *b)
@@ -683,11 +683,10 @@ SDL_PrivateGameControllerParseControllerConfigString(SDL_GameController *gamecon
 /*
  * Make a new button mapping struct
  */
-static void SDL_PrivateLoadButtonMapping(SDL_GameController *gamecontroller, SDL_JoystickGUID guid, const char *pchName, const char *pchMapping)
+static void SDL_PrivateLoadButtonMapping(SDL_GameController *gamecontroller, const char *pchName, const char *pchMapping)
 {
     int i;
 
-    gamecontroller->guid = guid;
     gamecontroller->name = pchName;
     gamecontroller->num_bindings = 0;
     SDL_memset(gamecontroller->last_match_axis, 0, gamecontroller->joystick->naxes * sizeof(*gamecontroller->last_match_axis));
@@ -801,14 +800,16 @@ static void SDL_PrivateGameControllerRefreshMapping(ControllerMapping_t *pContro
 {
     SDL_GameController *gamecontrollerlist = SDL_gamecontrollers;
     while (gamecontrollerlist) {
-        if (!SDL_memcmp(&gamecontrollerlist->guid, &pControllerMapping->guid, sizeof(pControllerMapping->guid))) {
-            SDL_Event event;
-            event.type = SDL_CONTROLLERDEVICEREMAPPED;
-            event.cdevice.which = gamecontrollerlist->joystick->instance_id;
-            SDL_PushEvent(&event);
-
+        if (!SDL_memcmp(&gamecontrollerlist->joystick->guid, &pControllerMapping->guid, sizeof(pControllerMapping->guid))) {
             /* Not really threadsafe.  Should this lock access within SDL_GameControllerEventWatcher? */
-            SDL_PrivateLoadButtonMapping(gamecontrollerlist, pControllerMapping->guid, pControllerMapping->name, pControllerMapping->mapping);
+            SDL_PrivateLoadButtonMapping(gamecontrollerlist, pControllerMapping->name, pControllerMapping->mapping);
+
+            {
+                SDL_Event event;
+                event.type = SDL_CONTROLLERDEVICEREMAPPED;
+                event.cdevice.which = gamecontrollerlist->joystick->instance_id;
+                SDL_PushEvent(&event);
+            }
         }
 
         gamecontrollerlist = gamecontrollerlist->next;
@@ -1273,7 +1274,7 @@ SDL_GameControllerMapping(SDL_GameController * gamecontroller)
         return NULL;
     }
 
-    return SDL_GameControllerMappingForGUID(gamecontroller->guid);
+    return SDL_GameControllerMappingForGUID(gamecontroller->joystick->guid);
 }
 
 static void
@@ -1307,15 +1308,17 @@ SDL_GameControllerLoadHints()
 
 /*
  * Fill the given buffer with the expected controller mapping filepath. 
- * Usually this will just be CONTROLLER_MAPPING_FILE, but for Android,
- * we want to get the internal storage path.
+ * Usually this will just be SDL_HINT_GAMECONTROLLERCONFIG_FILE, but for
+ * Android, we want to get the internal storage path.
  */
 static SDL_bool SDL_GetControllerMappingFilePath(char *path, size_t size)
 {
-#ifdef CONTROLLER_MAPPING_FILE
-#define STRING(X) SDL_STRINGIFY_ARG(X)
-    return SDL_strlcpy(path, STRING(CONTROLLER_MAPPING_FILE), size) < size;
-#elif defined(__ANDROID__)
+    const char *hint = SDL_GetHint(SDL_HINT_GAMECONTROLLERCONFIG_FILE);
+    if (hint && *hint) {
+        return SDL_strlcpy(path, hint, size) < size;
+    }
+
+#if defined(__ANDROID__)
     return SDL_snprintf(path, size, "%s/controller_map.txt", SDL_AndroidGetInternalStoragePath()) < size;
 #else
     return SDL_FALSE;
@@ -1465,6 +1468,13 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
     Uint16 version;
     Uint32 vidpid;
 
+#if defined(__LINUX__)
+    if (name && SDL_strstr(name, "Wireless Controller Motion Sensors")) {
+        /* Don't treat the PS4 motion controls as a separate game controller */
+        return SDL_TRUE;
+    }
+#endif
+
     if (SDL_allowed_controllers.num_entries == 0 &&
         SDL_ignored_controllers.num_entries == 0) {
         return SDL_FALSE;
@@ -1582,7 +1592,7 @@ SDL_GameControllerOpen(int device_index)
         }
     }
 
-    SDL_PrivateLoadButtonMapping(gamecontroller, pSupportedController->guid, pSupportedController->name, pSupportedController->mapping);
+    SDL_PrivateLoadButtonMapping(gamecontroller, pSupportedController->name, pSupportedController->mapping);
 
     /* Add the controller to list */
     ++gamecontroller->ref_count;
@@ -1714,6 +1724,12 @@ SDL_GameControllerName(SDL_GameController * gamecontroller)
     } else {
         return gamecontroller->name;
     }
+}
+
+int
+SDL_GameControllerGetPlayerIndex(SDL_GameController *gamecontroller)
+{
+    return SDL_JoystickGetPlayerIndex(SDL_GameControllerGetJoystick(gamecontroller));
 }
 
 Uint16

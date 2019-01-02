@@ -1,4 +1,4 @@
-' Copyright (c) 2014-2018 Bruce A Henderson
+' Copyright (c) 2014-2019 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -312,7 +312,7 @@ Type TSDLWindow
 	End Method
 	
 	Rem
-	bbdoc: Gets the brightness (gamma multiplier) for the display that owns the window.
+	bbdoc: Gets the brightness (Gamma multiplier) For the display that owns the window.
 	returns: The brightness for the display where 0.0 is completely dark and 1.0 is normal brightness.
 	about: Despite the name and signature, this method sets the brightness of the entire display, not an individual window.
 	A window is considered to be owned by the display that contains the window's center pixel. (The index of this display can be
@@ -432,7 +432,14 @@ Type TSDLWindow
 	Method GLSwap()
 		SDL_GL_SwapWindow(windowPtr)
 	End Method
-		
+	
+	Rem
+	bbdoc: 
+	End Rem
+	Method GetWindowHandle:Byte Ptr()
+		Return bmx_sdl_video_GetWindowHandle(windowPtr)
+	End Method
+	
 End Type
 
 Rem

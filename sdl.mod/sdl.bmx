@@ -1,4 +1,4 @@
-' Copyright (c) 2014-2018 Bruce A Henderson
+' Copyright (c) 2014-2019 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -405,3 +405,6 @@ End Rem
 Function SDLClearError()
 	SDL_ClearError()
 End Function
+
+' shutdown all the subsystems
+atexit_(SDL_Quit)

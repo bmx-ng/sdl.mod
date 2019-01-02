@@ -1,4 +1,4 @@
-' Copyright (c) 2014-2018 Bruce A Henderson
+' Copyright (c) 2014-2019 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -45,7 +45,7 @@ Global _currentContext:TGraphicsContext
 Public
 
 Type TGraphicsContext
-	Field mode:Int
+	Field Mode:Int
 	Field width:Int
 	Field height:Int
 	Field depth:Int
@@ -94,8 +94,7 @@ Type TSDLGraphics Extends TGraphics
 
 	Method GetHandle:Byte Ptr()
 		If _context Then
-			' FIXME
-			'Return bbSDLGraphicsGetHandle(_context)
+			Return _context.window.GetWindowHandle()
 		End If
 	End Method
 	
@@ -105,7 +104,7 @@ End Type
 
 Type TSDLGraphicsMode Extends TGraphicsMode
 ?raspberrypi
-	Field mode:Int
+	Field Mode:Int
 	Field group:Int
 ?
 End Type
@@ -132,7 +131,7 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 			t.depth=p[2]
 			t.hertz=p[3]
 ?raspberrypi
-			t.mode=p[4]
+			t.Mode=p[4]
 			t.group=p[5]
 ?
 			modes[i]=t

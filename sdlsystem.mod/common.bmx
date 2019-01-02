@@ -1,4 +1,4 @@
-' Copyright (c) 2014-2018 Bruce A Henderson
+' Copyright (c) 2014-2019 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -77,9 +77,9 @@ Extern
 
 	Function MouseState:Int(x:Int Ptr, y:Int Ptr)="SDL_GetMouseState"
 	
-	Function bmx_SDL_ShowSimpleMessageBox:Int(text:String, _appTitle:String, serious:Int)
-	Function bmx_SDL_ShowMessageBox_confirm:Int(text:String, _appTitle:String, serious:Int)
-	Function bmx_SDL_ShowMessageBox_proceed:Int(text:String, _appTitle:String, serious:Int)
+	Function bmx_SDL_ShowSimpleMessageBox:Int(Text:String, _appTitle:String, serious:Int)
+	Function bmx_SDL_ShowMessageBox_confirm:Int(Text:String, _appTitle:String, serious:Int)
+	Function bmx_SDL_ShowMessageBox_proceed:Int(Text:String, _appTitle:String, serious:Int)
 
 	Function bmx_SDL_SetEventFilter(driver:Object)
 	
