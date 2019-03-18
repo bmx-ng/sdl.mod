@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -392,9 +392,12 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
     }
 }
 
+static void
+display_remove_global(void *data, struct wl_registry *registry, uint32_t id) {}
+
 static const struct wl_registry_listener registry_listener = {
     display_handle_global,
-    NULL, /* global_remove */
+    display_remove_global
 };
 
 int

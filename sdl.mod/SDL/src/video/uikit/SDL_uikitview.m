@@ -1,6 +1,6 @@
  /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -81,6 +81,27 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
     return self;
 }
+
+- (void)layoutSubviews
+{
+	// Fix for touch ios.
+#if TARGET_OS_IOS
+	// on ios, a metal view gets added to our parent, and covers this for touch events.
+	// So set ourselves to user interact, and siblings false. johna
+	NSArray<UIView*>* subviews = [self.superview subviews];
+	for (int i=0; i<[subviews count]; i++)
+	{
+		UIView *view = [subviews objectAtIndex:i];
+		if (view == self) {
+			[view setUserInteractionEnabled:YES];  // set our user interaction to true.
+		} else {
+			[view setUserInteractionEnabled:NO];  // siblings to false.
+		}
+	}
+#endif
+    [super layoutSubviews];
+}
+
 
 - (void)setSDLWindow:(SDL_Window *)window
 {
