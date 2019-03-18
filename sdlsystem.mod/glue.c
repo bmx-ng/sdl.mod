@@ -97,19 +97,22 @@ void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 			}
 			// intentional fall-through...
 		case SDL_KEYUP:
-			data = mapkey(event->key.keysym.sym);
+			data = mapkey(event->key.keysym.sym ^ 0x40000000);
 			mods = mapmods(event->key.keysym.mod);
 
-			if (event->key.repeat) {
-				bbSDLSystemEmitEvent( BBEVENT_KEYREPEAT,source,data,mods,0,0,&bbNullObject );
+			// only generate for keys we support
+			if (data || i) {
+				if (event->key.repeat) {
+					bbSDLSystemEmitEvent( BBEVENT_KEYREPEAT,source,data,mods,0,0,&bbNullObject );
+					if (i) {
+						bbSDLSystemEmitEvent( BBEVENT_KEYCHAR,source,i,0,0,0,&bbNullObject );
+					}
+					return;
+				}
+				bbSDLSystemEmitEvent( (event->type == SDL_KEYDOWN) ? BBEVENT_KEYDOWN : BBEVENT_KEYUP,source,data,mods,0,0,&bbNullObject );
 				if (i) {
 					bbSDLSystemEmitEvent( BBEVENT_KEYCHAR,source,i,0,0,0,&bbNullObject );
 				}
-				return;
-			}
-			bbSDLSystemEmitEvent( (event->type == SDL_KEYDOWN) ? BBEVENT_KEYDOWN : BBEVENT_KEYUP,source,data,mods,0,0,&bbNullObject );
-			if (i) {
-				bbSDLSystemEmitEvent( BBEVENT_KEYCHAR,source,i,0,0,0,&bbNullObject );
 			}
 			return;
 			break;
@@ -409,8 +412,9 @@ int mapkey(SDL_Keycode keycode) {
 		case SDLK_SLASH:
 			return KEY_SLASH;
 	}
-	
-	return keycode;
+
+	// we don't have a mapping
+	return 0;
 }
 
 int mapmods(int keymods) {
