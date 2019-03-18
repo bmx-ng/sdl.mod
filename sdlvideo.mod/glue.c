@@ -34,7 +34,9 @@ BBArray * bmx_sdl_video_GetVideoDrivers() {
 	BBString **s=(BBString**)BBARRAYDATA( p,p->dims );
 	for( int i=0;i<n;++i ){
 		s[i] = bbStringFromUTF8String( SDL_GetVideoDriver(i) );
+#ifndef BMX_NG
 		BBRETAIN( s[i] );
+#endif
 	}
 	
 	return p;
