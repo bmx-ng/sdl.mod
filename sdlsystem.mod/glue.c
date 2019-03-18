@@ -97,7 +97,7 @@ void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 			}
 			// intentional fall-through...
 		case SDL_KEYUP:
-			data = mapkey(event->key.keysym.sym ^ 0x40000000);
+			data = mapkey(event->key.keysym.sym);
 			mods = mapmods(event->key.keysym.mod);
 
 			// only generate for keys we support
