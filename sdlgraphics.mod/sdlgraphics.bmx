@@ -207,9 +207,9 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 
 		context.window = TSDLWindow.Create(AppTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, windowFlags)
 		If glFlags Then
-			SDL_GL_SetSwapInterval(-1)
-
 			context.context = context.window.GLCreateContext()
+			SDL_GL_SetSwapInterval(-1)
+			context.sync = -1
 		End If
 
 		context.width = width
@@ -235,6 +235,11 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 	End Method
 
 	Method Flip( sync:Int )
+		'BRL  SDL
+		'-1   -1   sdl: adaptive vsync, brl: "use graphics object's refresh rate"
+		' 1    1   vsync
+		' 0    0   sdl: immediate, brl: "as soon as possible"
+
 		'bbSDLGraphicsFlip sync
 		If Not _currentContext Then
 			Return
