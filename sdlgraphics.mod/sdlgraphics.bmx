@@ -52,7 +52,7 @@ Type TGraphicsContext
 	Field hertz:Int
 	Field flags:Int
 	Field sync:Int
-	
+
 	Field window:TSDLWindow
 	Field context:TSDLGLContext
 	Field info:Byte Ptr
@@ -65,7 +65,7 @@ Type TSDLGraphics Extends TGraphics
 		Assert _context
 		Return SDLGraphicsDriver()
 	End Method
-	
+
 	Method GetSettings( width:Int Var,height:Int Var,depth:Int Var,hertz:Int Var,flags:Int Var )
 		Assert _context
 		'Local w:Int,h:Int,d:Int,r:Int,f:Int
@@ -76,7 +76,7 @@ Type TSDLGraphics Extends TGraphics
 		hertz=_context.hertz
 		flags=_context.flags
 	End Method
-	
+
 	Method Close()
 		If Not _context Return
 		'bbSDLGraphicsClose( _context )
@@ -97,9 +97,9 @@ Type TSDLGraphics Extends TGraphics
 			Return _context.window.GetWindowHandle()
 		End If
 	End Method
-	
+
 	Field _context:TGraphicsContext
-	
+
 End Type
 
 Type TSDLGraphicsMode Extends TGraphicsMode
@@ -141,34 +141,34 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 		Next
 		Return modes
 	End Method
-	
+
 	Method AttachGraphics:TSDLGraphics( widget:Byte Ptr,flags:Int )
 		Local t:TSDLGraphics=New TSDLGraphics
 		't._context=bbGLGraphicsAttachGraphics( widget,flags )
 		Return t
 	End Method
-	
+
 	Method CreateGraphics:TSDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Int )
 		Local t:TSDLGraphics=New TSDLGraphics
 		t._context=SDLGraphicsCreateGraphics( width,height,depth,hertz,flags )
 		Return t
 	End Method
-	
+
 	Method SDLGraphicsCreateGraphics:TGraphicsContext(width:Int,height:Int,depth:Int,hertz:Int,flags:Int)
 		Local context:TGraphicsContext = New TGraphicsContext
 
 		Local windowFlags:UInt = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL
 		Local gFlags:UInt
 		Local glFlags:UInt = flags & SDL_GRAPHICS_GL
-		
+
 		If flags & SDL_GRAPHICS_NATIVE Then
-		
+
 			flags :~ SDL_GRAPHICS_NATIVE
-			
+
 			gFlags = flags & (SDL_GRAPHICS_BACKBUFFER | SDL_GRAPHICS_ALPHABUFFER | SDL_GRAPHICS_DEPTHBUFFER | SDL_GRAPHICS_STENCILBUFFER | SDL_GRAPHICS_ACCUMBUFFER)
-			
+
 			flags :~ SDL_GRAPHICS_GL
-			
+
 			flags :~ (SDL_GRAPHICS_BACKBUFFER | SDL_GRAPHICS_ALPHABUFFER | SDL_GRAPHICS_DEPTHBUFFER | SDL_GRAPHICS_STENCILBUFFER | SDL_GRAPHICS_ACCUMBUFFER)
 
 			windowFlags :| flags
@@ -201,28 +201,28 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 				If gFlags & GRAPHICS_STENCILBUFFER Then SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1)
 			End If
 		End If
-		
+
 
 		'End If
-		
+
 		context.window = TSDLWindow.Create(AppTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, windowFlags)
 		If glFlags Then
-			SDL_GL_SetSwapInterval(-1)
-		
 			context.context = context.window.GLCreateContext()
+			SDL_GL_SetSwapInterval(-1)
+			context.sync = -1
 		End If
-		
+
 		context.width = width
 		context.height = height
 		context.depth = depth
 		context.hertz = hertz
 		context.flags = flags
-		
+
 		AddHook EmitEventHook,GraphicsHook,context,0
-		
+
 		Return context
 	End Method
-	
+
 	Method SetGraphics( g:TGraphics )
 		Local context:TGraphicsContext
 		Local t:TSDLGraphics=TSDLGraphics( g )
@@ -233,25 +233,30 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 		End If
 		_currentContext = context
 	End Method
-	
+
 	Method Flip( sync:Int )
+		'BRL  SDL
+		'-1   -1   sdl: adaptive vsync, brl: "use graphics object's refresh rate"
+		' 1    1   vsync
+		' 0    0   sdl: immediate, brl: "as soon as possible"
+
 		'bbSDLGraphicsFlip sync
 		If Not _currentContext Then
 			Return
 		End If
-		
+
 		If sync <> _currentContext.sync Then
 			_currentContext.sync = sync
 			If _currentContext.context Then
 				_currentContext.context.SetSwapInterval(sync)
 			End If
 		End If
-		
+
 		If _currentContext.context Then
 			_currentContext.window.GLSwap()
 		End If
 	End Method
-	
+
 	Function GraphicsHook:Object( id,data:Object,context:Object )
 		Local ev:TEvent=TEvent(data)
 		If Not ev Return data
@@ -267,7 +272,7 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 					End If
 				End If
 		End Select
-		
+
 		Return data
 	End Function
 
