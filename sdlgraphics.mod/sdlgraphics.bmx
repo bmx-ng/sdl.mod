@@ -98,6 +98,9 @@ Type TSDLGraphics Extends TGraphics
 		End If
 	End Method
 
+	Method Resize(width:Int, height:Int) Override
+	End Method
+
 	Field _context:TGraphicsContext
 
 End Type

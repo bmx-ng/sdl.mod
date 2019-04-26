@@ -282,6 +282,9 @@ Type TD3D9SDLGraphics Extends TGraphics
 		Next
 	End Method
 
+	Method Resize(width:Int, height:Int)
+		_g.Resize(width, height)
+	End Method
 	
 	Field _hwnd:Byte Ptr
 	
