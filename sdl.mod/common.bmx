@@ -51,6 +51,7 @@ Extern
 
 	Function bmx_SDL_GetError:String()
 	Function SDL_ClearError()
+	Function SDL_free(handle:Byte Ptr)
 
 	Function bmx_SDL_AllocRW_stream:Byte Ptr(stream:TStream)
 	
