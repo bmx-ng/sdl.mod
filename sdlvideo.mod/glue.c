@@ -25,6 +25,10 @@
 
 #include "brl.mod/blitz.mod/blitz.h"
 
+#ifdef _WIN32
+static SDL_Surface * _appIcon = 0;
+#endif
+
 BBArray * bmx_sdl_video_GetVideoDrivers() {
 
 	int n = SDL_GetNumVideoDrivers();
@@ -153,10 +157,95 @@ SDL_DisplayMode * bmx_sdl_video_GetClosestDisplayMode(SDL_DisplayMode * mode, in
 
 // --------------------------------------------------------
 
+#ifdef _WIN32
+void bmx_sdl_video_MakeAppIcon() {
+
+	HICON icon = bbAppIcon(GetModuleHandle(0));
+	if (icon == NULL) {
+		return;
+	}
+	
+	ICONINFO iconInfo;
+	if (!GetIconInfo(icon, &iconInfo)) {
+		return;
+	}
+	
+	if (!iconInfo.hbmColor) {
+		return;
+	}
+	
+	BITMAP bitmap;
+	if (!GetObject(iconInfo.hbmColor, sizeof(BITMAP), &bitmap)) {
+		return;
+	}
+	
+	HBITMAP hbitmap = (HBITMAP)CopyImage(iconInfo.hbmColor, IMAGE_BITMAP, bitmap.bmWidth, bitmap.bmHeight, LR_CREATEDIBSECTION);
+	if (!GetObject(hbitmap, sizeof(BITMAP), &bitmap)) {
+		DeleteObject(hbitmap);
+		return;
+	}
+	
+	if (bitmap.bmBitsPixel != 32) {
+		DeleteObject(hbitmap);
+		return;
+	}
+	
+	if (bitmap.bmBits == NULL) {
+		DeleteObject(hbitmap);
+		return;
+	}
+	
+    int rmask = 0x00FF0000;
+    int gmask = 0x0000FF00;
+    int bmask = 0x000000FF;
+    int amask = 0xFF000000;
+
+	_appIcon = SDL_CreateRGBSurface(SDL_SWSURFACE, bitmap.bmWidth, bitmap.bmHeight, bitmap.bmBitsPixel, rmask, gmask, bmask, amask);
+	if (_appIcon == NULL) {
+		DeleteObject(hbitmap);
+		return ;
+	}
+	
+	// the bitmap is inverted, so we need to 
+	if (SDL_MUSTLOCK(_appIcon)) {
+		SDL_LockSurface(_appIcon);
+	}
+	
+	int width = bitmap.bmWidthBytes;
+	BYTE * dst = _appIcon->pixels;
+	BYTE * src = (BYTE*)bitmap.bmBits;
+	for (int i = 0; i < bitmap.bmHeight; i++) {
+		memcpy(dst + i * width, src + (bitmap.bmHeight - i - 1) * width, width);
+	}
+	if (SDL_MUSTLOCK(_appIcon)) {
+		SDL_UnlockSurface(_appIcon);
+	}
+	
+	DeleteObject(hbitmap);
+}
+
+void bmx_sdl_video_SetAppIcon(SDL_Window * window) {
+	if (_appIcon == NULL) {
+		bmx_sdl_video_MakeAppIcon();
+	}
+
+	if (_appIcon != NULL) {
+		SDL_SetWindowIcon(window, _appIcon);
+	}
+}
+#endif
+
 SDL_Window * bmx_sdl_video_CreateWindow(BBString * title, int x, int y, int w, int h, Uint32 flags) {
 	char * t = bbStringToUTF8String(title);
 	SDL_Window * window = SDL_CreateWindow(t, x, y, w, h, flags);
 	bbMemFree(t);
+	
+	#ifdef _WIN32
+	if (window != NULL) {
+		bmx_sdl_video_SetAppIcon(window);
+	}
+	#endif
+	
 	return window;
 }
 
