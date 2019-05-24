@@ -110,10 +110,10 @@ Type TSDLWindow
 	End Method
 	
 	Rem
-	bbdoc: 
+	bbdoc: Sets the icon for the window.
 	End Rem
 	Method SetIcon(icon:TSDLSurface)
-		' TODO
+		SDL_SetWindowIcon(windowPtr, icon.surfacePtr)
 	End Method
 	
 	Rem

@@ -22,7 +22,7 @@
 SuperStrict
 
 Rem
-bbdoc: 
+bbdoc: SDL Surface
 End Rem
 Module SDL.SDLSurface
 

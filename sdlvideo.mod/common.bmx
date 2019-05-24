@@ -120,6 +120,7 @@ Extern
 	Function SDL_GetWindowGammaRamp:Int(handle:Byte Ptr, red:Short Ptr, green:Short Ptr, blue:Short Ptr)
 	Function SDL_DestroyWindow(handle:Byte Ptr)
 	Function SDL_RestoreWindow(handle:Byte Ptr)
+	Function SDL_SetWindowIcon(handle:Byte Ptr, surface:Byte Ptr)
 
 	Function SDL_GetGrabbedWindow:Byte Ptr()
 	Function SDL_IsScreenSaverEnabled:Int()
