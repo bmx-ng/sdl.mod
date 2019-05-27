@@ -161,10 +161,10 @@ Type TD3D9SDLGraphics Extends TGraphics
 		Return Self
 	End Method
 	
-	Method Create:TD3D9SDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Int)
+	Method Create:TD3D9SDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Int,x:Int,y:Int)
 	
 		
-		_g = SDLGraphicsDriver().CreateGraphics( width, height, depth, hertz, flags | GRAPHICS_WIN32_DX )
+		_g = SDLGraphicsDriver().CreateGraphics( width, height, depth, hertz, flags | GRAPHICS_WIN32_DX, x, y )
 		
 		_hwnd = _g.GetHandle()
 		
@@ -250,11 +250,11 @@ Type TD3D9SDLGraphics Extends TGraphics
 		Return _driver
 	End Method
 	
-	Method GetSettings:Int( width:Int Var,height:Int Var,depth:Int Var,hertz:Int Var,flags:Int Var )
+	Method GetSettings:Int( width:Int Var,height:Int Var,depth:Int Var,hertz:Int Var,flags:Int Var,x:Int Var,y:Int Var )
 		'
 		ValidateSize
 		'
-		_g.GetSettings(width, height, depth, hertz, flags)
+		_g.GetSettings(width, height, depth, hertz, flags, x, y)
 	End Method
 
 	Method Close:Int()
@@ -284,6 +284,10 @@ Type TD3D9SDLGraphics Extends TGraphics
 
 	Method Resize(width:Int, height:Int)
 		_g.Resize(width, height)
+	End Method
+
+	Method Position(x:Int, y:Int)
+		_g.Position(x, y)
 	End Method
 	
 	Field _hwnd:Byte Ptr
@@ -359,8 +363,8 @@ Type TD3D9SDLGraphicsDriver Extends TGraphicsDriver
 		Return New TD3D9SDLGraphics.Attach( widget:Byte Ptr,flags:Int )
 	End Method
 	
-	Method CreateGraphics:TD3D9SDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Int)
-		Return New TD3D9SDLGraphics.Create( width,height,depth,hertz,flags )
+	Method CreateGraphics:TD3D9SDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Int,x:Int,y:Int)
+		Return New TD3D9SDLGraphics.Create( width,height,depth,hertz,flags,x,y )
 	End Method
 
 	Method Graphics:TD3D9SDLGraphics()

@@ -24,7 +24,7 @@ Const LOG_ERRS=True'False
 
 Private
 
-Global _gw,_gh,_gd,_gr,_gf
+Global _gw,_gh,_gd,_gr,_gf,_gx,_gy
 Global _color
 Global _clscolor
 Global _ix#,_iy#,_jx#,_jy#
@@ -265,8 +265,8 @@ Type TD3D9SDLMax2DDriver Extends TMax2dDriver
 		If g Return TMax2DGraphics.Create( g,Self )
 	End Method
 	
-	Method CreateGraphics:TGraphics( width,height,depth,hertz,flags )
-		Local g:TD3D9SDLGraphics=D3D9SDLGraphicsDriver().CreateGraphics( width,height,depth,hertz,flags )
+	Method CreateGraphics:TGraphics( width,height,depth,hertz,flags,x,y )
+		Local g:TD3D9SDLGraphics=D3D9SDLGraphicsDriver().CreateGraphics( width,height,depth,hertz,flags,x,y )
 		If Not g Return Null
 		Return TMax2DGraphics.Create( g,Self )
 	End Method
@@ -318,7 +318,7 @@ Type TD3D9SDLMax2DDriver Extends TMax2dDriver
 	
 	Method ResetDevice()
 		_d3d9graphics.ValidateSize
-		_d3d9graphics.GetSettings _gw,_gh,_gd,_gr,_gf
+		_d3d9graphics.GetSettings _gw,_gh,_gd,_gr,_gf,_gx,_gy
 	
 		Local viewport:D3DVIEWPORT9
 		viewport.X = 0

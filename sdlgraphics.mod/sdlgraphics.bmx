@@ -52,6 +52,8 @@ Type TGraphicsContext
 	Field hertz:Int
 	Field flags:Int
 	Field sync:Int
+	Field x:Int
+	Field y:Int
 
 	Field window:TSDLWindow
 	Field context:TSDLGLContext
@@ -66,7 +68,7 @@ Type TSDLGraphics Extends TGraphics
 		Return SDLGraphicsDriver()
 	End Method
 
-	Method GetSettings( width:Int Var,height:Int Var,depth:Int Var,hertz:Int Var,flags:Int Var )
+	Method GetSettings( width:Int Var,height:Int Var,depth:Int Var,hertz:Int Var,flags:Int Var,x:Int Var,y:Int Var )
 		Assert _context
 		'Local w:Int,h:Int,d:Int,r:Int,f:Int
 		'bbSDLGraphicsGetSettings _context,w,h,d,r,f
@@ -75,6 +77,8 @@ Type TSDLGraphics Extends TGraphics
 		depth=_context.depth
 		hertz=_context.hertz
 		flags=_context.flags
+		x=_context.x
+		y=_context.y
 	End Method
 
 	Method Close()
@@ -99,6 +103,9 @@ Type TSDLGraphics Extends TGraphics
 	End Method
 
 	Method Resize(width:Int, height:Int) Override
+	End Method
+	
+	Method Position(x:Int, y:Int) Override
 	End Method
 
 	Field _context:TGraphicsContext
@@ -151,13 +158,13 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 		Return t
 	End Method
 
-	Method CreateGraphics:TSDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Int )
+	Method CreateGraphics:TSDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Int,x:Int,y:Int )
 		Local t:TSDLGraphics=New TSDLGraphics
-		t._context=SDLGraphicsCreateGraphics( width,height,depth,hertz,flags )
+		t._context=SDLGraphicsCreateGraphics( width,height,depth,hertz,flags,x,y )
 		Return t
 	End Method
 
-	Method SDLGraphicsCreateGraphics:TGraphicsContext(width:Int,height:Int,depth:Int,hertz:Int,flags:Int)
+	Method SDLGraphicsCreateGraphics:TGraphicsContext(width:Int,height:Int,depth:Int,hertz:Int,flags:Int,x:Int,y:Int)
 		Local context:TGraphicsContext = New TGraphicsContext
 
 		Local windowFlags:UInt = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL
@@ -207,8 +214,14 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 
 
 		'End If
+		If x < 0 Then
+			x = SDL_WINDOWPOS_CENTERED
+		End If
+		If y < 0 Then
+			y = SDL_WINDOWPOS_CENTERED
+		End If
 
-		context.window = TSDLWindow.Create(AppTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, windowFlags)
+		context.window = TSDLWindow.Create(AppTitle, x, y, width, height, windowFlags)
 		If glFlags Then
 			context.context = context.window.GLCreateContext()
 			SDL_GL_SetSwapInterval(-1)
@@ -272,6 +285,15 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 						ctxt.width = ev.x
 						ctxt.height = ev.y
 						GraphicsResize(ev.x, ev.y)
+					End If
+				End If
+			Case EVENT_WINDOWMOVE
+				Local ctxt:TGraphicsContext = TGraphicsContext(context)
+				If ctxt Then
+					If ctxt.window.GetID() = ev.data Then
+						ctxt.x = ev.x
+						ctxt.y = ev.y
+						GraphicsPosition(ev.x, ev.y)
 					End If
 				End If
 		End Select

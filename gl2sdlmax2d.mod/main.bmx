@@ -733,9 +733,9 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	End Method
 	
-	Method CreateGraphics:TMax2DGraphics( width, height, depth, hertz, flags )
+	Method CreateGraphics:TMax2DGraphics( width, height, depth, hertz, flags, x, y )
 
-		Local g:TSDLGraphics = SDLGraphicsDriver().CreateGraphics( width, height, depth, hertz, flags | SDL_GRAPHICS_GL )
+		Local g:TSDLGraphics = SDLGraphicsDriver().CreateGraphics( width, height, depth, hertz, flags | SDL_GRAPHICS_GL, x, y )
 		
 		If g Then Return TMax2DGraphics.Create( g, Self )
 
@@ -767,8 +767,8 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 	
 	Method ResetGLContext( g:TGraphics )
 
-		Local gw, gh, gd, gr, gf
-		g.GetSettings( gw, gh, gd, gr, gf )
+		Local gw, gh, gd, gr, gf, gx, gy
+		g.GetSettings( gw, gh, gd, gr, gf, gx, gy )
 
 		If Not inited Then
 			Init()

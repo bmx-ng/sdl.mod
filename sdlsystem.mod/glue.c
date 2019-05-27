@@ -181,6 +181,9 @@ void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 				case SDL_WINDOWEVENT_RESIZED:
 					bbSDLSystemEmitEvent(BBEVENT_WINDOWSIZE, source, event->window.windowID, 0, event->window.data1, event->window.data2, &bbNullObject);
 					return;
+				case SDL_WINDOWEVENT_MOVED:
+					bbSDLSystemEmitEvent(BBEVENT_WINDOWMOVE, source, event->window.windowID, 0, event->window.data1, event->window.data2, &bbNullObject);
+					return;
 			}
 	}	
 	
