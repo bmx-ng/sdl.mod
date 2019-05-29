@@ -24,7 +24,13 @@ Depending on which platform you are targeting, you may be required to install ex
 
 As well as the usual packages required to build BlitzMax, the following developer packages are required for building the libSDL sources with SDL.mod :
 
+#### Debian (Ubuntu, Mint, etc)
+
 ```libasound2-dev libpulse-dev libaudio-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxxf86vm-dev libxss-dev libgl1-mesa-dev libesd0-dev libdbus-1-dev libudev-dev```
+
+#### Fedora
+
+```nas-devel dbus-devel libudev-devel libXScrnSaver-devel```
 
 Although these are required for compilation, the runtime requirements for specific audio libraries are optional.
 
