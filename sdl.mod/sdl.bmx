@@ -63,6 +63,7 @@ Import "include/linuxx86/*.h"
 ?linuxx64
 ModuleInfo "CC_OPTS: -mmmx -m3dnow -msse -msse2 -DHAVE_LINUX_VERSION_H"
 ModuleInfo "CC_OPTS: -I/usr/include/dbus-1.0 -I/usr/lib/x86_64-linux-gnu/dbus-1.0/include"
+ModuleInfo "CC_OPTS: -I/usr/lib64/dbus-1.0/include/dbus"
 
 Import "include/linuxx64/*.h"
 ?raspberrypi
