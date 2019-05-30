@@ -32,6 +32,10 @@ As well as the usual packages required to build BlitzMax, the following develope
 
 ```nas-devel dbus-devel libudev-devel libXScrnSaver-devel```
 
+#### openSUSE
+
+```libudev-devel libXss-devel```
+
 Although these are required for compilation, the runtime requirements for specific audio libraries are optional.
 
 ### Windows
