@@ -3,7 +3,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 endif()
 
 cmake_minimum_required(VERSION 2.8.11)
-project(SDL2 C)
+project(SDL2 C CXX)
 
 # !!! FIXME: this should probably do "MACOSX_RPATH ON" as a target property
 # !!! FIXME:  for the SDL2 shared library (so you get an
@@ -699,7 +699,7 @@ if(LIBC)
             _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull
             atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp
             vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp
-            nanosleep sysconf sysctlbyname getauxval poll
+            nanosleep sysconf sysctlbyname getauxval poll _Exit
             )
       string(TOUPPER ${_FN} _UPPER)
       set(_HAVEVAR "HAVE_${_UPPER}")
@@ -771,7 +771,7 @@ if(SDL_POWER)
   file(GLOB POWER_SOURCES ${SDL2_SOURCE_DIR}/src/power/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${POWER_SOURCES})
 endif()
-# TODO: in configure.in, the test for LOADSO and SDL_DLOPEN is a bit weird:
+# TODO: in configure.ac, the test for LOADSO and SDL_DLOPEN is a bit weird:
 # if LOADSO is not wanted, SDL_LOADSO_DISABLED is set
 # If however on Unix or APPLE dlopen() is detected via CheckDLOPEN(),
 # SDL_LOADSO_DISABLED will not be set, regardless of the LOADSO settings
@@ -913,6 +913,8 @@ if(ANDROID)
       message(STATUS "Vulkan doesn't work on this configuration")
     endif()
   endif()
+
+  file(GLOB ANDROID_HIDAPI_SOURCES ${SDL2_SOURCE_DIR}/src/hidapi/android/*.cpp)
 
   CheckPTHREAD()
 
@@ -1301,7 +1303,7 @@ elseif(WINDOWS)
   # Libraries for Win32 native and MinGW
   list(APPEND EXTRA_LIBS user32 gdi32 winmm imm32 ole32 oleaut32 version uuid advapi32 shell32)
 
-  # TODO: in configure.in the check for timers is set on
+  # TODO: in configure.ac the check for timers is set on
   # cygwin | mingw32* - does this include mingw32CE?
   if(SDL_TIMERS)
     set(SDL_TIMER_WINDOWS 1)
@@ -1569,7 +1571,7 @@ if(VIDEO_VULKAN)
 endif()
 
 # Dummies
-# configure.in does it differently:
+# configure.ac does it differently:
 # if not have X
 #   if enable_X {  SDL_X_DISABLED = 1 }
 #   [add dummy sources]
@@ -1776,6 +1778,17 @@ if(SDL_SHARED)
   endif()
 endif()
 
+if(ANDROID)
+  add_library(hidapi SHARED ${ANDROID_HIDAPI_SOURCES})
+  if(MSVC AND NOT LIBC)
+    # Don't try to link with the default set of libraries.
+    set_target_properties(hidapi PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
+    set_target_properties(hidapi PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
+    set_target_properties(hidapi PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
+  endif()
+  target_link_libraries(hidapi log)
+endif()
+
 if(SDL_STATIC)
   set (BUILD_SHARED_LIBS FALSE)
   add_library(SDL2-static STATIC ${SOURCE_FILES})
@@ -1868,8 +1881,8 @@ if(NOT (WINDOWS OR CYGWIN))
     if(NOT ANDROID)
         install(CODE "
           execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-            \"lib${SONAME}${SOPOSTFIX}${SOEXT}\" \"libSDL2${SOPOSTFIX}${SOEXT}\")"
-            WORKING_DIR "${SDL2_BINARY_DIR}")
+            \"lib${SONAME}${SOPOSTFIX}${SOEXT}\" \"libSDL2${SOPOSTFIX}${SOEXT}\"
+            WORKING_DIRECTORY \"${SDL2_BINARY_DIR}\")")
         install(FILES ${SDL2_BINARY_DIR}/libSDL2${SOPOSTFIX}${SOEXT} DESTINATION "lib${LIB_SUFFIX}")
     endif()
   endif()

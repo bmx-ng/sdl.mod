@@ -38,6 +38,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     private static final String TAG = "SDL";
 
     public static boolean mIsResumedCalled, mHasFocus;
+    public static final boolean mHasMultiWindow = (Build.VERSION.SDK_INT >= 24);
 
     // Cursor types
     private static final int SDL_SYSTEM_CURSOR_NONE = -1;
@@ -72,10 +73,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
     /** If shared libraries (e.g. SDL or the native application) could not be loaded. */
     public static boolean mBrokenLibraries;
-
-    // If we want to separate mouse and touch events.
-    //  This is only toggled in native code when a hint is set!
-    public static boolean mSeparateMouseAndTouch;
 
     // Main components
     protected static SDLActivity mSingleton;
@@ -140,6 +137,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      */
     protected String[] getLibraries() {
         return new String[] {
+            "hidapi",
             "SDL2",
             // "SDL2_image",
             // "SDL2_mixer",
@@ -277,16 +275,12 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
     }
 
-    // Events
-    @Override
-    protected void onPause() {
-        Log.v(TAG, "onPause()");
-        super.onPause();
+    protected void pauseNativeThread() {
         mNextNativeState = NativeState.PAUSED;
         mIsResumedCalled = false;
 
         if (SDLActivity.mBrokenLibraries) {
-           return;
+            return;
         }
 
         if (mHIDDeviceManager != null) {
@@ -296,10 +290,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         SDLActivity.handleNativeState();
     }
 
-    @Override
-    protected void onResume() {
-        Log.v(TAG, "onResume()");
-        super.onResume();
+    protected void resumeNativeThread() {
         mNextNativeState = NativeState.RESUMED;
         mIsResumedCalled = true;
 
@@ -312,6 +303,43 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
 
         SDLActivity.handleNativeState();
+    }
+
+    // Events
+    @Override
+    protected void onPause() {
+        Log.v(TAG, "onPause()");
+        super.onPause();
+        if (!mHasMultiWindow) {
+            pauseNativeThread();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        Log.v(TAG, "onResume()");
+        super.onResume();
+        if (!mHasMultiWindow) {
+            resumeNativeThread();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        Log.v(TAG, "onStop()");
+        super.onStop();
+        if (mHasMultiWindow) {
+            pauseNativeThread();
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        Log.v(TAG, "onStart()");
+        super.onStart();
+        if (mHasMultiWindow) {
+            resumeNativeThread();
+        }
     }
 
     public static int getCurrentOrientation() {
@@ -350,15 +378,21 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
            return;
         }
 
-        SDLActivity.mHasFocus = hasFocus;
+        mHasFocus = hasFocus;
         if (hasFocus) {
            mNextNativeState = NativeState.RESUMED;
            SDLActivity.getMotionListener().reclaimRelativeMouseModeIfNeeded();
-        } else {
-           mNextNativeState = NativeState.PAUSED;
-        }
 
-        SDLActivity.handleNativeState();
+           SDLActivity.handleNativeState();
+           nativeFocusChanged(true);
+
+        } else {
+           nativeFocusChanged(false);
+           if (!mHasMultiWindow) {
+               mNextNativeState = NativeState.PAUSED;
+               SDLActivity.handleNativeState();
+           }
+        }
     }
 
     @Override
@@ -617,7 +651,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             }
             case COMMAND_CHANGE_SURFACEVIEW_FORMAT:
             {
-                int format = ((int)msg.obj);
+                int format = (Integer) msg.obj;
                 int pf;
 
                 if (SDLActivity.mSurface == null) {
@@ -722,11 +756,13 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void nativeQuit();
     public static native void nativePause();
     public static native void nativeResume();
+    public static native void nativeFocusChanged(boolean hasFocus);
     public static native void onNativeDropFile(String filename);
     public static native void nativeSetScreenResolution(int surfaceWidth, int surfaceHeight, int deviceWidth, int deviceHeight, int format, float rate);
     public static native void onNativeResize();
     public static native void onNativeKeyDown(int keycode);
     public static native void onNativeKeyUp(int keycode);
+    public static native boolean onNativeSoftReturnKey();
     public static native void onNativeKeyboardFocusLost();
     public static native void onNativeMouse(int button, int action, float x, float y, boolean relative);
     public static native void onNativeTouch(int touchDevId, int pointerFingerId,
@@ -994,6 +1030,14 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             this.y = y;
             this.w = w;
             this.h = h;
+
+            /* Minimum size of 1 pixel, so it takes focus. */
+            if (this.w <= 0) {
+                this.w = 1;
+            }
+            if (this.h + HEIGHT_PADDING <= 0) {
+                this.h = 1 - HEIGHT_PADDING;
+            }
         }
 
         @Override
@@ -1772,8 +1816,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         // 12290 = Samsung DeX mode desktop mouse
         // 12290 = 0x3002 = 0x2002 | 0x1002 = SOURCE_MOUSE | SOURCE_TOUCHSCREEN
         // 0x2   = SOURCE_CLASS_POINTER
-        if ((event.getSource() == InputDevice.SOURCE_MOUSE || event.getSource() == (InputDevice.SOURCE_MOUSE | InputDevice.SOURCE_TOUCHSCREEN))
-                && SDLActivity.mSeparateMouseAndTouch) {
+        if (event.getSource() == InputDevice.SOURCE_MOUSE || event.getSource() == (InputDevice.SOURCE_MOUSE | InputDevice.SOURCE_TOUCHSCREEN)) {
             try {
                 mouseButton = (Integer) event.getClass().getMethod("getButtonState").invoke(event);
             } catch(Exception e) {
@@ -2045,14 +2088,8 @@ class SDLInputConnection extends BaseInputConnection {
          */
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-            String imeHide = SDLActivity.nativeGetHint("SDL_RETURN_KEY_HIDES_IME");
-            if ((imeHide != null) && imeHide.equals("1")) {
-                Context c = SDL.getContext();
-                if (c instanceof SDLActivity) {
-                    SDLActivity activity = (SDLActivity)c;
-                    activity.sendCommand(SDLActivity.COMMAND_TEXTEDIT_HIDE, null);
-                    return true;
-                }
+            if (SDLActivity.onNativeSoftReturnKey()) {
+                return true;
             }
         }
 
@@ -2065,6 +2102,11 @@ class SDLInputConnection extends BaseInputConnection {
 
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
+            if (c == '\n') {
+                if (SDLActivity.onNativeSoftReturnKey()) {
+                    return true;
+                }
+            }
             nativeGenerateScancodeForUnichar(c);
         }
 

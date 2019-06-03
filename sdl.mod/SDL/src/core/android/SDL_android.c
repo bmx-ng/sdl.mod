@@ -42,6 +42,7 @@
 #include "../../haptic/android/SDL_syshaptic_c.h"
 
 #include <android/log.h>
+#include <sys/system_properties.h>
 #include <pthread.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -97,6 +98,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeKeyUp)(
         JNIEnv *env, jclass jcls,
         jint keycode);
 
+JNIEXPORT jboolean JNICALL SDL_JAVA_INTERFACE(onNativeSoftReturnKey)(
+        JNIEnv *env, jclass jcls);
+
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeKeyboardFocusLost)(
         JNIEnv *env, jclass jcls);
 
@@ -130,6 +134,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePause)(
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeResume)(
         JNIEnv *env, jclass cls);
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeFocusChanged)(
+        JNIEnv *env, jclass cls, jboolean hasFocus);
 
 JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetHint)(
         JNIEnv *env, jclass cls,
@@ -279,9 +286,6 @@ static jmethodID midPollInputDevices;
 static jmethodID midPollHapticDevices;
 static jmethodID midHapticRun;
 static jmethodID midHapticStop;
-
-/* static fields */
-static jfieldID fidSeparateMouseAndTouch;
 
 /* Accelerometer data storage */
 static SDL_DisplayOrientation displayOrientation;
@@ -535,12 +539,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
        !midCreateCustomCursor || !midSetCustomCursor || !midSetSystemCursor || !midSupportsRelativeMouse || !midSetRelativeMouseEnabled ||
        !midIsChromebook || !midIsDeXMode || !midManualBackButton) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
-    }
-
-    fidSeparateMouseAndTouch = (*env)->GetStaticFieldID(env, mActivityClass, "mSeparateMouseAndTouch", "Z");
-
-    if (!fidSeparateMouseAndTouch) {
-        __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java static fields, do you have the latest version of SDLActivity.java?");
     }
 
     checkJNIReady();
@@ -926,6 +924,17 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeKeyUp)(
     Android_OnKeyUp(keycode);
 }
 
+/* Virtual keyboard return key might stop text input */
+JNIEXPORT jboolean JNICALL SDL_JAVA_INTERFACE(onNativeSoftReturnKey)(
+                                    JNIEnv *env, jclass jcls)
+{
+    if (SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, SDL_FALSE)) {
+        SDL_StopTextInput();
+        return JNI_TRUE;
+    }
+    return JNI_FALSE;
+}
+
 /* Keyboard Focus Lost */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeKeyboardFocusLost)(
                                     JNIEnv *env, jclass jcls)
@@ -1043,7 +1052,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePause)(
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativePause()");
 
     if (Android_Window) {
-        SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
         SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
         SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
@@ -1069,7 +1077,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeResume)(
     if (Android_Window) {
         SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
         SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
-        SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_RESTORED, 0, 0);
     }
 
@@ -1078,6 +1085,19 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeResume)(
      * and this function will be called from the Java thread instead.
      */
     SDL_SemPost(Android_ResumeSem);
+
+    SDL_UnlockMutex(Android_ActivityMutex);
+}
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeFocusChanged)(
+                                    JNIEnv *env, jclass cls, jboolean hasFocus)
+{
+    SDL_LockMutex(Android_ActivityMutex);
+
+    if (Android_Window) {
+        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeFocusChanged()");
+        SDL_SendWindowEvent(Android_Window, (hasFocus ? SDL_WINDOWEVENT_FOCUS_GAINED : SDL_WINDOWEVENT_FOCUS_LOST), 0, 0);
+    } 
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }
@@ -1122,7 +1142,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancod
     }
 }
 
-
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText)(
                                     JNIEnv *env, jclass cls,
                                     jstring text, jint newCursorPosition)
@@ -1165,7 +1184,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetenv)(
              Functions called by SDL into Java
 *******************************************************************************/
 
-static int s_active = 0;
+static SDL_atomic_t s_active;
 struct LocalReferenceHolder
 {
     JNIEnv *m_env;
@@ -1190,7 +1209,7 @@ static SDL_bool LocalReferenceHolder_Init(struct LocalReferenceHolder *refholder
         SDL_SetError("Failed to allocate enough JVM local references");
         return SDL_FALSE;
     }
-    ++s_active;
+    SDL_AtomicIncRef(&s_active);
     refholder->m_env = env;
     return SDL_TRUE;
 }
@@ -1203,8 +1222,13 @@ static void LocalReferenceHolder_Cleanup(struct LocalReferenceHolder *refholder)
     if (refholder->m_env) {
         JNIEnv *env = refholder->m_env;
         (*env)->PopLocalFrame(env, NULL);
-        --s_active;
+        SDL_AtomicDecRef(&s_active);
     }
+}
+
+static SDL_bool LocalReferenceHolder_IsActive(void)
+{
+    return (SDL_AtomicGet(&s_active) > 0);
 }
 
 ANativeWindow* Android_JNI_GetNativeWindow(void)
@@ -1610,7 +1634,7 @@ static SDL_bool Android_JNI_ExceptionOccurred(SDL_bool silent)
     jthrowable exception;
 
     /* Detect mismatch LocalReferenceHolder_Init/Cleanup */
-    SDL_assert((s_active > 0));
+    SDL_assert(LocalReferenceHolder_IsActive());
 
     exception = (*env)->ExceptionOccurred(env);
     if (exception != NULL) {
@@ -2206,13 +2230,6 @@ void Android_JNI_InitTouch() {
     (*env)->CallStaticVoidMethod(env, mActivityClass, midInitTouch);
 }
 
-/* sets the mSeparateMouseAndTouch field */
-void Android_JNI_SetSeparateMouseAndTouch(SDL_bool new_value)
-{
-    JNIEnv *env = Android_JNI_GetEnv();
-    (*env)->SetStaticBooleanField(env, mActivityClass, fidSeparateMouseAndTouch, new_value ? JNI_TRUE : JNI_FALSE);
-}
-
 void Android_JNI_PollInputDevices(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
@@ -2388,6 +2405,18 @@ void *SDL_AndroidGetActivity(void)
 
     /* return SDLActivity.getContext(); */
     return (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
+}
+
+int SDL_GetAndroidSDKVersion(void)
+{
+    static int sdk_version;
+    if (!sdk_version) {
+        char sdk[PROP_VALUE_MAX] = {0};
+        if (__system_property_get("ro.build.version.sdk", sdk) != 0) {
+            sdk_version = SDL_atoi(sdk);
+        }
+    }
+    return sdk_version;
 }
 
 SDL_bool SDL_IsAndroidTablet(void)

@@ -96,7 +96,6 @@ void Android_JNI_SuspendScreenSaver(SDL_bool suspend);
 
 /* Touch support */
 void Android_JNI_InitTouch(void);
-void Android_JNI_SetSeparateMouseAndTouch(SDL_bool new_value);
 
 /* Threads */
 #include <jni.h>
@@ -122,6 +121,8 @@ SDL_bool Android_JNI_SetSystemCursor(int cursorID);
 SDL_bool Android_JNI_SupportsRelativeMouse(void);
 SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled);
 
+
+int SDL_GetAndroidSDKVersion(void);
 
 SDL_bool SDL_IsAndroidTablet(void);
 SDL_bool SDL_IsAndroidTV(void);

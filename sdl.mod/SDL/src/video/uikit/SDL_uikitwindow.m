@@ -67,6 +67,20 @@
 
 @implementation SDL_uikitwindow
 
+- (void)didAddSubview:(UIView *)subview
+{
+	[super didAddSubview:subview];
+	// We need to pach the enabled state in subviews as a Metal view gets added and covers up the SDL_uikitview that handles touch.
+	// So set needs layout so that the layout gets done (which is where we patch the flags) Johna.
+    NSArray<UIView*>* subviews = self.subviews;
+	for (int i=0; i<[subviews count]; i++)
+	{
+		UIView *view = [subviews objectAtIndex:i];
+		// NSLog( @"View %p enabled %d\n", view, view.userInteractionEnabled );
+		[view setNeedsLayout];  // force the subviews to layout.
+	}
+}
+
 - (void)layoutSubviews
 {
     /* Workaround to fix window orientation issues in iOS 8+. */
@@ -77,7 +91,8 @@
 @end
 
 
-static int SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bool created)
+static int
+SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bool created)
 {
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *displaydata = (__bridge SDL_DisplayData *) display->driverdata;
@@ -144,12 +159,6 @@ static int SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bo
     /* Sets this view as the controller's view, and adds the view to the window
      * heirarchy. */
     [view setSDLWindow:window];
-
-    /* Make this window the current mouse focus for touch input */
-    if (displaydata.uiscreen == [UIScreen mainScreen]) {
-        SDL_SetMouseFocus(window);
-        SDL_SetKeyboardFocus(window);
-    }
 
     return 0;
 }
@@ -240,6 +249,14 @@ UIKit_ShowWindow(_THIS, SDL_Window * window)
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
         [data.uiwindow makeKeyAndVisible];
+
+        /* Make this window the current mouse focus for touch input */
+        SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+        SDL_DisplayData *displaydata = (__bridge SDL_DisplayData *) display->driverdata;
+        if (displaydata.uiscreen == [UIScreen mainScreen]) {
+            SDL_SetMouseFocus(window);
+            SDL_SetKeyboardFocus(window);
+        }
     }
 }
 
