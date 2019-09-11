@@ -152,14 +152,18 @@ Type TSDLStream Extends TStream
 		Close()
 	End Method
 
-	Function Create:TSDLStream( file:String, readable:Int, writeable:Int )
+	Function Create:TSDLStream( file:String, readable:Int, writeMode:Int )
 		Local stream:TSDLStream=New TSDLStream
 		Local Mode:String
 
-		If readable And writeable
+		If readable And writeMode = WRITE_MODE_OVERWRITE
 			Mode="r+b"
-		Else If writeable
+		Else If readable And writeMode = WRITE_MODE_APPEND
+			Mode="a+b"
+		Else If writeMode = WRITE_MODE_OVERWRITE
 			Mode="wb"
+		Else If writeMode = WRITE_MODE_APPEND
+			Mode="ab"
 		Else
 			Mode="rb"
 		EndIf
@@ -181,15 +185,15 @@ Rem
 bbdoc: Opens an SDL stream for reading/writing.
 returns: A stream object.
 End Rem
-Function OpenSDLStream:TSDLStream( file:String, readable:Int, writeable:Int )
-	Return TSDLStream.Create( file, readable, writeable )
+Function OpenSDLStream:TSDLStream( file:String, readable:Int, writeMode:Int )
+	Return TSDLStream.Create( file, readable, writeMode )
 End Function
 
 Type TSDLStreamFactory Extends TStreamFactory
 
-	Method CreateStream:TStream( url:Object, proto$, path$, readable:Int, writeable:Int )
+	Method CreateStream:TStream( url:Object, proto$, path$, readable:Int, writeMode:Int )
 		If proto="sdl" Then
-			Return TSDLStream.Create( path, readable, writeable )
+			Return TSDLStream.Create( path, readable, writeMode )
 		End If
 	End Method
 	
