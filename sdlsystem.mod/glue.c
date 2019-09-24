@@ -30,6 +30,8 @@
 
 /* System stuff */
 
+static int mouse_button_map[] = {0, 1, 3, 2, 4, 5};
+
 int brl_event_EmitEvent( BBObject *event );
 BBObject *brl_event_CreateEvent( int id,BBObject *source,int data,int mods,int x,int y,BBObject *extra );
 int sdl_sdlsystem_TSDLSystemDriver__eventFilter(BBObject * userdata, int eventType);
@@ -130,7 +132,7 @@ void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 			return;
 		case SDL_MOUSEBUTTONDOWN:
 		case SDL_MOUSEBUTTONUP:
-			bbSDLSystemEmitEvent( (event->type == SDL_MOUSEBUTTONDOWN) ? BBEVENT_MOUSEDOWN : BBEVENT_MOUSEUP,source,(event->button.button == 1) ? 1 : 5 - event->button.button,0,event->button.x,event->button.y,&bbNullObject );
+			bbSDLSystemEmitEvent( (event->type == SDL_MOUSEBUTTONDOWN) ? BBEVENT_MOUSEDOWN : BBEVENT_MOUSEUP,source,mouse_button_map[event->button.button],0,event->button.x,event->button.y,&bbNullObject );
 			return;
 		case SDL_MOUSEWHEEL:
 			bbSDLSystemEmitEvent( BBEVENT_MOUSEWHEEL,source,(event->wheel.y < 0) ? -1 : 1,0,0,0,&bbNullObject );
