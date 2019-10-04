@@ -63,12 +63,12 @@ End Type
 
 Type TSDLGraphics Extends TGraphics
 
-	Method Driver:TSDLGraphicsDriver()
+	Method Driver:TSDLGraphicsDriver() Override
 		Assert _context
 		Return SDLGraphicsDriver()
 	End Method
 
-	Method GetSettings( width:Int Var,height:Int Var,depth:Int Var,hertz:Int Var,flags:Int Var,x:Int Var,y:Int Var )
+	Method GetSettings( width:Int Var,height:Int Var,depth:Int Var,hertz:Int Var,flags:Int Var,x:Int Var,y:Int Var ) Override
 		Assert _context
 		'Local w:Int,h:Int,d:Int,r:Int,f:Int
 		'bbSDLGraphicsGetSettings _context,w,h,d,r,f
@@ -81,7 +81,7 @@ Type TSDLGraphics Extends TGraphics
 		y=_context.y
 	End Method
 
-	Method Close()
+	Method Close() Override
 		If Not _context Return
 		'bbSDLGraphicsClose( _context )
 		If _currentContext = _context Then
@@ -126,7 +126,7 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 	Const MODE_SIZE:Int = 6
 ?
 
-	Method GraphicsModes:TGraphicsMode[]()
+	Method GraphicsModes:TGraphicsMode[]() Override
 		Local buf:Int[1024*MODE_SIZE]
 ?Not raspberrypi
 		Local count:Int=bbSDLGraphicsGraphicsModes( 0, buf,1024 )
@@ -152,13 +152,13 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 		Return modes
 	End Method
 
-	Method AttachGraphics:TSDLGraphics( widget:Byte Ptr,flags:Int )
+	Method AttachGraphics:TSDLGraphics( widget:Byte Ptr,flags:Int ) Override
 		Local t:TSDLGraphics=New TSDLGraphics
 		't._context=bbGLGraphicsAttachGraphics( widget,flags )
 		Return t
 	End Method
 
-	Method CreateGraphics:TSDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Int,x:Int,y:Int )
+	Method CreateGraphics:TSDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Int,x:Int,y:Int ) Override
 		Local t:TSDLGraphics=New TSDLGraphics
 		t._context=SDLGraphicsCreateGraphics( width,height,depth,hertz,flags,x,y )
 		Return t
@@ -239,7 +239,7 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 		Return context
 	End Method
 
-	Method SetGraphics( g:TGraphics )
+	Method SetGraphics( g:TGraphics ) Override
 		Local context:TGraphicsContext
 		Local t:TSDLGraphics=TSDLGraphics( g )
 		If t context=t._context
@@ -250,7 +250,7 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 		_currentContext = context
 	End Method
 
-	Method Flip( sync:Int )
+	Method Flip( sync:Int ) Override
 		'BRL  SDL
 		'-1   -1   sdl: adaptive vsync, brl: "use graphics object's refresh rate"
 		' 1    1   vsync
@@ -301,7 +301,7 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 		Return data
 	End Function
 
-	Method CanResize:Int()
+	Method CanResize:Int() Override
 		Return True
 	End Method
 

@@ -214,7 +214,7 @@ Type TGLImageFrame Extends TImageFrame
 		seq=0
 	End Method
 	
-	Method Draw( x0#,y0#,x1#,y1#,tx#,ty#,sx#,sy#,sw#,sh# )
+	Method Draw( x0#,y0#,x1#,y1#,tx#,ty#,sx#,sy#,sw#,sh# ) Override
 		Assert seq=GraphicsSeq Else "Image does not exist"
 
 		Local u0#=sx * uscale
@@ -294,21 +294,21 @@ Type TGLMax2DDriver Extends TMax2DDriver
 	End Method
 
 	'graphics driver overrides
-	Method GraphicsModes:TGraphicsMode[]()
+	Method GraphicsModes:TGraphicsMode[]() Override
 		Return SDLGraphicsDriver().GraphicsModes()
 	End Method
 	
-	Method AttachGraphics:TMax2DGraphics( widget:Byte Ptr,flags )
+	Method AttachGraphics:TMax2DGraphics( widget:Byte Ptr,flags ) Override
 		Local g:TSDLGraphics=SDLGraphicsDriver().AttachGraphics( widget,flags )
 		If g Return TMax2DGraphics.Create( g,Self )
 	End Method
 	
-	Method CreateGraphics:TMax2DGraphics( width,height,depth,hertz,flags,x,y )
+	Method CreateGraphics:TMax2DGraphics( width,height,depth,hertz,flags,x,y ) Override
 		Local g:TSDLGraphics=SDLGraphicsDriver().CreateGraphics( width,height,depth,hertz,flags | SDL_GRAPHICS_GL,x,y )
 		If g Return TMax2DGraphics.Create( g,Self )
 	End Method
 	
-	Method SetGraphics( g:TGraphics )
+	Method SetGraphics( g:TGraphics ) Override
 		If Not g
 			TMax2DGraphics.ClearCurrent
 			SDLGraphicsDriver().SetGraphics Null
@@ -341,21 +341,21 @@ Type TGLMax2DDriver Extends TMax2DDriver
 		glViewport 0,0,gw,gh
 	End Method
 	
-	Method Flip( sync )
+	Method Flip( sync ) Override
 		SDLGraphicsDriver().Flip sync
 	End Method
 	
-	Method ToString$()
+	Method ToString$() Override
 		Return "OpenGL"
 	End Method
 
-	Method CreateFrameFromPixmap:TGLImageFrame( pixmap:TPixmap,flags )
+	Method CreateFrameFromPixmap:TGLImageFrame( pixmap:TPixmap,flags ) Override
 		Local frame:TGLImageFrame
 		frame=TGLImageFrame.CreateFromPixmap( pixmap,flags )
 		Return frame
 	End Method
 
-	Method SetBlend( blend )
+	Method SetBlend( blend ) Override
 		If blend=state_blend Return
 		state_blend=blend
 		Select blend
@@ -384,32 +384,32 @@ Type TGLMax2DDriver Extends TMax2DDriver
 		End Select
 	End Method
 
-	Method SetAlpha( alpha# )
+	Method SetAlpha( alpha# ) Override
 		If alpha>1.0 alpha=1.0
 		If alpha<0.0 alpha=0.0
 		color4ub[3]=alpha*255
 		glColor4ubv color4ub
 	End Method
 
-	Method SetLineWidth( width# )
+	Method SetLineWidth( width# ) Override
 		glLineWidth width
 	End Method
 	
-	Method SetColor( red,green,blue )
+	Method SetColor( red,green,blue ) Override
 		color4ub[0]=Min(Max(red,0),255)
 		color4ub[1]=Min(Max(green,0),255)
 		color4ub[2]=Min(Max(blue,0),255)
 		glColor4ubv color4ub
 	End Method
 
-	Method SetClsColor( red,green,blue )
+	Method SetClsColor( red,green,blue ) Override
 		red=Min(Max(red,0),255)
 		green=Min(Max(green,0),255)
 		blue=Min(Max(blue,0),255)
 		glClearColor red/255.0,green/255.0,blue/255.0,1.0
 	End Method
 	
-	Method SetViewport( x,y,w,h )
+	Method SetViewport( x,y,w,h ) Override
 		If x=0 And y=0 And w=GraphicsWidth() And h=GraphicsHeight()
 			glDisable GL_SCISSOR_TEST
 		Else
@@ -418,25 +418,25 @@ Type TGLMax2DDriver Extends TMax2DDriver
 		EndIf
 	End Method
 
-	Method SetTransform( xx#,xy#,yx#,yy# )
+	Method SetTransform( xx#,xy#,yx#,yy# ) Override
 		ix=xx
 		iy=xy
 		jx=yx
 		jy=yy
 	End Method
 
-	Method Cls()
+	Method Cls() Override
 		glClear GL_COLOR_BUFFER_BIT
 	End Method
 
-	Method Plot( x#,y# )
+	Method Plot( x#,y# ) Override
 		DisableTex
 		glBegin GL_POINTS
 		glVertex2f x+.5,y+.5
 		glEnd
 	End Method
 
-	Method DrawLine( x0#,y0#,x1#,y1#,tx#,ty# )
+	Method DrawLine( x0#,y0#,x1#,y1#,tx#,ty# ) Override
 		DisableTex
 		glBegin GL_LINES
 		glVertex2f x0*ix+y0*iy+tx+.5,x0*jx+y0*jy+ty+.5
@@ -444,7 +444,7 @@ Type TGLMax2DDriver Extends TMax2DDriver
 		glEnd
 	End Method
 
-	Method DrawRect( x0#,y0#,x1#,y1#,tx#,ty# )
+	Method DrawRect( x0#,y0#,x1#,y1#,tx#,ty# ) Override
 		DisableTex
 		glBegin GL_QUADS
 		glVertex2f x0*ix+y0*iy+tx,x0*jx+y0*jy+ty
@@ -454,7 +454,7 @@ Type TGLMax2DDriver Extends TMax2DDriver
 		glEnd
 	End Method
 	
-	Method DrawOval( x0#,y0#,x1#,y1#,tx#,ty# )
+	Method DrawOval( x0#,y0#,x1#,y1#,tx#,ty# ) Override
 	
 		Local xr#=(x1-x0)*.5
 		Local yr#=(y1-y0)*.5
@@ -477,7 +477,7 @@ Type TGLMax2DDriver Extends TMax2DDriver
 		
 	End Method
 	
-	Method DrawPoly( xy#[],handle_x#,handle_y#,origin_x#,origin_y# )
+	Method DrawPoly( xy#[],handle_x#,handle_y#,origin_x#,origin_y# ) Override
 		If xy.length<6 Or (xy.length&1) Return
 		
 		DisableTex
@@ -490,7 +490,7 @@ Type TGLMax2DDriver Extends TMax2DDriver
 		glEnd
 	End Method
 		
-	Method DrawPixmap( p:TPixmap,x,y )
+	Method DrawPixmap( p:TPixmap,x,y ) Override
 		Local blend=state_blend
 		DisableTex
 		SetBlend SOLIDBLEND
@@ -509,7 +509,7 @@ Type TGLMax2DDriver Extends TMax2DDriver
 		SetBlend blend
 	End Method
 
-	Method GrabPixmap:TPixmap( x,y,w,h )
+	Method GrabPixmap:TPixmap( x,y,w,h ) Override
 		Local blend=state_blend
 		SetBlend SOLIDBLEND
 		Local p:TPixmap=CreatePixmap( w,h,PF_RGBA8888 )
@@ -519,7 +519,7 @@ Type TGLMax2DDriver Extends TMax2DDriver
 		Return p
 	End Method
 	
-	Method SetResolution( width#,height# )
+	Method SetResolution( width#,height# ) Override
 		glMatrixMode GL_PROJECTION
 		glLoadIdentity
 		glOrtho 0,width,height,0,-1,1

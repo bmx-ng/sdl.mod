@@ -246,18 +246,18 @@ Type TD3D9SDLGraphics Extends TGraphics
 		
 	End Method
 
-	Method Driver:TGraphicsDriver()
+	Method Driver:TGraphicsDriver() Override
 		Return _driver
 	End Method
 	
-	Method GetSettings:Int( width:Int Var,height:Int Var,depth:Int Var,hertz:Int Var,flags:Int Var,x:Int Var,y:Int Var )
+	Method GetSettings:Int( width:Int Var,height:Int Var,depth:Int Var,hertz:Int Var,flags:Int Var,x:Int Var,y:Int Var ) Override
 		'
 		ValidateSize
 		'
 		_g.GetSettings(width, height, depth, hertz, flags, x, y)
 	End Method
 
-	Method Close:Int()
+	Method Close:Int() Override
 		If Not _hwnd Return False
 		CloseD3DDevice
 		If Not _attached Then
@@ -282,11 +282,11 @@ Type TD3D9SDLGraphics Extends TGraphics
 		Next
 	End Method
 
-	Method Resize(width:Int, height:Int)
+	Method Resize(width:Int, height:Int) Override
 		_g.Resize(width, height)
 	End Method
 
-	Method Position(x:Int, y:Int)
+	Method Position(x:Int, y:Int) Override
 		_g.Position(x, y)
 	End Method
 	
@@ -355,15 +355,15 @@ Type TD3D9SDLGraphicsDriver Extends TGraphicsDriver
 		Return Self
 	End Method
 	
-	Method GraphicsModes:TGraphicsMode[]()
+	Method GraphicsModes:TGraphicsMode[]() Override
 		Return _modes
 	End Method
 	
-	Method AttachGraphics:TD3D9SDLGraphics( widget:Byte Ptr,flags:Int )
+	Method AttachGraphics:TD3D9SDLGraphics( widget:Byte Ptr,flags:Int ) Override
 		Return New TD3D9SDLGraphics.Attach( widget:Byte Ptr,flags:Int )
 	End Method
 	
-	Method CreateGraphics:TD3D9SDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Int,x:Int,y:Int)
+	Method CreateGraphics:TD3D9SDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Int,x:Int,y:Int) Override
 		Return New TD3D9SDLGraphics.Create( width,height,depth,hertz,flags,x,y )
 	End Method
 
@@ -371,11 +371,11 @@ Type TD3D9SDLGraphicsDriver Extends TGraphicsDriver
 		Return _graphics
 	End Method
 		
-	Method SetGraphics( g:TGraphics )
+	Method SetGraphics( g:TGraphics ) Override
 		_graphics=TD3D9SDLGraphics( g )
 	End Method
 	
-	Method Flip( sync:Int )
+	Method Flip( sync:Int ) Override
 		Local present:Int = _graphics.Flip(sync)
 		If UseDX9RenderLagFix Then
 			Local pixelsdrawn:Int
