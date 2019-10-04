@@ -121,27 +121,27 @@ Type TSDLStream Extends TStream
 
 	Field filePtr:Byte Ptr
 
-	Method Pos:Long()
+	Method Pos:Long() Override
 		Return bmx_SDL_RWtell(filePtr)
 	End Method
 
-	Method Size:Long()
+	Method Size:Long() Override
 		Return bmx_SDL_RWsize(filePtr)
 	End Method
 
-	Method Seek:Long( pos:Long, whence:Int = SEEK_SET_ )
+	Method Seek:Long( pos:Long, whence:Int = SEEK_SET_ ) Override
 		Return bmx_SDL_RWseek(filePtr, pos, whence)
 	End Method
 
-	Method Read:Long( buf:Byte Ptr,count:Long )
+	Method Read:Long( buf:Byte Ptr,count:Long ) Override
 		Return bmx_SDL_RWread(filePtr, buf, 1, count)
 	End Method
 
-	Method Write:Long( buf:Byte Ptr,count:Long )
+	Method Write:Long( buf:Byte Ptr,count:Long ) Override
 		Return bmx_SDL_RWwrite(filePtr, buf, 1, count)
 	End Method
 
-	Method Close()
+	Method Close() Override
 		If filePtr Then
 			bmx_SDL_RWclose(filePtr)
 			filePtr = Null
@@ -191,7 +191,7 @@ End Function
 
 Type TSDLStreamFactory Extends TStreamFactory
 
-	Method CreateStream:TStream( url:Object, proto$, path$, readable:Int, writeMode:Int )
+	Method CreateStream:TStream( url:Object, proto$, path$, readable:Int, writeMode:Int ) Override
 		If proto="sdl" Then
 			Return TSDLStream.Create( path, readable, writeMode )
 		End If

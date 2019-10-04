@@ -49,11 +49,11 @@ Type TSDLSystemDriver Extends TSystemDriver
 		OnEnd(SDL_Quit)
 	End Method
 
-	Method Poll()
+	Method Poll() Override
 		bmx_SDL_Poll()
 	End Method
 	
-	Method Wait()
+	Method Wait() Override
 		bmx_SDL_WaitEvent()
 	End Method
 
@@ -61,17 +61,17 @@ Type TSDLSystemDriver Extends TSystemDriver
 		' TODO
 	End Method
 
-	Method SetMouseVisible( visible:Int )
+	Method SetMouseVisible( visible:Int ) Override
 		SDL_ShowCursor(visible)
 	End Method
 
-	Method MoveMouse( x:Int,y:Int )
+	Method MoveMouse( x:Int,y:Int ) Override
 		If _sdl_WarpMouse Then
 			_sdl_WarpMouse(x, y)
 		End If
 	End Method
 
-	Method Notify( Text$,serious:Int )
+	Method Notify( Text$,serious:Int ) Override
 		Local res:Int = bmx_SDL_ShowSimpleMessageBox(Text, AppTitle, serious)
 		' failed to display message box?
 		If res Then
@@ -79,39 +79,39 @@ Type TSDLSystemDriver Extends TSystemDriver
 		End If
 	End Method
 	
-	Method Confirm:Int( Text$,serious:Int )
+	Method Confirm:Int( Text$,serious:Int ) Override
 		Return bmx_SDL_ShowMessageBox_confirm(Text, AppTitle, serious)
 	End Method
 	
-	Method Proceed:Int( Text$,serious:Int )
+	Method Proceed:Int( Text$,serious:Int ) Override
 		Return bmx_SDL_ShowMessageBox_proceed(Text, AppTitle, serious)
 	End Method
 
-	Method RequestFile$( Text$,exts$,save:Int,file$ )
+	Method RequestFile$( Text$,exts$,save:Int,file$ ) Override
 		' TODO
 	End Method
 	
-	Method RequestDir$( Text$,path$ )
+	Method RequestDir$( Text$,path$ ) Override
 		' TODO
 	End Method
 
-	Method OpenURL:Int( url$ )
+	Method OpenURL:Int( url$ ) Override
 		' TODO
 	End Method
 
-	Method DesktopWidth:Int()
+	Method DesktopWidth:Int() Override
 		Return bmx_SDL_GetDisplayWidth(0)
 	End Method
 	
-	Method DesktopHeight:Int()
+	Method DesktopHeight:Int() Override
 		Return bmx_SDL_GetDisplayHeight(0)
 	End Method
 	
-	Method DesktopDepth:Int()
+	Method DesktopDepth:Int() Override
 		Return bmx_SDL_GetDisplayDepth(0)
 	End Method
 	
-	Method DesktopHertz:Int()
+	Method DesktopHertz:Int() Override
 		Return bmx_SDL_GetDisplayhertz(0)
 	End Method
 
@@ -122,7 +122,7 @@ Type TSDLSystemDriver Extends TSystemDriver
 		Return 1
 	End Function
 
-	Method Name:String()
+	Method Name:String() Override
 		Return "SDLSystemDriver"
 	End Method
 	

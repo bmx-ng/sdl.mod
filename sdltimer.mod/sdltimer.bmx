@@ -95,7 +95,7 @@ Type TSDLTimer Extends TTimer
 	bbdoc: Gets timer tick counter.
 	returns: The number of times the timer has ticked over
 	End Rem
-	Method Ticks:Int()
+	Method Ticks:Int() Override
 		Return _ticks
 	End Method
 	
@@ -103,14 +103,14 @@ Type TSDLTimer Extends TTimer
 	bbdoc: Stops the timer
 	about: Once stopped, the timer can no longer be used.
 	End Rem
-	Method Stop()
+	Method Stop() Override
 		If Not _handle Return
 		bmx_sdl_timer_stop _handle,Self
 		_handle=0
 		_event=Null
 	End Method
 	
-	Method Fire()
+	Method Fire() Override
 		If Not _handle Return
 		_ticks:+1
 		If _event
@@ -124,7 +124,7 @@ Type TSDLTimer Extends TTimer
 	bbdoc: Waits until the timer ticks.
 	returns: The number of ticks since the last call to #Wait.
 	End Rem
-	Method Wait:Int()
+	Method Wait:Int() Override
 		If Not _handle Return 0
 		Local n:Int
 		Repeat
@@ -135,7 +135,7 @@ Type TSDLTimer Extends TTimer
 		Return n
 	End Method
 	
-	Function Create:TTimer( hertz#,event:TEvent=Null )
+	Function Create:TTimer( hertz#,event:TEvent=Null ) Override
 		Local t:TSDLTimer =New TSDLTimer
 		Local handle:Byte Ptr=bmx_sdl_timer_start( hertz,t )
 		If Not handle Return Null
@@ -153,11 +153,11 @@ End Type
 
 Type TSDLTimerFactory Extends TTimerFactory
 	
-	Method GetName:String()
+	Method GetName:String() Override
 		Return "SDLTimer"
 	End Method
 	
-	Method Create:TTimer(hertz#,event:TEvent=Null)
+	Method Create:TTimer(hertz#,event:TEvent=Null) Override
 		Return TSDLTimer.Create( hertz,event )
 	End Method
 		

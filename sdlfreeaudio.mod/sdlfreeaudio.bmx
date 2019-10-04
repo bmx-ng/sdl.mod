@@ -62,7 +62,7 @@ Import "glue.cpp"
 
 Type TSDLFreeAudioDriver Extends TFreeAudioAudioDriver
 
-	Method Startup:Int()
+	Method Startup:Int() Override
 		Local device:Byte Ptr = OpenSDLAudioDevice()
 		Local res:Int=-1
 		If device Then
@@ -71,7 +71,7 @@ Type TSDLFreeAudioDriver Extends TFreeAudioAudioDriver
 		Return res <> -1
 	End Method
 
-	Function Create:TFreeAudioAudioDriver( name$,Mode:Int )
+	Function Create:TFreeAudioAudioDriver( name$,Mode:Int ) Override
 		Local t:TSDLFreeAudioDriver = New TSDLFreeAudioDriver
 		t._name=name
 		t._mode=Mode
