@@ -47,129 +47,129 @@ Type TVirtualJoystickDriver Extends TJoystickDriver
 		joysticks[port] = joystick
 	End Method
 
-	Method GetName:String()
+	Method GetName:String() Override
 		Return "Virtual Joystick"
 	End Method
 
-	Method JoyCount:Int()
+	Method JoyCount:Int() Override
 		Return joysticks.length
 	End Method
 	
-	Method JoyName:String(port:Int)
+	Method JoyName:String(port:Int) Override
 		SampleJoy port
 		If currentJoystick Then
 			Return currentJoystick.name
 		End If
 	End Method
 	
-	Method JoyButtonCaps:Int(port:Int)
+	Method JoyButtonCaps:Int(port:Int) Override
 		SampleJoy port
 		If currentJoystick Then
 			Return currentJoystick.buttoncaps
 		End If
 	End Method
 	
-	Method JoyAxisCaps:Int(port:Int)
+	Method JoyAxisCaps:Int(port:Int) Override
 		SampleJoy port
 		If currentJoystick Then
 			Return currentJoystick.flags
 		End If
 	End Method
 	
-	Method JoyDown:Int( button:Int, port:Int=0 )
+	Method JoyDown:Int( button:Int, port:Int=0 ) Override
 		SampleJoy port
 		If currentJoystick Then
 			Return currentJoystick.ButtonDown(button)
 		End If
 	End Method
 	
-	Method JoyHit:Int( button:Int, port:Int=0 )
+	Method JoyHit:Int( button:Int, port:Int=0 ) Override
 		SampleJoy port
 		If currentJoystick Then
 			Return currentJoystick.ButtonHit(button)
 		End If
 	End Method
 	
-	Method JoyX#( port:Int=0 )
+	Method JoyX#( port:Int=0 ) Override
 		SampleJoy port
 		If currentJoystick Then
 			Return currentJoystick.GetX()
 		End If
 	End Method
 	
-	Method JoyY#( port:Int=0 )
+	Method JoyY#( port:Int=0 ) Override
 		SampleJoy port
 		If currentJoystick Then
 			Return currentJoystick.GetY()
 		End If
 	End Method
 	
-	Method JoyZ#( port:Int=0 )
+	Method JoyZ#( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method JoyR#( port:Int=0 )
+	Method JoyR#( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method JoyU#( port:Int=0 )
+	Method JoyU#( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method JoyV#( port:Int=0 )
+	Method JoyV#( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method JoyYaw#( port:Int=0 )
+	Method JoyYaw#( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method JoyPitch#( port:Int=0 )
+	Method JoyPitch#( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method JoyRoll#( port:Int=0 )
+	Method JoyRoll#( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method JoyHat#( port:Int=0 )
+	Method JoyHat#( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method JoyWheel#( port:Int=0 )
+	Method JoyWheel#( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method JoyType:Int( port:Int=0 )
+	Method JoyType:Int( port:Int=0 ) Override
 	End Method
 	
-	Method JoyXDir:Int( port:Int=0 )
+	Method JoyXDir:Int( port:Int=0 ) Override
 		Local t#=JoyX( port )
 		If t<.333333 Return -1
 		If t>.333333 Return 1
 		Return 0
 	End Method
 
-	Method JoyYDir:Int( port:Int=0 )
+	Method JoyYDir:Int( port:Int=0 ) Override
 		Local t#=JoyY( port )
 		If t<.333333 Return -1
 		If t>.333333 Return 1
 		Return 0
 	End Method
 
-	Method JoyZDir:Int( port:Int=0 )
+	Method JoyZDir:Int( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method JoyUDir:Int( port:Int=0 )
+	Method JoyUDir:Int( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method JoyVDir:Int( port:Int=0 )
+	Method JoyVDir:Int( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method FlushJoy( port_mask:Int=~0 )
+	Method FlushJoy( port_mask:Int=~0 ) Override
 	End Method
 
 	Method SampleJoy(port:Int)
