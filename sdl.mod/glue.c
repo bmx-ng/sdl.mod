@@ -28,7 +28,7 @@
 
 int sdl_sdl__sdl_rwops_seek(BBObject *, int, int);
 BBLONG sdl_sdl__sdl_rwops_read(BBObject *, void *, BBLONG);
-BBLONG sdl_sdl__sdl_rwops_write(BBObject *, void *, BBLONG);
+BBLONG sdl_sdl__sdl_rwops_write(BBObject *, const void *, BBLONG);
 int sdl_sdl__sdl_rwops_close(BBObject *);
 
 /* ----------------------------------------------------- */

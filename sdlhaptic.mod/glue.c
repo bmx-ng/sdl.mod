@@ -21,6 +21,7 @@
     distribution.
 */
 #include "SDL_haptic.h"
+#include <stdlib.h>
 
 void bmx_sdl_haptic_SDLHapticEffect_free(SDL_HapticEffect  * effect) {
 	free(effect);
