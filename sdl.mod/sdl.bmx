@@ -68,6 +68,7 @@ ModuleInfo "CC_OPTS: -I/usr/lib64/dbus-1.0/include"
 Import "include/linuxx64/*.h"
 ?raspberrypi
 ModuleInfo "LD_OPTS: -L%PWD%/lib/raspberrypi"
+ModuleInfo "CC_OPTS: -I/usr/include/dbus-1.0"
 
 Import "include/raspberrypi/*.h"
 ?android
