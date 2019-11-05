@@ -201,7 +201,7 @@
 #define HAVE_DBUS_DBUS_H 1
 /* #undef HAVE_FCITX_FRONTEND_H */
 /* #undef HAVE_IBUS_IBUS_H */
-#define HAVE_IMMINTRIN_H 1
+/* #undef HAVE_IMMINTRIN_H */
 /* #undef HAVE_LIBSAMPLERATE_H */
 #define HAVE_LIBUDEV_H 1
 
