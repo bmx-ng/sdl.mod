@@ -57,7 +57,7 @@ Import "-framework ForceFeedback"
 
 ?linuxx86
 ModuleInfo "CC_OPTS: -mmmx -m3dnow -msse -msse2 -DHAVE_LINUX_VERSION_H"
-ModuleInfo "CC_OPTS: -I/usr/include/dbus-1.0 -I/usr/lib/x86_64-linux-gnu/dbus-1.0/include"
+ModuleInfo "CC_OPTS: -I/usr/include/dbus-1.0 -I/usr/lib/i386-linux-gnu/dbus-1.0/include"
 
 Import "include/linuxx86/*.h"
 ?linuxx64
