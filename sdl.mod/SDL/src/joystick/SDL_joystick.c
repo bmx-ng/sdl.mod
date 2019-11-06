@@ -323,6 +323,7 @@ SDL_JoystickOpen(int device_index)
     joystick->instance_id = instance_id;
     joystick->attached = SDL_TRUE;
     joystick->player_index = -1;
+    joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
 
     if (driver->Open(joystick, device_index) < 0) {
         SDL_free(joystick);
@@ -360,7 +361,6 @@ SDL_JoystickOpen(int device_index)
         SDL_UnlockJoysticks();
         return NULL;
     }
-    joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
 
     /* If this joystick is known to have all zero centered axes, skip the auto-centering code */
     if (SDL_JoystickAxesCenteredAtZero(joystick)) {
@@ -1018,7 +1018,7 @@ void
 SDL_JoystickUpdate(void)
 {
     int i;
-    SDL_Joystick *joystick;
+    SDL_Joystick *joystick, *next;
 
     if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {
         return;
@@ -1037,14 +1037,12 @@ SDL_JoystickUpdate(void)
     /* Make sure the list is unlocked while dispatching events to prevent application deadlocks */
     SDL_UnlockJoysticks();
 
-    /* Special function for HIDAPI devices, as a single device can provide multiple SDL_Joysticks */
-#ifdef SDL_JOYSTICK_HIDAPI
-    SDL_HIDAPI_UpdateDevices();
-#endif /* SDL_JOYSTICK_HIDAPI */
-
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         if (joystick->attached) {
-            joystick->driver->Update(joystick);
+            /* This should always be true, but seeing a crash in the wild...? */
+            if (joystick->driver) {
+                joystick->driver->Update(joystick);
+            }
 
             if (joystick->delayed_guide_button) {
                 SDL_GameControllerHandleDelayedGuideButton(joystick);
@@ -1076,7 +1074,8 @@ SDL_JoystickUpdate(void)
     SDL_updating_joystick = SDL_FALSE;
 
     /* If any joysticks were closed while updating, free them here */
-    for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
+    for (joystick = SDL_joysticks; joystick; joystick = next) {
+        next = joystick->next;
         if (joystick->ref_count <= 0) {
             SDL_JoystickClose(joystick);
         }
@@ -1168,13 +1167,24 @@ SDL_IsJoystickPS4(Uint16 vendor, Uint16 product)
 SDL_bool
 SDL_IsJoystickNintendoSwitchPro(Uint16 vendor, Uint16 product)
 {
-    return (GuessControllerType(vendor, product) == k_eControllerType_SwitchProController);
+    EControllerType eType = GuessControllerType(vendor, product);
+    return (eType == k_eControllerType_SwitchProController ||
+            eType == k_eControllerType_SwitchInputOnlyController);
+}
+
+SDL_bool
+SDL_IsJoystickNintendoSwitchProInputOnly(Uint16 vendor, Uint16 product)
+{
+    EControllerType eType = GuessControllerType(vendor, product);
+    return (eType == k_eControllerType_SwitchInputOnlyController);
 }
 
 SDL_bool
 SDL_IsJoystickSteamController(Uint16 vendor, Uint16 product)
 {
-    return BIsSteamController(GuessControllerType(vendor, product));
+    EControllerType eType = GuessControllerType(vendor, product);
+    return (eType == k_eControllerType_SteamController ||
+            eType == k_eControllerType_SteamControllerV2);
 }
 
 SDL_bool
@@ -1194,12 +1204,6 @@ SDL_bool
 SDL_IsJoystickXboxOne(Uint16 vendor, Uint16 product)
 {
     return (GuessControllerType(vendor, product) == k_eControllerType_XBoxOneController);
-}
-
-SDL_bool
-SDL_IsJoystickGameCube(Uint16 vendor, Uint16 product)
-{
-    return (GuessControllerType(vendor, product) == k_eControllerType_GameCube);
 }
 
 SDL_bool

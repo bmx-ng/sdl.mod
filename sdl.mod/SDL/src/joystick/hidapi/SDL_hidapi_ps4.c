@@ -48,8 +48,6 @@
 
 #define USB_PACKET_LENGTH   64
 
-#define VOLUME_CHECK_INTERVAL_MS    (10 * 1000)
-
 typedef enum
 {
     k_EPS4ReportIdUsbState = 1,
@@ -108,7 +106,6 @@ typedef struct
 } DS4EffectsState_t;
 
 typedef struct {
-    SDL_JoystickID joystickID;
     SDL_bool is_dongle;
     SDL_bool is_bluetooth;
     SDL_bool audio_supported;
@@ -141,85 +138,8 @@ static Uint32 crc32(Uint32 crc, const void *data, int count)
     return crc;
 }
 
-#if defined(__WIN32__) && defined(HAVE_ENDPOINTVOLUME_H)
-#include "../../core/windows/SDL_windows.h"
-
-#ifndef NTDDI_VISTA
-#define NTDDI_VISTA    0x06000000
-#endif
-#ifndef _WIN32_WINNT_VISTA
-#define _WIN32_WINNT_VISTA 0x0600
-#endif
-
-/* Define Vista for the Audio related includes below to work */
-#undef NTDDI_VERSION
-#define NTDDI_VERSION NTDDI_VISTA
-#undef _WIN32_WINNT
-#define _WIN32_WINNT _WIN32_WINNT_VISTA
-#define COBJMACROS
-#include <mmdeviceapi.h>
-#include <audioclient.h>
-#include <endpointvolume.h>
-
-#undef DEFINE_GUID
-#define DEFINE_GUID(n,l,w1,w2,b1,b2,b3,b4,b5,b6,b7,b8) static const GUID n = {l,w1,w2,{b1,b2,b3,b4,b5,b6,b7,b8}}
-DEFINE_GUID(SDL_CLSID_MMDeviceEnumerator, 0xBCDE0395, 0xE52F, 0x467C, 0x8E, 0x3D, 0xC4, 0x57, 0x92, 0x91, 0x69, 0x2E);
-DEFINE_GUID(SDL_IID_IMMDeviceEnumerator, 0xA95664D2, 0x9614, 0x4F35, 0xA7, 0x46, 0xDE, 0x8D, 0xB6, 0x36, 0x17, 0xE6);
-DEFINE_GUID(SDL_IID_IAudioEndpointVolume, 0x5CDF2C82, 0x841E, 0x4546, 0x97, 0x22, 0x0C, 0xF7, 0x40, 0x78, 0x22, 0x9A);
-#endif
-
-
-
-static float GetSystemVolume(void)
-{
-    float volume = -1.0f;    /* Return this if we can't get system volume */
-
-#if defined(__WIN32__) && defined(HAVE_ENDPOINTVOLUME_H)
-    HRESULT hr = WIN_CoInitialize();
-    if (SUCCEEDED(hr)) {
-        IMMDeviceEnumerator *pEnumerator;
-
-        /* This should gracefully fail on XP and succeed on everything Vista and above */
-        hr = CoCreateInstance(&SDL_CLSID_MMDeviceEnumerator, NULL, CLSCTX_ALL, &SDL_IID_IMMDeviceEnumerator, (LPVOID*)&pEnumerator);
-        if (SUCCEEDED(hr)) {
-            IMMDevice *pDevice;
-
-            hr = IMMDeviceEnumerator_GetDefaultAudioEndpoint(pEnumerator, eRender, eConsole, &pDevice);
-            if (SUCCEEDED(hr)) {
-                IAudioEndpointVolume *pEndpointVolume;
-
-                hr = IMMDevice_Activate(pDevice, &SDL_IID_IAudioEndpointVolume, CLSCTX_ALL, NULL, (LPVOID*)&pEndpointVolume);
-                if (SUCCEEDED(hr)) {
-                    IAudioEndpointVolume_GetMasterVolumeLevelScalar(pEndpointVolume, &volume);
-                    IUnknown_Release(pEndpointVolume);
-                }
-                IUnknown_Release(pDevice);
-            }
-            IUnknown_Release(pEnumerator);
-        }
-        WIN_CoUninitialize();
-    }
-#endif /* __WIN32__ */
-
-    return volume;
-}
-
-static uint8_t GetPlaystationVolumeFromFloat(float fVolume)
-{
-    const int k_nVolumeFitRatio = 15;
-    const int k_nVolumeFitOffset = 9;
-    float fVolLog;
-
-    if (fVolume > 1.0f || fVolume < 0.0f) {
-        fVolume = 0.30f;
-    }
-    fVolLog = SDL_logf(fVolume * 100);
-
-    return (Uint8)((fVolLog * k_nVolumeFitRatio) + k_nVolumeFitOffset);
-}
-
 static SDL_bool
-HIDAPI_DriverPS4_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number)
+HIDAPI_DriverPS4_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name)
 {
     return SDL_IsJoystickPS4(vendor_id, product_id);
 }
@@ -273,8 +193,10 @@ static SDL_bool HIDAPI_DriverPS4_CanRumble(Uint16 vendor_id, Uint16 product_id)
     return SDL_TRUE;
 }
 
+static int HIDAPI_DriverPS4_Rumble(SDL_Joystick *joystick, hid_device *dev, void *context, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
+
 static SDL_bool
-HIDAPI_DriverPS4_InitDriver(SDL_HIDAPI_DriverData *context, Uint16 vendor_id, Uint16 product_id, int *num_joysticks)
+HIDAPI_DriverPS4_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_id, Uint16 product_id, void **context)
 {
     SDL_DriverPS4_Context *ctx;
 
@@ -283,14 +205,14 @@ HIDAPI_DriverPS4_InitDriver(SDL_HIDAPI_DriverData *context, Uint16 vendor_id, Ui
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
-    context->context = ctx;
+    *context = ctx;
 
     /* Check for type of connection */
     ctx->is_dongle = (vendor_id == SONY_USB_VID && product_id == SONY_DS4_DONGLE_PID);
     if (ctx->is_dongle) {
         ctx->is_bluetooth = SDL_FALSE;
     } else if (vendor_id == SONY_USB_VID) {
-        ctx->is_bluetooth = !CheckUSBConnected(context->device);
+        ctx->is_bluetooth = !CheckUSBConnected(dev);
     } else {
         /* Third party controllers appear to all be wired */
         ctx->is_bluetooth = SDL_FALSE;
@@ -313,48 +235,11 @@ HIDAPI_DriverPS4_InitDriver(SDL_HIDAPI_DriverData *context, Uint16 vendor_id, Ui
         }
     }
 
-    ctx->joystickID = SDL_GetNextJoystickInstanceID();
-    *num_joysticks += 1;
-    SDL_PrivateJoystickAdded(ctx->joystickID);
-
-    return SDL_TRUE;
-}
-
-static void
-HIDAPI_DriverPS4_QuitDriver(SDL_HIDAPI_DriverData *context, SDL_bool send_event, int *num_joysticks)
-{
-    SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)context->context;
-
-    *num_joysticks -= 1;
-    if (send_event) {
-        SDL_PrivateJoystickRemoved(ctx->joystickID);
-    }
-    SDL_free(context->context);
-}
-
-static int
-HIDAPI_DriverPS4_NumJoysticks(SDL_HIDAPI_DriverData *context)
-{
-    return 1;
-}
-
-static SDL_JoystickID
-HIDAPI_DriverPS4_InstanceIDForIndex(SDL_HIDAPI_DriverData *context, int index)
-{
-    SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)context->context;
-    return ctx->joystickID;
-}
-
-static int HIDAPI_DriverPS4_Rumble(SDL_HIDAPI_DriverData *context, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
-
-static SDL_bool
-HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_DriverData *context, SDL_Joystick *joystick)
-{
     /* Initialize LED and effect state */
-    HIDAPI_DriverPS4_Rumble(context, joystick, 0, 0, 0);
+    HIDAPI_DriverPS4_Rumble(joystick, dev, ctx, 0, 0, 0);
 
     /* Initialize the joystick capabilities */
-    joystick->nbuttons = SDL_CONTROLLER_BUTTON_MAX;
+    joystick->nbuttons = 16;
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
     joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
 
@@ -362,9 +247,9 @@ HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_DriverData *context, SDL_Joystick *joys
 }
 
 static int
-HIDAPI_DriverPS4_Rumble(SDL_HIDAPI_DriverData *context, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+HIDAPI_DriverPS4_Rumble(SDL_Joystick *joystick, hid_device *dev, void *context, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
 {
-    SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)context->context;
+    SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)context;
     DS4EffectsState_t *effects;
     Uint8 data[78];
     int report_size, offset;
@@ -399,20 +284,6 @@ HIDAPI_DriverPS4_Rumble(SDL_HIDAPI_DriverData *context, SDL_Joystick *joystick, 
     effects->ucLedGreen = 0;
     effects->ucLedBlue = 80;
 
-    if (ctx->audio_supported) {
-        Uint32 now = SDL_GetTicks();
-        if (!ctx->last_volume_check ||
-            SDL_TICKS_PASSED(now, ctx->last_volume_check + VOLUME_CHECK_INTERVAL_MS)) {
-            ctx->volume = GetPlaystationVolumeFromFloat(GetSystemVolume());
-            ctx->last_volume_check = now;
-        }
-
-        effects->ucVolumeRight = ctx->volume;
-        effects->ucVolumeLeft = ctx->volume;
-        effects->ucVolumeSpeaker = ctx->volume;
-        effects->ucVolumeMic = 0xFF;
-    }
-
     if (ctx->is_bluetooth) {
         /* Bluetooth reports need a CRC at the end of the packet (at least on Linux) */
         Uint8 ubHdr = 0xA2; /* hidp header is part of the CRC calculation */
@@ -422,7 +293,7 @@ HIDAPI_DriverPS4_Rumble(SDL_HIDAPI_DriverData *context, SDL_Joystick *joystick, 
         SDL_memcpy(&data[report_size - sizeof(unCRC)], &unCRC, sizeof(unCRC));
     }
 
-    if (hid_write(context->device, data, report_size) != report_size) {
+    if (hid_write(dev, data, report_size) != report_size) {
         return SDL_SetError("Couldn't send rumble packet");
     }
 
@@ -509,6 +380,7 @@ HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_
         Uint8 data = (packet->rgucButtonsHatAndCounter[2] & 0x03);
 
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, 15, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
     }
 
     axis = ((int)packet->ucTriggerLeft * 257) - 32768;
@@ -544,25 +416,20 @@ HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_
 }
 
 static SDL_bool
-HIDAPI_DriverPS4_UpdateDriver(SDL_HIDAPI_DriverData *context, int *num_joysticks)
+HIDAPI_DriverPS4_Update(SDL_Joystick *joystick, hid_device *dev, void *context)
 {
-    SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)context->context;
-    SDL_Joystick *joystick = SDL_JoystickFromInstanceID(ctx->joystickID);
+    SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)context;
     Uint8 data[USB_PACKET_LENGTH];
     int size;
 
-    if (joystick == NULL) {
-        return SDL_TRUE; /* Nothing to do right now! */
-    }
-
-    while ((size = hid_read_timeout(context->device, data, sizeof(data), 0)) > 0) {
+    while ((size = hid_read_timeout(dev, data, sizeof(data), 0)) > 0) {
         switch (data[0]) {
         case k_EPS4ReportIdUsbState:
-            HIDAPI_DriverPS4_HandleStatePacket(joystick, context->device, ctx, (PS4StatePacket_t *)&data[1]);
+            HIDAPI_DriverPS4_HandleStatePacket(joystick, dev, ctx, (PS4StatePacket_t *)&data[1]);
             break;
         case k_EPS4ReportIdBluetoothState:
             /* Bluetooth state packets have two additional bytes at the beginning */
-            HIDAPI_DriverPS4_HandleStatePacket(joystick, context->device, ctx, (PS4StatePacket_t *)&data[3]);
+            HIDAPI_DriverPS4_HandleStatePacket(joystick, dev, ctx, (PS4StatePacket_t *)&data[3]);
             break;
         default:
 #ifdef DEBUG_JOYSTICK
@@ -575,11 +442,17 @@ HIDAPI_DriverPS4_UpdateDriver(SDL_HIDAPI_DriverData *context, int *num_joysticks
     if (ctx->rumble_expiration) {
         Uint32 now = SDL_GetTicks();
         if (SDL_TICKS_PASSED(now, ctx->rumble_expiration)) {
-            HIDAPI_DriverPS4_Rumble(context, joystick, 0, 0, 0);
+            HIDAPI_DriverPS4_Rumble(joystick, dev, context, 0, 0, 0);
         }
     }
 
     return (size >= 0);
+}
+
+static void
+HIDAPI_DriverPS4_Quit(SDL_Joystick *joystick, hid_device *dev, void *context)
+{
+    SDL_free(context);
 }
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4 =
@@ -588,13 +461,10 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4 =
     SDL_TRUE,
     HIDAPI_DriverPS4_IsSupportedDevice,
     HIDAPI_DriverPS4_GetDeviceName,
-    HIDAPI_DriverPS4_InitDriver,
-    HIDAPI_DriverPS4_QuitDriver,
-    HIDAPI_DriverPS4_UpdateDriver,
-    HIDAPI_DriverPS4_NumJoysticks,
-    HIDAPI_DriverPS4_InstanceIDForIndex,
-    HIDAPI_DriverPS4_OpenJoystick,
-    HIDAPI_DriverPS4_Rumble
+    HIDAPI_DriverPS4_Init,
+    HIDAPI_DriverPS4_Rumble,
+    HIDAPI_DriverPS4_Update,
+    HIDAPI_DriverPS4_Quit
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI_PS4 */
