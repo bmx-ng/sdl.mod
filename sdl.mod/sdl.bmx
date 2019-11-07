@@ -99,8 +99,6 @@ Import "-loleaut32"
 Import "-lshell32"
 Import "-lversion"
 
-?raspberrypi
-Import "-lSDL2"
 ?linux
 Import "-ldl"
 ?nx
