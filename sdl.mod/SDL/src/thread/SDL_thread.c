@@ -29,6 +29,7 @@
 #include "SDL_hints.h"
 #include "../SDL_error_c.h"
 
+#include "brl.mod/blitz.mod/blitz.h"
 
 SDL_TLSID
 SDL_TLSCreate()
@@ -285,8 +286,14 @@ SDL_RunThread(void *data)
     /* Wake up the parent thread */
     SDL_SemPost(args->wait);
 
+	/* register with BlitzMax */
+	BBThread * bbThread = bbThreadRegister(SDL_ThreadID());
+
     /* Run the function */
     *statusloc = userfunc(userdata);
+
+	/* unregister with BlitzMax */
+	bbThreadUnregister(bbThread);
 
     /* Clean up thread-local storage */
     SDL_TLSCleanup();

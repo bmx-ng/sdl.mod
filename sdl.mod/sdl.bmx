@@ -92,7 +92,12 @@ ModuleInfo "LD_OPTS: -L%nx.devkitpro%/portlibs/switch/lib"
 '        Some versions of MinGW have it, some don't...
 '
 'ModuleInfo "CC_OPTS: -DHAVE_XINPUT_GAMEPAD_EX -DHAVE_XINPUT_STATE_EX"
-
+'
+' Source changes : 
+'       SDL/src/thread/SDL_thread.c
+'          Added thread register/unregister.
+'
+'
 Import "-limm32"
 Import "-lole32"
 Import "-loleaut32"
