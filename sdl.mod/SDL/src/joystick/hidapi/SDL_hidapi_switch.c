@@ -33,6 +33,7 @@
 #include "SDL_gamecontroller.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
+#include "../../SDL_hints_c.h"
 
 
 #ifdef SDL_JOYSTICK_HIDAPI_SWITCH
@@ -225,16 +226,7 @@ typedef struct {
 static SDL_bool
 HIDAPI_DriverSwitch_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name)
 {
-    if (vendor_id == 0 && product_id == 0) {
-        /* Some devices are only identifiable by their name */
-        if (SDL_strcmp(name, "Lic Pro Controller") == 0 ||
-            SDL_strcmp(name, "Nintendo Wireless Gamepad") == 0 ||
-            SDL_strcmp(name, "Wireless Gamepad") == 0) {
-            /* HORI or PowerA Switch Pro Controller clone */
-            return SDL_TRUE;
-        }
-    }
-    return SDL_IsJoystickNintendoSwitchPro(vendor_id, product_id);
+    return (SDL_GetJoystickGameControllerType(vendor_id, product_id, name) == SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO);
 }
 
 static const char *
@@ -591,7 +583,7 @@ static Sint16 ApplyStickCalibration(SDL_DriverSwitch_Context *ctx, int nStick, i
 static void SDLCALL SDL_GameControllerButtonReportingHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)userdata;
-    ctx->m_bUseButtonLabels = (hint && *hint != '0' && SDL_strcasecmp(hint, "false") != 0);
+    ctx->m_bUseButtonLabels = SDL_GetStringBoolean(hint, SDL_TRUE);
 }
 
 static Uint8 RemapButton(SDL_DriverSwitch_Context *ctx, Uint8 button)

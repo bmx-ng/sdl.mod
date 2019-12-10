@@ -334,16 +334,20 @@ CPU_haveAltiVec(void)
 }
 
 #if !defined(__ARM_ARCH)
-static SDL_bool CPU_haveARMSIMD(void) { return 0; }
+static int
+CPU_haveARMSIMD(void)
+{
+	return 0;
+}
 
-#elif defined(__linux__)
+#elif defined(__LINUX__)
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <elf.h>
 
-static SDL_bool
+static int
 CPU_haveARMSIMD(void)
 {
     int arm_simd = 0;
@@ -358,8 +362,10 @@ CPU_haveARMSIMD(void)
             if (aux.a_type == AT_PLATFORM)
             {
                 const char *plat = (const char *) aux.a_un.a_val;
-                arm_simd = strncmp(plat, "v6l", 3) == 0 ||
-                           strncmp(plat, "v7l", 3) == 0;
+                if (plat) {
+                    arm_simd = strncmp(plat, "v6l", 3) == 0 ||
+                               strncmp(plat, "v7l", 3) == 0;
+                }
             }
         }
         close(fd);
@@ -368,15 +374,17 @@ CPU_haveARMSIMD(void)
 }
 
 #else
-static SDL_bool
+static int
 CPU_haveARMSIMD(void)
 {
-    #warning SDL_HasARMSIMD is not implemented for this ARM platform. Write me.
-    return 0;
+#if !defined(__ANDROID__) && !defined(__IPHONEOS__) && !defined(__TVOS__)
+#warning SDL_HasARMSIMD is not implemented for this ARM platform, defaulting to TRUE
+#endif
+    return 1;
 }
 #endif
 
-#if (defined(__LINUX__) || defined(__ANDROID__)) && defined(__ARM_ARCH) && !defined(HAVE_GETAUXVAL)
+#if defined(__LINUX__) && defined(__ARM_ARCH) && !defined(HAVE_GETAUXVAL)
 static int
 readProcAuxvForNeon(void)
 {
@@ -395,7 +403,6 @@ readProcAuxvForNeon(void)
     return neon;
 }
 #endif
-
 
 static int
 CPU_haveNEON(void)

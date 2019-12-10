@@ -16978,7 +16978,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 
-    for ac_func in malloc calloc realloc free getenv setenv putenv unsetenv qsort abs bcopy memset memcpy memmove wcslen wcscmp strlen strlcpy strlcat _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval poll _Exit
+    for ac_func in malloc calloc realloc free getenv setenv putenv unsetenv qsort abs bcopy memset memcpy memmove wcslen wcslcpy wcslcat wcsdup wcsstr wcscmp wcsncmp strlen strlcpy strlcat _strrev _strupr _strlwr strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval poll _Exit
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -24364,14 +24364,7 @@ _ACEOF
 
                 fi
             else
-                case "$host" in
-                *-*-cygwin* | *-*-mingw32* )
-                    SOURCES="$SOURCES $srcdir/src/hidapi/windows/hid.c"
-                    ;;
-                *-*-darwin* )
-                    SOURCES="$SOURCES $srcdir/src/hidapi/mac/hid.c"
-                    ;;
-                esac
+                SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
             fi
         fi
 
@@ -25493,7 +25486,7 @@ VERSION_OBJECTS=`echo $VERSION_SOURCES`
 VERSION_DEPENDS=`echo $VERSION_SOURCES`
 VERSION_OBJECTS=`echo "$VERSION_OBJECTS" | sed 's,[^ ]*/\([^ ]*\)\.rc,$(objects)/\1.o,g'`
 VERSION_DEPENDS=`echo "$VERSION_DEPENDS" | sed "s,\\([^ ]*\\)/\\([^ ]*\\)\\.rc,\\\\
-\\$(objects)/\\2.o: \\1/\\2.rc\\\\
+\\$(objects)/\\2.o: \\1/\\2.rc \\$(objects)/.created\\\\
 	\\$(WINDRES) \\$< \\$@,g"`
 
 SDLMAIN_OBJECTS=`echo $SDLMAIN_SOURCES`

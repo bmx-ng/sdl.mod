@@ -335,7 +335,7 @@ if test x$enable_libc = xyes; then
         AC_DEFINE(HAVE_MPROTECT, 1, [ ])
         ]),
     )
-    AC_CHECK_FUNCS(malloc calloc realloc free getenv setenv putenv unsetenv qsort abs bcopy memset memcpy memmove wcslen wcscmp strlen strlcpy strlcat _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval poll _Exit)
+    AC_CHECK_FUNCS(malloc calloc realloc free getenv setenv putenv unsetenv qsort abs bcopy memset memcpy memmove wcslen wcslcpy wcslcat wcsdup wcsstr wcscmp wcsncmp strlen strlcpy strlcat _strrev _strupr _strlwr strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval poll _Exit)
 
     AC_CHECK_LIB(m, pow, [LIBS="$LIBS -lm"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm"])
     AC_CHECK_FUNCS(acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf copysign copysignf cos cosf exp expf fabs fabsf floor floorf fmod fmodf log logf log10 log10f pow powf scalbn scalbnf sin sinf sqrt sqrtf tan tanf)
@@ -3315,6 +3315,7 @@ AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[d
             AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [ ])
             EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
+            SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
 
             if test x$have_libusb_h = xyes; then
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
@@ -3342,14 +3343,7 @@ AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[d
                     AC_DEFINE_UNQUOTED(SDL_LIBUSB_DYNAMIC, "$libusb_lib", [ ])
                 fi
             else
-                case "$host" in
-                *-*-cygwin* | *-*-mingw32* )
-                    SOURCES="$SOURCES $srcdir/src/hidapi/windows/hid.c"
-                    ;;
-                *-*-darwin* )
-                    SOURCES="$SOURCES $srcdir/src/hidapi/mac/hid.c"
-                    ;;
-                esac
+                SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
             fi
         fi
 
@@ -4177,7 +4171,7 @@ VERSION_OBJECTS=`echo $VERSION_SOURCES`
 VERSION_DEPENDS=`echo $VERSION_SOURCES`
 VERSION_OBJECTS=`echo "$VERSION_OBJECTS" | sed 's,[[^ ]]*/\([[^ ]]*\)\.rc,$(objects)/\1.o,g'`
 VERSION_DEPENDS=`echo "$VERSION_DEPENDS" | sed "s,\\([[^ ]]*\\)/\\([[^ ]]*\\)\\.rc,\\\\
-\\$(objects)/\\2.o: \\1/\\2.rc\\\\
+\\$(objects)/\\2.o: \\1/\\2.rc \\$(objects)/.created\\\\
 	\\$(WINDRES) \\$< \\$@,g"`
 
 SDLMAIN_OBJECTS=`echo $SDLMAIN_SOURCES`
