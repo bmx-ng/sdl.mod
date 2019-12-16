@@ -415,5 +415,12 @@ Function SDLClearError()
 	SDL_ClearError()
 End Function
 
+Rem
+bbdoc: (re)Initialises the audio subsystem.
+End Rem
+Function SDLAudioInit:Int(name:String)
+	Return bmx_SDL_AudioInit(name)
+End Function
+
 ' shutdown all the subsystems
 atexit_(SDL_Quit)

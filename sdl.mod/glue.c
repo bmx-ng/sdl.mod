@@ -149,3 +149,12 @@ BBString * bmx_SDL_GetClipboardText() {
 	}
 	return text;
 }
+
+/* ----------------------------------------------------- */
+
+int bmx_SDL_AudioInit(BBString * name) {
+	char * n = bbStringToUTF8String(name);
+	int res = SDL_AudioInit(n);
+	bbMemFree(n);
+	return res;
+}

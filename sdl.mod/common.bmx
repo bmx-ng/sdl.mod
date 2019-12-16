@@ -48,6 +48,7 @@ Extern
 	Function SDL_QuitSubSystem(flags:Int)
 	Function SDL_WasInit:Int(flags:Int)
 	Function SDL_Quit()
+	Function bmx_SDL_AudioInit:Int(name:String)
 
 	Function bmx_SDL_GetError:String()
 	Function SDL_ClearError()

@@ -38,7 +38,9 @@ struct sdlaudio : audiodevice {
 
 	int reset() {
 
-		SDL_InitSubSystem(SDL_INIT_AUDIO);
+		if (!SDL_WasInit(SDL_INIT_AUDIO)) {
+			SDL_InitSubSystem(SDL_INIT_AUDIO);
+		}
 		
 		SDL_AudioSpec want;
 		
