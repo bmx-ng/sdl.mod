@@ -882,6 +882,12 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	End Method
 
+	Method SetColor( color:SColor8 ) Override
+		color4f[0]=color.r / 255.0
+		color4f[1]=color.g / 255.0
+		color4f[2]=color.b / 255.0
+	End Method
+
 	Method SetClsColor( red, green, blue ) Override
 
 		red = Min( Max( red, 0 ), 255 )
@@ -889,6 +895,10 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		blue = Min( Max( blue, 0 ), 255 )
 		glClearColor( red / 255.0, green / 255.0, blue / 255.0, 1.0 )
 
+	End Method
+
+	Method SetClsColor( color:SColor8 ) Override
+		glClearColor( color.r / 255.0, color.g / 255.0, color.b / 255.0, 1.0 )
 	End Method
 	
 	Method SetViewport( x, y, w, h ) Override
