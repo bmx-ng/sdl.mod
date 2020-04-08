@@ -190,7 +190,7 @@
 #endif
 
 #ifndef SDL_VIDEO_RENDER_OGL_ES2
-#define SDL_VIDEO_RENDER_OGL_ES2 1
+#define SDL_VIDEO_RENDER_OGL_ES2 0
 #endif
 
 /* Metal only supported on 64-bit architectures with 10.11+ */
@@ -213,10 +213,10 @@
 #define SDL_VIDEO_OPENGL    1
 #endif
 #ifndef SDL_VIDEO_OPENGL_ES2
-#define SDL_VIDEO_OPENGL_ES2    1
+#define SDL_VIDEO_OPENGL_ES2    0
 #endif
 #ifndef SDL_VIDEO_OPENGL_EGL
-#define SDL_VIDEO_OPENGL_EGL    1
+#define SDL_VIDEO_OPENGL_EGL    0
 #endif
 #ifndef SDL_VIDEO_OPENGL_CGL
 #define SDL_VIDEO_OPENGL_CGL    1
@@ -228,7 +228,7 @@
 /* Enable Vulkan and Metal support */
 #ifndef SDL_VIDEO_VULKAN
 #if SDL_PLATFORM_SUPPORTS_METAL
-#define SDL_VIDEO_VULKAN 1
+#define SDL_VIDEO_VULKAN 0
 #else
 #define SDL_VIDEO_VULKAN 0
 #endif
