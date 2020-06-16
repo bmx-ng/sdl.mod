@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -722,23 +722,24 @@ Uint32
 SDL_GetGlobalMouseState(int *x, int *y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    int tmpx, tmpy;
 
-    /* make sure these are never NULL for the backend implementations... */
-    if (!x) {
-        x = &tmpx;
+    if (mouse->GetGlobalMouseState) {
+        int tmpx, tmpy;
+
+        /* make sure these are never NULL for the backend implementations... */
+        if (!x) {
+            x = &tmpx;
+        }
+        if (!y) {
+            y = &tmpy;
+        }
+
+        *x = *y = 0;
+
+        return mouse->GetGlobalMouseState(x, y);
+    } else {
+        return SDL_GetMouseState(x, y);
     }
-    if (!y) {
-        y = &tmpy;
-    }
-
-    *x = *y = 0;
-
-    if (!mouse->GetGlobalMouseState) {
-        return 0;
-    }
-
-    return mouse->GetGlobalMouseState(x, y);
 }
 
 void

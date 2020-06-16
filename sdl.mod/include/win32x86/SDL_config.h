@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -117,6 +117,10 @@ typedef unsigned int uintptr_t;
 #define HAVE_STRCHR 1
 #define HAVE_STRRCHR 1
 #define HAVE_STRSTR 1
+/* #undef HAVE_STRTOK_R */
+#if defined(_MSC_VER)
+#define HAVE_STRTOK_S 1
+#endif
 /* These functions have security warnings, so we won't use them */
 /* #undef HAVE__LTOA */
 /* #undef HAVE__ULTOA */
@@ -183,7 +187,7 @@ typedef unsigned int uintptr_t;
 #endif
 
 /* Enable various audio drivers */
-//#define SDL_AUDIO_DRIVER_WASAPI 1
+#define SDL_AUDIO_DRIVER_WASAPI 0
 #define SDL_AUDIO_DRIVER_DSOUND 1
 #define SDL_AUDIO_DRIVER_WINMM  1
 #define SDL_AUDIO_DRIVER_DISK   1
@@ -191,13 +195,18 @@ typedef unsigned int uintptr_t;
 
 /* Enable various input drivers */
 #define SDL_JOYSTICK_DINPUT 1
-#define SDL_JOYSTICK_XINPUT 1
 #define SDL_JOYSTICK_HIDAPI 1
+#define SDL_JOYSTICK_RAWINPUT   1
+#define SDL_JOYSTICK_VIRTUAL    1
+#if _MSC_VER >= 1911
+#define SDL_JOYSTICK_WGI    0   /* This requires Windows SDK 10.0.16299.0 or newer */
+#endif
+#define SDL_JOYSTICK_XINPUT 1
 #define SDL_HAPTIC_DINPUT   1
 #define SDL_HAPTIC_XINPUT   1
 
-/* Enable the dummy sensor driver */
-#define SDL_SENSOR_DUMMY  1
+/* Enable the sensor driver */
+#define SDL_SENSOR_WINDOWS  1
 
 /* Enable various shared object loading systems */
 #define SDL_LOADSO_WINDOWS  1
@@ -215,7 +224,7 @@ typedef unsigned int uintptr_t;
 #ifndef SDL_VIDEO_RENDER_D3D
 #define SDL_VIDEO_RENDER_D3D    1
 #endif
-#ifndef SDL_VIDEO_RENDER_D3D11
+#if _MSC_VER >= 1911
 #define SDL_VIDEO_RENDER_D3D11  0
 #endif
 
@@ -254,3 +263,5 @@ typedef unsigned int uintptr_t;
 #endif
 
 #endif /* SDL_config_windows_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

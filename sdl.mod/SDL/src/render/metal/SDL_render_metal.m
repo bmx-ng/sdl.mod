@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,7 +23,6 @@
 #if SDL_VIDEO_RENDER_METAL && !SDL_RENDER_DISABLED
 
 #include "SDL_hints.h"
-#include "SDL_log.h"
 #include "SDL_assert.h"
 #include "SDL_syswm.h"
 #include "SDL_metal.h"
@@ -47,6 +46,9 @@
 #endif
 
 /* Apple Metal renderer implementation */
+
+/* Used to re-create the window with Metal capability */
+extern int SDL_RecreateWindow(SDL_Window * window, Uint32 flags);
 
 /* macOS requires constants in a buffer to have a 256 byte alignment. */
 /* Use native type alignments from https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf */
@@ -357,6 +359,7 @@ MakePipelineCache(METAL_RenderData *data, METAL_PipelineCache *cache, const char
     MakePipelineState(data, cache, @" (blend=blend)", SDL_BLENDMODE_BLEND);
     MakePipelineState(data, cache, @" (blend=add)", SDL_BLENDMODE_ADD);
     MakePipelineState(data, cache, @" (blend=mod)", SDL_BLENDMODE_MOD);
+    MakePipelineState(data, cache, @" (blend=mul)", SDL_BLENDMODE_MUL);
 }
 
 static void
@@ -946,6 +949,19 @@ METAL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     texturedata.hasdata = YES;
 }}
 
+static void
+METAL_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
+{ @autoreleasepool {
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+    METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
+
+    if (scaleMode == SDL_ScaleModeNearest) {
+        texturedata.mtlsampler = data.mtlsamplernearest;
+    } else {
+        texturedata.mtlsampler = data.mtlsamplerlinear;
+    }
+}}
+
 static int
 METAL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
 { @autoreleasepool {
@@ -1348,6 +1364,7 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 SDL_memcpy(&statecache.viewport, &cmd->data.viewport.rect, sizeof (statecache.viewport));
                 statecache.projection_offset = cmd->data.viewport.first;
                 statecache.viewport_dirty = SDL_TRUE;
+                statecache.cliprect_dirty = SDL_TRUE;
                 break;
             }
 
@@ -1564,6 +1581,8 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     SDL_MetalView view = NULL;
     CAMetalLayer *layer = nil;
     SDL_SysWMinfo syswm;
+    Uint32 window_flags;
+    SDL_bool changed_window = SDL_FALSE;
 
     SDL_VERSION(&syswm.version);
     if (!SDL_GetWindowWMInfo(window, &syswm)) {
@@ -1574,9 +1593,20 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
         return NULL;
     }
 
+    window_flags = SDL_GetWindowFlags(window);
+    if (!(window_flags & SDL_WINDOW_METAL)) {
+        changed_window = SDL_TRUE;
+        if (SDL_RecreateWindow(window, (window_flags & ~SDL_WINDOW_OPENGL) | SDL_WINDOW_METAL) < 0) {
+            return NULL;
+        }
+    }
+
     renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
         SDL_OutOfMemory();
+        if (changed_window) {
+            SDL_RecreateWindow(window, window_flags);
+        }
         return NULL;
     }
 
@@ -1586,6 +1616,9 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     if (mtldevice == nil) {
         SDL_free(renderer);
         SDL_SetError("Failed to obtain Metal device");
+        if (changed_window) {
+            SDL_RecreateWindow(window, window_flags);
+        }
         return NULL;
     }
 
@@ -1596,6 +1629,9 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
         [mtldevice release];
 #endif
         SDL_free(renderer);
+        if (changed_window) {
+            SDL_RecreateWindow(window, window_flags);
+        }
         return NULL;
     }
 
@@ -1608,6 +1644,9 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 #endif
         SDL_Metal_DestroyView(view);
         SDL_free(renderer);
+        if (changed_window) {
+            SDL_RecreateWindow(window, window_flags);
+        }
         return NULL;
     }
 
@@ -1763,6 +1802,7 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->UpdateTextureYUV = METAL_UpdateTextureYUV;
     renderer->LockTexture = METAL_LockTexture;
     renderer->UnlockTexture = METAL_UnlockTexture;
+    renderer->SetTextureScaleMode = METAL_SetTextureScaleMode;
     renderer->SetRenderTarget = METAL_SetRenderTarget;
     renderer->QueueSetViewport = METAL_QueueSetViewport;
     renderer->QueueSetDrawColor = METAL_QueueSetDrawColor;

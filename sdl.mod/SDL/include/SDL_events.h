@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -84,6 +84,8 @@ typedef enum
                                      Called on iOS in applicationDidBecomeActive()
                                      Called on Android in onResume()
                                 */
+
+    SDL_LOCALECHANGED,  /**< The user's locale preferences have changed. */
 
     /* Display events */
     SDL_DISPLAYEVENT   = 0x150,  /**< Display state change */

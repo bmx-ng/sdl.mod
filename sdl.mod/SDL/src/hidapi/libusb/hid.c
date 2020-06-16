@@ -141,6 +141,7 @@ struct hid_device_ {
 
 	/* The interface number of the HID */
 	int interface;
+	int detached_driver;
 
 	/* Indexes of Strings */
 	int manufacturer_index;
@@ -481,7 +482,8 @@ int HID_API_EXPORT hid_exit(void)
 static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_descriptor *intf_desc)
 {
 	static const int XB360_IFACE_SUBCLASS = 93;
-	static const int XB360_IFACE_PROTOCOL = 1; /* Wired only */
+	static const int XB360_IFACE_PROTOCOL = 1; /* Wired */
+	static const int XB360W_IFACE_PROTOCOL = 129; /* Wireless */
 	static const int SUPPORTED_VENDORS[] = {
 		0x0079, /* GPD Win 2 */
 		0x044f, /* Thrustmaster */
@@ -493,6 +495,7 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x07ff, /* Mad Catz */
 		0x0e6f, /* PDP */
 		0x0f0d, /* Hori */
+		0x1038, /* SteelSeries */
 		0x11c9, /* Nacon */
 		0x12ab, /* Unknown */
 		0x1430, /* RedOctane */
@@ -505,10 +508,10 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x24c6, /* PowerA */
 	};
 
-	if (intf_desc->bInterfaceNumber == 0 &&
-	    intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
+	if (intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
 	    intf_desc->bInterfaceSubClass == XB360_IFACE_SUBCLASS &&
-	    intf_desc->bInterfaceProtocol == XB360_IFACE_PROTOCOL) {
+	    (intf_desc->bInterfaceProtocol == XB360_IFACE_PROTOCOL ||
+	     intf_desc->bInterfaceProtocol == XB360W_IFACE_PROTOCOL)) {
 		int i;
 		for (i = 0; i < sizeof(SUPPORTED_VENDORS)/sizeof(SUPPORTED_VENDORS[0]); ++i) {
 			if (vendor_id == SUPPORTED_VENDORS[i]) {
@@ -554,13 +557,7 @@ static int should_enumerate_interface(unsigned short vendor_id, const struct lib
 
 	/* Also enumerate Xbox 360 controllers */
 	if (is_xbox360(vendor_id, intf_desc))
-	{
-		/* hid_write() to Xbox 360 controllers doesn't seem to work on Linux:
-		   - xpad 1-2:1.0: xpad_try_sending_next_out_packet - usb_submit_urb failed with result -2
-		   Xbox 360 controller support is good on Linux anyway, so we'll ignore this for now.
 		return 1;
-		*/
-	}
 
 	/* Also enumerate Xbox One controllers */
 	if (is_xboxone(vendor_id, intf_desc))
@@ -611,25 +608,25 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 						/* Check the VID/PID against the arguments */
 						if ((vendor_id == 0x0 || vendor_id == dev_vid) &&
 						    (product_id == 0x0 || product_id == dev_pid)) {
-							struct hid_device_info *tmp;
-
-							/* VID/PID match. Create the record. */
-							tmp = (struct hid_device_info*) calloc(1, sizeof(struct hid_device_info));
-							if (cur_dev) {
-								cur_dev->next = tmp;
-							}
-							else {
-								root = tmp;
-							}
-							cur_dev = tmp;
-
-							/* Fill out the record */
-							cur_dev->next = NULL;
-							cur_dev->path = make_path(dev, interface_num);
-
 							res = libusb_open(dev, &handle);
 
 							if (res >= 0) {
+								struct hid_device_info *tmp;
+
+								/* VID/PID match. Create the record. */
+								tmp = (struct hid_device_info*) calloc(1, sizeof(struct hid_device_info));
+								if (cur_dev) {
+									cur_dev->next = tmp;
+								}
+								else {
+									root = tmp;
+								}
+								cur_dev = tmp;
+
+								/* Fill out the record */
+								cur_dev->next = NULL;
+								cur_dev->path = make_path(dev, interface_num);
+
 								/* Serial Number */
 								if (desc.iSerialNumber > 0)
 									cur_dev->serial_number =
@@ -707,16 +704,22 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 #endif /* INVASIVE_GET_USAGE */
 
 								libusb_close(handle);
-							}
-							/* VID/PID */
-							cur_dev->vendor_id = dev_vid;
-							cur_dev->product_id = dev_pid;
 
-							/* Release Number */
-							cur_dev->release_number = desc.bcdDevice;
+								/* VID/PID */
+								cur_dev->vendor_id = dev_vid;
+								cur_dev->product_id = dev_pid;
 
-							/* Interface Number */
-							cur_dev->interface_number = interface_num;
+								/* Release Number */
+								cur_dev->release_number = desc.bcdDevice;
+
+								/* Interface Number */
+								cur_dev->interface_number = interface_num;
+								cur_dev->interface_class = intf_desc->bInterfaceClass;
+								cur_dev->interface_subclass = intf_desc->bInterfaceSubClass;
+								cur_dev->interface_protocol = intf_desc->bInterfaceProtocol;
+
+							} else
+								LOG("Can't open device 0x%.4x/0x%.4x during enumeration: %d\n", dev_vid, dev_pid, res);
 						}
 					}
 				} /* altsettings */
@@ -780,7 +783,7 @@ hid_device * hid_open(unsigned short vendor_id, unsigned short product_id, const
 	return handle;
 }
 
-static void read_callback(struct libusb_transfer *transfer)
+static void LIBUSB_CALL read_callback(struct libusb_transfer *transfer)
 {
 	hid_device *dev = (hid_device *)transfer->user_data;
 	int res;
@@ -917,6 +920,39 @@ static int read_thread(void *param)
 	return 0;
 }
 
+static void init_xboxone(libusb_device_handle *device_handle, struct libusb_config_descriptor *conf_desc)
+{
+        static const int XB1_IFACE_SUBCLASS = 71;
+        static const int XB1_IFACE_PROTOCOL = 208;
+	int j, k, res;
+
+	for (j = 0; j < conf_desc->bNumInterfaces; j++) {
+		const struct libusb_interface *intf = &conf_desc->interface[j];
+		for (k = 0; k < intf->num_altsetting; k++) {
+			const struct libusb_interface_descriptor *intf_desc;
+			intf_desc = &intf->altsetting[k];
+
+			if (intf_desc->bInterfaceNumber != 0 &&
+			    intf_desc->bAlternateSetting == 0 &&
+			    intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
+			    intf_desc->bInterfaceSubClass == XB1_IFACE_SUBCLASS &&
+			    intf_desc->bInterfaceProtocol == XB1_IFACE_PROTOCOL) {
+				res = libusb_claim_interface(device_handle, intf_desc->bInterfaceNumber);
+				if (res < 0) {
+					LOG("can't claim interface %d: %d\n", intf_desc->bInterfaceNumber, res);
+					continue;
+				}
+
+				res = libusb_set_interface_alt_setting(device_handle, intf_desc->bInterfaceNumber, intf_desc->bAlternateSetting);
+				if (res < 0) {
+					LOG("xbox init: can't set alt setting %d: %d\n", intf_desc->bInterfaceNumber, res);
+				}
+
+				libusb_release_interface(device_handle, intf_desc->bInterfaceNumber);
+			}
+		}
+	}
+}
 
 hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 {
@@ -938,6 +974,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 		struct libusb_device_descriptor desc;
 		struct libusb_config_descriptor *conf_desc = NULL;
 		int i,j,k;
+
 		libusb_get_device_descriptor(usb_dev, &desc);
 
 		res = libusb_get_active_config_descriptor(usb_dev, &conf_desc);
@@ -953,6 +990,8 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 				if (should_enumerate_interface(desc.idVendor, intf_desc)) {
 					char *dev_path = make_path(usb_dev, intf_desc->bInterfaceNumber);
 					if (!strcmp(dev_path, path)) {
+						int detached_driver = 0;
+
 						/* Matched Paths. Open this device */
 
 						/* OPEN HERE */
@@ -963,6 +1002,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 							break;
 						}
 						good_open = 1;
+
 #ifdef DETACH_KERNEL_DRIVER
 						/* Detach the kernel driver, but only if the
 						   device is managed by the kernel */
@@ -975,8 +1015,10 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 								good_open = 0;
 								break;
 							}
+							detached_driver = 1;
 						}
 #endif
+
 						res = libusb_claim_interface(dev->device_handle, intf_desc->bInterfaceNumber);
 						if (res < 0) {
 							LOG("can't claim interface %d: %d\n", intf_desc->bInterfaceNumber, res);
@@ -986,6 +1028,11 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 							break;
 						}
 
+						/* Initialize XBox One controllers */
+						if (is_xboxone(desc.idVendor, intf_desc)) {
+							init_xboxone(dev->device_handle, conf_desc);
+						}
+
 						/* Store off the string descriptor indexes */
 						dev->manufacturer_index = desc.iManufacturer;
 						dev->product_index      = desc.iProduct;
@@ -993,6 +1040,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 
 						/* Store off the interface number */
 						dev->interface = intf_desc->bInterfaceNumber;
+						dev->detached_driver = detached_driver;
 
 						/* Find the INPUT and OUTPUT endpoints. An
 						   OUTPUT endpoint is not required. */
@@ -1057,17 +1105,17 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t length)
 {
 	int res;
-	int report_number = data[0];
-	int skipped_report_id = 0;
-
-	if (report_number == 0x0) {
-		data++;
-		length--;
-		skipped_report_id = 1;
-	}
-
 
 	if (dev->output_endpoint <= 0) {
+		int report_number = data[0];
+		int skipped_report_id = 0;
+
+		if (report_number == 0x0) {
+			data++;
+			length--;
+			skipped_report_id = 1;
+		}
+
 		/* No interrupt out endpoint. Use the Control Endpoint */
 		res = libusb_control_transfer(dev->device_handle,
 			LIBUSB_REQUEST_TYPE_CLASS|LIBUSB_RECIPIENT_INTERFACE|LIBUSB_ENDPOINT_OUT,
@@ -1096,9 +1144,6 @@ int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t 
 
 		if (res < 0)
 			return -1;
-
-		if (skipped_report_id)
-			actual_length++;
 
 		return actual_length;
 	}
@@ -1300,6 +1345,15 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 
 	/* release the interface */
 	libusb_release_interface(dev->device_handle, dev->interface);
+
+#ifdef DETACH_KERNEL_DRIVER
+	/* Re-attach kernel driver if necessary. */
+	if (dev->detached_driver) {
+		int res = libusb_attach_kernel_driver(dev->device_handle, dev->interface);
+		if (res < 0)
+			LOG("Couldn't re-attach kernel driver.\n");
+	}
+#endif
 
 	/* Close the handle */
 	libusb_close(dev->device_handle);
