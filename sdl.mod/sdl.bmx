@@ -422,5 +422,13 @@ Function SDLAudioInit:Int(name:String)
 	Return bmx_SDL_AudioInit(name)
 End Function
 
+Rem
+bbdoc: Returns the total number of logical CPU cores.
+about: On CPUs that include technologies such as hyperthreading, the number of logical cores may be more than the number of physical cores.
+End Rem
+Function SDLGetCPUCount:Int()
+	Return SDL_GetCPUCount()
+End Function
+
 ' shutdown all the subsystems
 atexit_(SDL_Quit)
