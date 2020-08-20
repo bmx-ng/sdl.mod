@@ -186,6 +186,22 @@ void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 				case SDL_WINDOWEVENT_MOVED:
 					bbSDLSystemEmitEvent(BBEVENT_WINDOWMOVE, source, event->window.windowID, 0, event->window.data1, event->window.data2, &bbNullObject);
 					return;
+				case SDL_WINDOWEVENT_ENTER:
+					bbSDLSystemEmitEvent(BBEVENT_MOUSEENTER, source, event->window.windowID, 0, 0, 0, &bbNullObject);
+					return;
+				case SDL_WINDOWEVENT_LEAVE:
+					bbSDLSystemEmitEvent(BBEVENT_MOUSELEAVE, source, event->window.windowID, 0, 0, 0, &bbNullObject);
+					return;
+				case SDL_WINDOWEVENT_MINIMIZED:
+					bbSDLSystemEmitEvent(BBEVENT_WINDOWMINIMIZE, source, event->window.windowID, 0, 0, 0, &bbNullObject);
+					return;
+				case SDL_WINDOWEVENT_MAXIMIZED:
+					bbSDLSystemEmitEvent(BBEVENT_WINDOWMAXIMIZE, source, event->window.windowID, 0, 0, 0, &bbNullObject);
+					return;
+				case SDL_WINDOWEVENT_RESTORED:
+					bbSDLSystemEmitEvent(BBEVENT_WINDOWRESTORE, source, event->window.windowID, 0, 0, 0, &bbNullObject);
+					return;
+				
 			}
 	}	
 	
