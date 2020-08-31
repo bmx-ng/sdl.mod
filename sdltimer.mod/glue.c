@@ -44,6 +44,7 @@ void bmx_sdl_timer_fire( int id, BBObject * obj, int ticks ) {
     userevent.type = SDL_USEREVENT;
     userevent.code = id,
     userevent.data1 = obj;
+	userevent.data2 = malloc(sizeof(int));
 	((int*)userevent.data2)[0] = ticks;
 
     event.type = SDL_USEREVENT;

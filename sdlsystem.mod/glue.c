@@ -141,6 +141,7 @@ void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 			switch (event->user.code) {
 				case BBEVENT_TIMERTICK:
 					bbSDLSystemEmitEvent( BBEVENT_TIMERTICK,event->user.data1,((int*)event->user.data2)[0],0,0,0,&bbNullObject );
+					free(event->user.data2);
 					return;
 				case 0x802:
 					brl_event_EmitEvent( event->user.data1 );
