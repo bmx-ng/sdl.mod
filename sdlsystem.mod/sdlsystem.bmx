@@ -30,6 +30,8 @@ Module SDL.SDLSystem
 Import SDL.SDL
 Import BRL.System
 Import BRL.LinkedList
+Import Pub.NFD
+Import Brl.StringBuilder
 
 Import "common.bmx"
 
@@ -88,11 +90,81 @@ Type TSDLSystemDriver Extends TSystemDriver
 	End Method
 
 	Method RequestFile$( Text$,exts$,save:Int,file$ ) Override
-		' TODO
+		Local requestedFile:String
+		
+		Local res:Int
+		Local defaultPath:Byte Ptr
+		Local outPath:Byte Ptr
+		Local filterList:Byte Ptr
+		If file Then
+			defaultPath = file.ToUTF8String()
+		End If
+		If exts Then
+			Local groups:String[] = exts.Split(";")
+
+			Local sb:TStringBuilder = New TStringBuilder
+			For Local group:String = EachIn groups				
+				Local i:Int = group.Find(":")
+				Local ext:String
+				If i > -1 Then
+					ext = group[i + 1..]
+				Else
+					ext = group
+				End If
+				If ext <> "*" Then
+					If sb.Length() Then
+						sb.Append(";")
+					End If
+					sb.Append(ext)
+				End If
+			Next
+
+			filterList = sb.ToString().ToUTF8String()
+		End If
+		
+		If save Then
+			res = NFD_SaveDialog(filterList, defaultPath, Varptr outPath)
+		Else
+			res = NFD_OpenDialog(filterList, defaultPath, Varptr outPath)
+		End If
+		
+		If res = 1 And outPath Then
+			requestedFile = String.FromUTF8String(outPath)
+			free_(outPath)
+		End If
+		
+		If defaultPath Then
+			MemFree(defaultPath)
+		End If
+		If filterList Then
+			MemFree(filterList)
+		End If
+		
+		Return requestedFile
 	End Method
 	
 	Method RequestDir$( Text$,path$ ) Override
-		' TODO
+		Local requestedDir:String
+		
+		Local res:Int
+		Local defaultPath:Byte Ptr
+		Local outPath:Byte Ptr
+		If path Then
+			defaultPath = path.ToUTF8String()
+		End If
+		
+		res = NFD_PickFolder(defaultPath, Varptr outPath)
+
+		If res = 1 And outPath Then
+			requestedDir = String.FromUTF8String(outPath)
+			free_(outPath)
+		End If
+		
+		If defaultPath Then
+			MemFree(defaultPath)
+		End If
+	
+		Return requestedDir
 	End Method
 
 	Method OpenURL:Int( url$ ) Override
@@ -190,3 +262,12 @@ Type TSDLMultiGesture
 	End Function
 	
 End Type
+
+Private
+
+Extern
+	Function NFD_OpenDialog:Int(filterList:Byte Ptr, defaultPath:Byte Ptr, outPath:Byte Ptr Ptr)
+	Function NFD_SaveDialog:Int(filterList:Byte Ptr, defaultPath:Byte Ptr, outPath:Byte Ptr Ptr)
+	Function NFD_PickFolder:Int(defaultPath:Byte Ptr, outPath:Byte Ptr Ptr)
+	Function free_(buf:Byte Ptr)="void free(void *)!"
+End Extern
