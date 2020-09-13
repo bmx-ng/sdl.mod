@@ -1,4 +1,4 @@
-' Copyright (c) 2014-2019 Bruce A Henderson
+' Copyright (c) 2014-2020 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -86,6 +86,10 @@ Import "include/ios/*.h"
 
 ?nx
 ModuleInfo "LD_OPTS: -L%nx.devkitpro%/portlibs/switch/lib"
+?haikux64
+ModuleInfo "CC_OPTS: -mmmx -m3dnow -msse -msse2 -msse3"
+
+Import "include/haikux64/*.h"
 ?win32
 '
 ' Note : If you have XINPUT errors during the build, try uncommenting the following CC_OPTS.

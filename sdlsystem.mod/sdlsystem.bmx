@@ -1,4 +1,4 @@
-' Copyright (c) 2014-2019 Bruce A Henderson
+' Copyright (c) 2014-2020 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -90,6 +90,7 @@ Type TSDLSystemDriver Extends TSystemDriver
 	End Method
 
 	Method RequestFile$( Text$,exts$,save:Int,file$ ) Override
+?Not haiku
 		Local requestedFile:String
 		
 		Local res:Int
@@ -141,9 +142,11 @@ Type TSDLSystemDriver Extends TSystemDriver
 		End If
 		
 		Return requestedFile
+?
 	End Method
 	
 	Method RequestDir$( Text$,path$ ) Override
+?Not haiku
 		Local requestedDir:String
 		
 		Local res:Int
@@ -165,6 +168,7 @@ Type TSDLSystemDriver Extends TSystemDriver
 		End If
 	
 		Return requestedDir
+?
 	End Method
 
 	Method OpenURL:Int( url$ ) Override

@@ -1,4 +1,4 @@
-' Copyright (c) 2014-2019 Bruce A Henderson
+' Copyright (c) 2014-2020 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -39,6 +39,13 @@ Import "source.bmx"
 ?raspberrypi
 Import "-lrt"
 ?win32
+Import "source.bmx"
+?haiku
+Import "-lbe"
+Import "-lmedia"
+Import "-lgame"
+Import "-ldevice"
+Import "-ltextencoding"
 Import "source.bmx"
 ?
 

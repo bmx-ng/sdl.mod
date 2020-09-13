@@ -1,4 +1,4 @@
-' Copyright (c) 2014-2019 Bruce A Henderson
+' Copyright (c) 2014-2020 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -52,6 +52,9 @@ Import "../../sdl.mod/sdl.mod/include/android/*.h"
 
 ?ios
 Import "../../sdl.mod/sdl.mod/include/ios/*.h"
+
+?haikux64
+Import "../../sdl.mod/sdl.mod/include/haikux64/*.h"
 
 ?
 
