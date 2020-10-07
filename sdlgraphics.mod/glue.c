@@ -65,11 +65,6 @@ void bmx_SDL_Poll();
 void bmx_SDL_WaitEvent();
 void * bbSDLGraphicsGetHandle(BBSDLContext *context);
 
-#ifdef __RASPBERRYPI__
-void bmx_tvservice_get_closest_mode(int width, int height, int framerate, int * mode, int * group);
-void bmx_tvservice_setmode(int mode, int group, int width, int height);
-#endif
-
 static BBSDLContext *_currentContext;
 
 int bbSDLGraphicsGraphicsModes( int display, int *imodes,int maxcount ) {
@@ -124,21 +119,11 @@ BBSDLContext *bbSDLGraphicsCreateGraphics( int width,int height,int depth,int hz
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
 #endif
 
-#ifdef __RASPBERRYPI__
-	int rpi_mode;
-	int rpi_group;
-	
-	if (depth && (flags & FLAGS_RPI_TV_FULLSCREEN)) {
-		bmx_tvservice_get_closest_mode(width, height, hz, &rpi_mode, &rpi_group);
-		bmx_tvservice_setmode(rpi_mode, rpi_group, width, height);
-	}
-	SDL_VideoInit(NULL);
-#endif
 	SDL_Window *window = SDL_CreateWindow(appTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		width, height, windowFlags);
 		
 	if (window == NULL) {
-printf("error... %s\n", SDL_GetError());fflush(stdout);
+		printf("error... %s\n", SDL_GetError());fflush(stdout);
 		return NULL;
 	}
 
@@ -155,17 +140,14 @@ printf("error... %s\n", SDL_GetError());fflush(stdout);
 	bbcontext->mode=mode;	
 	bbcontext->width=width;	
 	bbcontext->height=height;
-#ifdef __RASPBERRYPI__
-	bbcontext->depth=16;
-#else
 	bbcontext->depth=24;	
-#endif
 	bbcontext->hertz=hz;
 	bbcontext->flags=flags;
 	bbcontext->sync=-1;	
 	bbcontext->window=window;
 	bbcontext->context=context;
 	SDL_GetWindowWMInfo(window, &bbcontext->info);
+
 	return bbcontext;
 
 }
@@ -229,9 +211,6 @@ void bbSDLGraphicsGetSettings( BBSDLContext *context, int * width,int * height,i
 void bbSDLExit(){
 	bbSDLGraphicsClose( _currentContext );
 	_currentContext=0;
-#ifdef __RASPBERRYPI__
-	SDL_VideoQuit();
-#endif
 }
 
 void * bbSDLGraphicsGetHandle(BBSDLContext *context) {

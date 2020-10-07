@@ -58,9 +58,6 @@ Import "../../sdl.mod/sdl.mod/include/haikux64/*.h"
 Import "../../sdl.mod/sdl.mod/SDL/include/*.h"
 
 Import "glue.c"
-?raspberrypi
-Import "rpi_glue.c"
-?
 
 Extern
 
@@ -81,13 +78,7 @@ Extern
 	' system stuff
 '	Function SDL_ShowCursor(visible:Int)
 	Function bmx_SDL_WarpMouseInWindow(x:Int, y:Int)
-	
-?raspberrypi
-	Function bmx_tvservice_init()
-	Function bmx_tvservice_modes:Int(modes:Byte Ptr, maxcount:Int, withMode:Int)
-	Function bmx_reset_screen()
-?
-	
+		
 '	Function bmx_SDL_GetDisplayWidth:Int(display:Int)
 '	Function bmx_SDL_GetDisplayHeight:Int(display:Int)
 '	Function bmx_SDL_GetDisplayDepth:Int(display:Int)
