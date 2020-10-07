@@ -100,7 +100,10 @@
 #define HAVE_WCSLEN 1
 /* #undef HAVE_WCSLCPY */
 /* #undef HAVE_WCSLCAT */
+#define HAVE_WCSDUP 1
+#define HAVE_WCSSTR 1
 #define HAVE_WCSCMP 1
+#define HAVE_WCSNCMP 1
 #define HAVE_STRLEN 1
 /* #undef HAVE_STRLCPY */
 /* #undef HAVE_STRLCAT */
@@ -112,6 +115,7 @@
 #define HAVE_STRCHR 1
 #define HAVE_STRRCHR 1
 #define HAVE_STRSTR 1
+#define HAVE_STRTOK_R 1
 /* #undef HAVE_ITOA */
 /* #undef HAVE__LTOA */
 /* #undef HAVE__UITOA */
@@ -200,7 +204,7 @@
 
 /* #undef HAVE_ALTIVEC_H */
 #define HAVE_DBUS_DBUS_H 1
-/* #undef HAVE_FCITX_FRONTEND_H */
+#define HAVE_FCITX 1
 /* #undef HAVE_IBUS_IBUS_H */
 /* #undef HAVE_IMMINTRIN_H */
 /* #undef HAVE_LIBSAMPLERATE_H */
@@ -286,6 +290,7 @@
 /* #undef SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H */
 /* #undef SDL_JOYSTICK_HIDAPI */
 /* #undef SDL_JOYSTICK_EMSCRIPTEN */
+#define SDL_JOYSTICK_VIRTUAL 1
 /* #undef SDL_HAPTIC_DUMMY */
 /* #undef SDL_HAPTIC_ANDROID */
 #define SDL_HAPTIC_LINUX 1
@@ -329,9 +334,9 @@
 /* #undef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_XKBCOMMON */
 #define SDL_VIDEO_DRIVER_X11 1
 /* #undef SDL_VIDEO_DRIVER_RPI */
-/* #undef SDL_VIDEO_DRIVER_KMSDRM */
-/* #undef SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC */
-/* #undef SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC_GBM */
+#define SDL_VIDEO_DRIVER_KMSDRM 1
+#define SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC "libdrm.so.2"
+#define SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC_GBM "libgbm.so.1"
 /* #undef SDL_VIDEO_DRIVER_ANDROID */
 /* #undef SDL_VIDEO_DRIVER_EMSCRIPTEN */
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC "libX11.so.6"
@@ -361,20 +366,20 @@
 
 /* #undef SDL_VIDEO_RENDER_D3D */
 /* #undef SDL_VIDEO_RENDER_D3D11 */
-#define SDL_VIDEO_RENDER_OGL 1
-/* #undef SDL_VIDEO_RENDER_OGL_ES */
-/*#define SDL_VIDEO_RENDER_OGL_ES2 1*/
+/* #define SDL_VIDEO_RENDER_OGL 1 */
+#define SDL_VIDEO_RENDER_OGL_ES 1
+#define SDL_VIDEO_RENDER_OGL_ES2 1
 /* #undef SDL_VIDEO_RENDER_DIRECTFB */
 /* #undef SDL_VIDEO_RENDER_METAL */
 
 /* Enable OpenGL support */
-#define SDL_VIDEO_OPENGL 1
-/* #undef SDL_VIDEO_OPENGL_ES */
-/*#define SDL_VIDEO_OPENGL_ES2 1*/
+/* #define SDL_VIDEO_OPENGL 1 */
+#define SDL_VIDEO_OPENGL_ES 1
+#define SDL_VIDEO_OPENGL_ES2 1
 /* #undef SDL_VIDEO_OPENGL_BGL */
 /* #undef SDL_VIDEO_OPENGL_CGL */
 #define SDL_VIDEO_OPENGL_EGL 1
-#define SDL_VIDEO_OPENGL_GLX 1
+/* #define SDL_VIDEO_OPENGL_GLX 1 */
 /* #undef SDL_VIDEO_OPENGL_WGL */
 /* #undef SDL_VIDEO_OPENGL_OSMESA */
 /* #undef SDL_VIDEO_OPENGL_OSMESA_DYNAMIC */
@@ -382,7 +387,7 @@
 /* Enable Vulkan support */
 /*#define SDL_VIDEO_VULKAN 1*/
 /* Enable Metal support */
-#undef SDL_VIDEO_METAL
+/* #undef SDL_VIDEO_METAL */
 
 /* Enable system power support */
 #define SDL_POWER_LINUX 1
@@ -415,7 +420,7 @@
 /* Enable dynamic udev support */
 #define SDL_UDEV_DYNAMIC "libudev.so.1"
 /* Enable dynamic libusb support */
-#undef SDL_LIBUSB_DYNAMIC
+/* #undef SDL_LIBUSB_DYNAMIC */
 
 /* Enable dynamic libsamplerate support */
 /* #undef SDL_LIBSAMPLERATE_DYNAMIC */

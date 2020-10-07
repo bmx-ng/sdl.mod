@@ -27,6 +27,7 @@ Module SDL.SDLGraphics
 ModuleInfo "CC_OPTS: -D__RASPBERRYPI__"
 ModuleInfo "CC_OPTS: -I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads"
 ModuleInfo "LD_OPTS: -L/opt/vc/lib"
+ModuleInfo "LD_OPTS: -L/usr/lib/arm-linux-gnueabihf"
 
 Import "-lvcos"
 Import "-lvchostif"
