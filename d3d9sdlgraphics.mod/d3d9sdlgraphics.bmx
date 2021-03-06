@@ -10,6 +10,9 @@ Import SDL.SDLGraphics
 Import BRL.LinkedList
 
 Private
+'Extern
+'	Function bbAppIcon:Byte Ptr(inst:Byte Ptr)="HICON bbAppIcon(HINSTANCE)!"
+'End Extern
 
 'Global _wndClass$="BBDX9Device Window Class"
 
@@ -33,6 +36,25 @@ Global _d3dOccQuery:IDirect3DQuery9
 Type TD3D9AutoRelease
 	Field unk:IUnknown_
 End Type
+Rem
+Function D3D9WndProc:Byte Ptr( hwnd:Byte Ptr,msg:UInt,wp:WParam,lp:LParam) "win32"
+
+	bbSystemEmitOSEvent hwnd,msg,wp,lp,Null
+	
+	Select msg
+	Case WM_CLOSE
+		Return Null
+	Case WM_SYSKEYDOWN
+		If wp<>KEY_F4 Return Null
+	Case WM_ACTIVATE
+		If _graphics _graphics.OnWMActivate(wp)
+		Return 0
+	End Select
+
+	Return DefWindowProcW( hwnd,msg,wp,lp )
+
+End Function
+EndRem
 
 Function OpenD3DDevice:Int( hwnd:Byte Ptr,width:Int,height:Int,depth:Int,hertz:Int,flags:Int)
 	If _d3dDevRefs
@@ -60,7 +82,48 @@ Function OpenD3DDevice:Int( hwnd:Byte Ptr,width:Int,height:Int,depth:Int,hertz:I
 	
 	Local cflags:Int=D3DCREATE_FPU_PRESERVE
 	
-	'_d3dDev = New IDirect3DDevice9
+	'_d3dDev' = New IDirect3DDevice9
+
+	Function CheckDepthFormat(format)
+	    Return _d3d.CheckDeviceFormat(0,D3DDEVTYPE_HAL,D3DFMT_X8R8G8B8,D3DUSAGE_DEPTHSTENCIL,D3DRTYPE_SURFACE,format)=D3D_OK
+	End Function
+
+	If flags&GRAPHICS_DEPTHBUFFER Or flags&GRAPHICS_STENCILBUFFER
+	    pp.EnableAutoDepthStencil = True
+	    If flags&GRAPHICS_STENCILBUFFER
+	        If Not CheckDepthFormat( D3DFMT_D24S8 )
+	            If Not CheckDepthFormat( D3DFMT_D24FS8 )
+	                If Not CheckDepthFormat( D3DFMT_D24X4S4 )
+	                    If Not CheckDepthFormat( D3DFMT_D15S1 )
+	                        Return False
+	                    Else
+	                        pp.AutoDepthStencilFormat = D3DFMT_D15S1
+	                    EndIf
+	                Else
+	                    pp.AutoDepthStencilFormat = D3DFMT_D24X4S4
+	                EndIf
+	            Else
+	                pp.AutoDepthStencilFormat = D3DFMT_D24FS8
+	            EndIf
+	        Else
+	            pp.AutoDepthStencilFormat = D3DFMT_D24S8
+	        EndIf
+	    Else
+	        If Not CheckDepthFormat( D3DFMT_D32 )
+	            If Not CheckDepthFormat( D3DFMT_D24X8 )
+	                If Not CheckDepthFormat( D3DFMT_D16 )
+	                    Return False
+	                Else
+	                    pp.AutoDepthStencilFormat = D3DFMT_D16
+	                EndIf
+	            Else
+	                pp.AutoDepthStencilFormat = D3DFMT_D24X8
+	            EndIf
+	        Else
+	            pp.AutoDepthStencilFormat = D3DFMT_D32
+	        EndIf
+	    EndIf
+	EndIf
 	
 	'OK, try hardware vertex processing...
 	Local tflags:Int=D3DCREATE_PUREDEVICE|D3DCREATE_HARDWARE_VERTEXPROCESSING|cflags
@@ -119,6 +182,9 @@ Function CloseD3DDevice()
 End Function
 
 Function ResetD3DDevice()
+	If _graphics 
+		_graphics.OnDeviceLost()
+	EndIf
 	If _d3dOccQuery
 		_d3dOccQuery.Release_
 		_d3dOccQuery = Null
@@ -126,8 +192,13 @@ Function ResetD3DDevice()
 		'_d3dOccQuery = New IDirect3DQuery9
 	End If
 	
-	If _d3dDev.Reset( _presentParams)<0
-		Throw "_d3dDev.Reset failed"
+	Local result:Int = _d3dDev.Reset( _presentParams)
+	If result < 0
+		Throw "_d3dDev.Reset failed. Code: " + result
+	EndIf
+
+	If _graphics 
+		_graphics.OnDeviceReset()
 	EndIf
 
 	If _d3ddev.CreateQuery(9,_d3dOccQuery)<0
@@ -142,7 +213,24 @@ Public
 
 Global UseDX9RenderLagFix:Int = 0
 
+Type TD3D9SDLDeviceStateCallback
+	Field _fnCallback(obj:Object)
+	Field _obj:Object
+	
+	Method Create:TD3D9SDLDeviceStateCallback(fnCallback(obj:Object), obj:Object)
+		_fnCallback = fnCallback
+		_obj = obj
+
+		Return Self
+	EndMethod
+EndType
+
+
 Type TD3D9SDLGraphics Extends TGraphics
+	Method New()
+		_onDeviceLostCallbacks = New TList
+		_onDeviceResetCallbacks = New TList
+	EndMethod
 
 	Method Attach:TD3D9SDLGraphics( hwnd:Byte Ptr,flags:Int )
 		Local rect:Int[4]
@@ -190,6 +278,56 @@ Type TD3D9SDLGraphics Extends TGraphics
 		Return Self
 	End Method
 	
+	Method OnWMActivate(wp:WParam)
+		' this covers the alt-tab issue for render-texture management
+		Local activate:Short = wp & $FFFF
+		Local state:Short = (wp Shr 16) & $FFFF
+		
+		' only release when fullscreen
+		If activate = 0 And _depth <> 0
+			OnDeviceLost()
+		EndIf
+		' the Flip(sync) method will call into ResetD3DDevice where OnDeviceReset will be called
+	EndMethod
+	
+	Method AddDeviceLostCallback(fnOnDeviceLostCallback(obj:Object), obj:Object)
+		_onDeviceLostCallbacks.AddLast(New TD3D9SDLDeviceStateCallback.Create(fnOnDeviceLostCallback, obj))
+	EndMethod
+	
+	Method AddDeviceResetCallback(fnOnDeviceResetCallback(obj:Object), obj:Object)
+		_onDeviceResetCallbacks.AddLast(New TD3D9SDLDeviceStateCallback.Create(fnOnDeviceResetCallback, obj))
+	EndMethod
+	
+	Method RemoveDeviceLostCallback(fnOnDeviceLostCallback(obj:Object))
+		For Local statecallback:TD3D9SDLDeviceStateCallback = EachIn _onDeviceLostCallbacks
+			If statecallback._fnCallback = fnOnDeviceLostCallback
+				_onDeviceLostCallbacks.Remove(statecallback)
+				Exit
+			EndIf
+		Next
+	EndMethod
+
+	Method RemoveDeviceResetCallback(fnOnDeviceResetCallback(obj:Object))
+		For Local statecallback:TD3D9SDLDeviceStateCallback = EachIn _onDeviceResetCallbacks
+			If statecallback._fnCallback = fnOnDeviceResetCallback
+				_onDeviceResetCallbacks.Remove(statecallback)
+				Exit
+			EndIf
+		Next
+	EndMethod
+
+	Method OnDeviceLost()
+		For Local callback:TD3D9SDLDeviceStateCallback = EachIn _onDeviceLostCallbacks
+			callback._fnCallback(callback._obj)
+		Next
+	EndMethod
+	
+	Method OnDeviceReset()
+		For Local callback:TD3D9SDLDeviceStateCallback = EachIn _onDeviceResetCallbacks
+			callback._fnCallback(callback._obj)
+		Next
+	EndMethod
+		
 	Method GetDirect3DDevice:IDirect3DDevice9()
 		Return _d3dDev
 	End Method
@@ -300,7 +438,8 @@ Type TD3D9SDLGraphics Extends TGraphics
 	Field _attached:Int
 	
 	Field _g:TSDLGraphics
-
+	Field _onDeviceLostCallbacks:TList
+	Field _onDeviceResetCallbacks:TList
 End Type
 
 Type TD3D9SDLGraphicsDriver Extends TGraphicsDriver
@@ -340,7 +479,9 @@ Type TD3D9SDLGraphicsDriver Extends TGraphicsDriver
 			j:+1
 		Next
 		_modes=_modes[..j]
-	
+
+		'RONNY: Listen event
+		AddHook (EmitEventHook, DeviceResetHook, Self, 0)
 	
 '		Local name:Short Ptr = _wndClass.ToWString()
 '		'register wndclass
@@ -348,6 +489,7 @@ Type TD3D9SDLGraphicsDriver Extends TGraphicsDriver
 '		wndclass.SethInstance(GetModuleHandleW( Null ))
 '		wndclass.SetlpfnWndProc(D3D9WndProc)
 '		wndclass.SethCursor(LoadCursorW( Null,Short Ptr IDC_ARROW ))
+'		wndClass.SethIcon(bbAppIcon(GetModuleHandleW( Null )))
 '		wndclass.SetlpszClassName(name)
 '		RegisterClassW wndclass.classPtr
 '		MemFree name
@@ -355,12 +497,24 @@ Type TD3D9SDLGraphicsDriver Extends TGraphicsDriver
 		Return Self
 	End Method
 	
+	Function DeviceResetHook:Object(id:Int, data:Object, context:Object)
+		Local ev:TEvent = TEvent(data)
+		If Not ev Then Return data
+		
+'		Select ev.id
+'			Case SDL_RENDER_DEVICE_RESET
+'				Throw "Device Reset!"
+'		End Select
+		
+		Return data
+	End Function
+	
 	Method GraphicsModes:TGraphicsMode[]() Override
 		Return _modes
 	End Method
 	
 	Method AttachGraphics:TD3D9SDLGraphics( widget:Byte Ptr,flags:Int ) Override
-		Return New TD3D9SDLGraphics.Attach( widget:Byte Ptr,flags:Int )
+		Return New TD3D9SDLGraphics.Attach( widget,flags )
 	End Method
 	
 	Method CreateGraphics:TD3D9SDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Int,x:Int,y:Int) Override

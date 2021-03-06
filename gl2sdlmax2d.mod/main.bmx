@@ -286,6 +286,251 @@ Function DefaultTextureFShaderSource:String()
 
 End Function
 
+
+Global glewIsInit:Int
+
+Type TGL2SDLRenderImageContext Extends TRenderImageContext
+	Field _gc:TGraphics
+	Field _driver:TGraphicsDriver
+	Field _backbuffer:Int
+	Field _width:Int
+	Field _height:Int
+	Field _renderimages:TList
+	
+	Field _matrix:TMatrix
+
+	Method Delete()
+		Destroy()
+	EndMethod
+
+	Method Destroy()
+		_gc = Null
+
+		If _renderimages
+			For Local ri:TGL2SDLRenderImage = EachIn _renderimages
+				ri.DestroyRenderImage()
+			Next
+		EndIf
+	EndMethod
+
+	Method Create:TGL2SDLRenderimageContext(gc:TGraphics, driver:TGraphicsDriver)
+		If Not glewIsInit
+			glewInit
+			glewIsInit = True
+		EndIf
+
+		_renderimages = New TList
+		_gc = TMax2DGraphics(gc)
+		_driver = TMax2DDriver(driver)
+		
+		_width = GraphicsWidth()
+		_height = GraphicsHeight()
+
+		' get the backbuffer - usually 0
+		glGetIntegerv(GL_FRAMEBUFFER_BINDING, Varptr _backbuffer)
+		
+		'glGetFloatv(GL_PROJECTION_MATRIX, _matrix)
+		_matrix = TGL2Max2DDriver(driver).u_pmatrix
+		
+		Return Self
+	EndMethod
+
+	Method GraphicsContext:TGraphics()
+		Return _gc
+	EndMethod
+
+	Method CreateRenderImage:TRenderImage(width:Int, height:Int, UseImageFiltering:Int)
+		Local renderimage:TGL2SDLRenderImage = New TGL2SDLRenderImage.CreateRenderImage(width, height)
+		renderimage.Init(_gc, _driver, UseImageFiltering, Null)
+		Return  renderimage
+	EndMethod
+	
+	Method CreateRenderImageFromPixmap:TRenderImage(pixmap:TPixmap, UseImageFiltering:Int)
+		Local renderimage:TGL2SDLRenderImage = New TGL2SDLRenderImage.CreateRenderImage(pixmap.width, pixmap.height)
+		renderimage.Init(_gc, _driver, UseImageFiltering, pixmap)
+		Return  renderimage
+	EndMethod
+	
+	Method DestroyRenderImage(renderImage:TRenderImage)
+		renderImage.DestroyRenderImage()
+		_renderImages.Remove(renderImage)
+	EndMethod
+
+	Method SetRenderImage(renderimage:TRenderimage)
+		Local driver:TGL2Max2DDriver = TGL2Max2DDriver(_driver)
+		driver.Flush()
+			
+		If Not renderimage
+			glBindFramebuffer(GL_FRAMEBUFFER,_backbuffer)
+		
+			driver.u_pmatrix = _matrix
+			
+			glViewport(0,0,_width,_height)
+		Else
+			renderimage.SetRenderImage()
+		EndIf
+	EndMethod
+	
+	Method CreatePixmapFromRenderImage:TPixmap(renderImage:TRenderImage)
+		Return TGL2SDLRenderImage(renderImage).ToPixmap()
+	EndMethod
+EndType
+
+
+
+Type TGL2SDLRenderImageFrame Extends TGLImageFrame
+	Field _fbo:Int
+	
+	Method Delete()
+		DeleteFramebuffer
+	EndMethod
+	
+	Method DeleteFramebuffer()
+		If _fbo
+			glDeleteFramebuffers(1, Varptr _fbo)
+			_fbo = -1 '???
+		EndIf
+	EndMethod
+	
+	Method Clear(r:Int=0, g:Int=0, b:Int=0, a:Float=0.0)
+		'backup current
+		Local c:Float[4]
+		glGetFloatv(GL_COLOR_CLEAR_VALUE, c)		
+
+		glClearColor(r/255.0, g/255.0, b/255.0, a)
+		glClear(GL_COLOR_BUFFER_BIT)
+
+		glClearColor(c[0], c[1], c[2], c[3])
+	End Method
+
+	Method CreateRenderTarget:TGL2SDLRenderImageFrame(width, height, UseImageFiltering:Int, pixmap:TPixmap)
+		If pixmap pixmap = ConvertPixmap(pixmap, PF_RGBA)
+		
+		glDisable(GL_SCISSOR_TEST)
+
+		glGenTextures(1, Varptr name)
+		glBindTexture(GL_TEXTURE_2D, name)
+		If pixmap
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixmap.pixels)
+		Else
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Null)
+		EndIf
+
+		If UseImageFiltering
+			glTexParameteri GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR
+			glTexParameteri GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR
+		Else
+			glTexParameteri GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST
+			glTexParameteri GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST
+		EndIf
+		
+		glTexParameteri GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE
+		glTexParameteri GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE
+		
+		glGenFramebuffers(1,Varptr _fbo)
+		glBindFramebuffer GL_FRAMEBUFFER,_fbo
+
+		glBindTexture GL_TEXTURE_2D,name
+		glFramebufferTexture2D GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,name,0
+
+		If Not pixmap
+			Clear()
+		EndIf
+
+		uscale = 1.0 / width
+		vscale = 1.0 / height
+
+		Return Self
+	EndMethod
+	
+	Method DestroyRenderTarget()
+		DeleteFramebuffer()
+	EndMethod
+	
+	Method ToPixmap:TPixmap(width:Int, height:Int)
+		Local prevTexture:Int
+		Local prevFBO:Int
+		
+		glGetIntegerv(GL_TEXTURE_BINDING_2D,Varptr prevTexture)
+		glBindTexture(GL_TEXTURE_2D,name)
+
+		Local pixmap:TPixmap = CreatePixmap(width, height, PF_RGBA8888)		
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixmap.pixels)
+		
+		glBindTexture(GL_TEXTURE_2D,prevTexture)
+				
+		Return pixmap
+	EndMethod
+EndType
+
+Type TGL2SDLRenderImage Extends TRenderImage
+	'Field _matrix:Float[16]
+	Field _matrix:TMatrix
+	Field _driver:TGL2Max2DDriver
+
+	Method CreateRenderImage:TGL2SDLRenderImage(width:Int, height:Int)
+		Self.width = width	' TImage.width
+		Self.height = height	' TImage.height
+
+		Return Self
+	EndMethod
+	
+	Method DestroyRenderImage()
+		TGL2SDLRenderImageFrame(frames[0]).DestroyRenderTarget()
+	EndMethod
+	
+	Method Init(g:TGraphics, driver:TGraphicsDriver, UseImageFiltering:Int, pixmap:TPixmap)
+		_driver = TGL2Max2DDriver(driver)
+		_matrix = New TMatrix
+	
+		'_matrix.SetOrthographic( 0, width, 0, height, -1, 1 )
+		_matrix.SetOrthographic( 0, width, height, 0, -1, 1 )
+	
+		Local prevFBO:Int
+		Local prevTexture:Int
+		Local prevScissorTest:Int
+
+		glGetIntegerv(GL_FRAMEBUFFER_BINDING, Varptr prevFBO)
+		glGetIntegerv(GL_TEXTURE_BINDING_2D,Varptr prevTexture)
+		glGetIntegerv(GL_SCISSOR_TEST, Varptr prevScissorTest)
+		
+		frames = New TGL2SDLRenderImageFrame[1]
+		frames[0] = New TGL2SDLRenderImageFrame.CreateRenderTarget(width, height, UseImageFiltering, pixmap)
+		
+		If prevScissorTest glEnable(GL_SCISSOR_TEST)
+		glBindTexture GL_TEXTURE_2D,prevTexture
+		glBindFramebuffer GL_FRAMEBUFFER,prevFBO
+	EndMethod
+	
+	Method Clear(r:Int=0, g:Int=0, b:Int=0, a:Float=0.0)
+		If frames[0] Then TGL2SDLRenderImageFrame(frames[0]).Clear(r, g, b, a)
+	End Method
+
+	Method Frame:TImageFrame(index=0)
+		Return frames[0]
+	EndMethod
+	
+	Method SetRenderImage()
+		glBindFrameBuffer(GL_FRAMEBUFFER, TGL2SDLRenderImageFrame(frames[0])._fbo)
+		_driver.u_pmatrix = _matrix
+		glViewport 0,0,width,height 
+	EndMethod
+	
+	Method ToPixmap:TPixmap()
+		Return TGL2SDLRenderImageFrame(frames[0]).ToPixmap(width, height)
+	EndMethod
+	
+	Method SetViewport(x:Int, y:Int, width:Int, height)
+		If x = 0 And y = 0 And width = Self.width And height = Self.height
+			glDisable GL_SCISSOR_TEST
+		Else
+			glEnable GL_SCISSOR_TEST
+			glScissor x, y, width, height
+		EndIf
+	EndMethod
+EndType
+
+
 Public
 
 '============================================================================================'
@@ -808,6 +1053,10 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	End Method
 
+	Method CreateRenderImageContext:Object(g:TGraphics) Override
+		Return new TGL2SDLRenderImageContext.Create(g, self)
+	End Method
+	
 	Method CreateFrameFromPixmap:TGLImageFrame( pixmap:TPixmap, flags ) Override
 
 		Local frame:TGLImageFrame
