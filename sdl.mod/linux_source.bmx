@@ -1,4 +1,4 @@
-' Copyright (c) 2014-2020 Bruce A Henderson
+' Copyright (c) 2014-2021 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -29,6 +29,8 @@ Import "SDL/src/audio/dsp/SDL_dspaudio.c"
 Import "SDL/src/audio/nas/SDL_nasaudio.c"
 Import "SDL/src/core/linux/SDL_dbus.c"
 Import "SDL/src/core/linux/SDL_evdev.c"
+Import "SDL/src/core/linux/SDL_evdev_capabilities.c"
+Import "SDL/src/core/linux/SDL_evdev_kbd.c"
 Import "SDL/src/core/linux/SDL_ime.c"
 Import "SDL/src/core/linux/SDL_udev.c"
 Import "SDL/src/core/linux/SDL_threadprio.c"
