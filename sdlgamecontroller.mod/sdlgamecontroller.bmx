@@ -1,4 +1,4 @@
-' Copyright (c) 2015-2020 Bruce A Henderson
+' Copyright (c) 2015-2021 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -122,6 +122,115 @@ Type TSDLGameController
 	End Method
 	
 	Rem
+	bbdoc: Returns the type of this currently opened controller.
+	End Rem
+	Method GetType:ESDLGameControllerType()
+		Return SDL_GameControllerGetType(controllerPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns whether the game controller has a given axis.
+	End Rem
+	Method HasAxis:Int(axis:ESDLGameControllerAxis)
+		Return SDL_GameControllerHasAxis(controllerPtr, axis)
+	End Method
+	
+	Rem
+	bbdoc: Returns whether the game controller has a given button.
+	End Rem
+	Method HasButton:Int(button:ESDLGameControllerButton)
+		Return SDL_GameControllerHasButton(controllerPtr, button)
+	End Method
+
+	Rem
+	bbdoc: Gets the number of touchpads on the game controller.
+	End Rem
+	Method GetNumTouchpads:Int()
+		Return SDL_GameControllerGetNumTouchpads(controllerPtr)
+	End Method
+	
+	Rem
+	bbdoc: Gets the number of supported simultaneous fingers on a touchpad on the game controller.
+	End Rem
+	Method GetNumTouchpadFingers:Int(touchpad:Int)
+		Return SDL_GameControllerGetNumTouchpadFingers(controllerPtr, touchpad)
+	End Method
+	
+	Rem
+	bbdoc: Gets the current state of a finger on a touchpad on the game controller.
+	End Rem
+	Method GetTouchpadFinger:Int(touchpad:Int, finger:Int, state:Byte Var, x:Float Var, y:Float Var, pressure:Float Var)
+		Return SDL_GameControllerGetTouchpadFinger(controllerPtr, touchpad, finger, Varptr state, Varptr x, Varptr y, Varptr pressure)
+	End Method
+	
+	Rem
+	bbdoc: Returns whether the game controller has a particular sensor.
+	returns: #True if the sensor exists, #False otherwise.
+	End Rem
+	Method HasSensor:Int(sensorType:ESDLSensorType)
+		Return SDL_GameControllerHasSensor(controllerPtr, sensorType)
+	End Method
+	
+	Rem
+	bbdoc: Sets whether data reporting for the game controller sensor is enabled.
+	returns: 0, or -1 if an error occurred.
+	End Rem
+	Method SetSensorEnabled:Int(sensorType:ESDLSensorType, enabled:Int)
+		Return SDL_GameControllerSetSensorEnabled(controllerPtr, sensorType, enabled)
+	End Method
+	
+	Rem
+	bbdoc: Queries whether sensor data reporting is enabled for the game controller.
+	returns: #True if the sensor is enabled, #False otherwise.
+	End Rem
+	Method IsSensorEnabled:Int(sensorType:ESDLSensorType)
+		Return SDL_GameControllerIsSensorEnabled(controllerPtr, sensorType)
+	End Method
+	
+	Rem
+	bbdoc: Gets the current state of a game controller sensor.
+	returns: 0, or -1 if an error occurred.
+	about: The number of values and interpretation of the data is sensor dependent.
+ 	End Rem
+	Method SDL_GameControllerGetSensorData:Int(sensorType:ESDLSensorType, data:Float Ptr, numValues:Int)
+		Return SDL_GameControllerGetSensorData(controllerPtr, sensorType, data, numValues)
+	End Method
+	
+	Rem
+	bbdoc: Starts a rumble effect.
+	returns: 0, or -1 if rumble isn't supported on this controller.
+	about: Each call to this method cancels any previous rumble effect, and calling it with 0 intensity stops any rumbling.
+	End Rem
+	Method Rumble:Int(lowFrequencyRumble:Short, highFrequencyRumble:Short, durationMs:UInt)
+		Return SDL_GameControllerRumble(controllerPtr, lowFrequencyRumble, highFrequencyRumble, durationMs)
+	End Method
+	
+	Rem
+	bbdoc: Starts a rumble effect in the game controller's triggers
+	returns: 0, or -1 if rumble isn't supported on this controller.
+	about: Each call to this function cancels any previous trigger rumble effect, and calling it with 0 intensity stops any rumbling.
+	End Rem
+	Method RumbleTriggers:Int(leftRumble:Short, rightRumble:Short, durationMs:UInt)
+		Return SDL_GameControllerRumbleTriggers(controllerPtr, leftRumble, rightRumble, durationMs)
+	End Method
+	
+	Rem
+	bbdoc: Returns whether the controller has an LED.
+	returns: #True, or #False if this controller does not have a modifiable LED.
+	End Rem
+	Method HasLED:Int()
+		Return SDL_GameControllerHasLED(controllerPtr)
+	End Method
+	
+	Rem
+	bbdoc: Updates a controller's LED color.
+	returns: 0, or -1 if this controller does not have a modifiable LED.
+	End Rem
+	Method SDL_GameControllerSetLED:Int(red:Byte, green:Byte, blue:Byte)
+		Return SDL_GameControllerSetLED(controllerPtr, red, green, blue)
+	End Method
+	
+	Rem
 	bbdoc: Adds support for controllers that SDL is unaware of or to cause an existing controller to have a different binding.
 	returns: 1 if a new mapping is added, 0 if an existing mapping is updated, -1 on error; call #SDLGetError for more information.
 	about: The mapping string has the format "GUID,name,mapping", where GUID is the string value from #GetGUIDString, name is the human
@@ -190,6 +299,14 @@ Type TSDLGameController
 		If n Then
 			Return String.FromUTF8String(n)
 		End If
+	End Function
+	
+	Rem
+	bbdoc: Gets the type of a game controller.
+	about: This can be called before any controllers are opened.
+	End Rem
+	Function TypeForIndex:ESDLGameControllerType(port:Int)
+		Return SDL_GameControllerTypeForIndex(port)
 	End Function
 	
 End Type

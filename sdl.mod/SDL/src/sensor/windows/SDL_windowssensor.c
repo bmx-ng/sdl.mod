@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,9 +32,9 @@
 #include "../../core/windows/SDL_windows.h"
 
 #define COBJMACROS
-#include <InitGuid.h>
-#include <SensorsApi.h>
-#include <Sensors.h>
+#include <initguid.h>
+#include <sensorsapi.h>
+#include <sensors.h>
 
 DEFINE_GUID(SDL_CLSID_SensorManager, 0x77A1C827, 0xFCD2, 0x4689, 0x89, 0x15, 0x9D, 0x61, 0x3C, 0xC5, 0xFA, 0x3E);
 DEFINE_GUID(SDL_IID_SensorManager, 0xBD77DB67, 0x45A8, 0x42DC, 0x8D, 0x00, 0x6D, 0xCF, 0x15, 0xF8, 0x37, 0x7A);
@@ -279,7 +279,7 @@ static int ConnectSensor(ISensor *sensor)
 
     hr = ISensor_GetFriendlyName(sensor, &bstr_name);
     if (SUCCEEDED(hr) && bstr_name) {
-        name = WIN_StringToUTF8(bstr_name);
+        name = WIN_StringToUTF8W(bstr_name);
     } else {
         name = SDL_strdup("Unknown Sensor");
     }
@@ -294,6 +294,7 @@ static int ConnectSensor(ISensor *sensor)
     new_sensors = (SDL_Windows_Sensor *)SDL_realloc(SDL_sensors, (SDL_num_sensors + 1) * sizeof(SDL_Windows_Sensor));
     if (new_sensors == NULL) {
         SDL_UnlockSensors();
+        SDL_free(name);
         return SDL_OutOfMemory();
     }
 

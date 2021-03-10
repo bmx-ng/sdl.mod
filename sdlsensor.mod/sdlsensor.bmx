@@ -1,4 +1,4 @@
-' Copyright (c) 2014-2020 Bruce A Henderson
+' Copyright (c) 2014-2021 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -65,7 +65,7 @@ Type TSDLSensor
 	bbdoc: Gets the type of a sensor.
 	about: This can be called before any sensors are opened.
 	End Rem
-	Function GetDeviceType:Int(deviceIndex:Int)
+	Function GetDeviceType:ESDLSensorType(deviceIndex:Int)
 		Return SDL_SensorGetDeviceType(deviceIndex)
 	End Function
 	
@@ -111,7 +111,7 @@ Type TSDLSensor
 	bbdoc: Gets the type of a sensor.
 	about: This can be called before any sensors are opened.
 	End Rem
-	Method GetType:Int()
+	Method GetType:ESDLSensorType()
 		Return SDL_SensorGetType(sensorPtr)
 	End Method
 	

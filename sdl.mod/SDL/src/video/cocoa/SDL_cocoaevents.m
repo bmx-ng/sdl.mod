@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,12 +26,14 @@
 
 #include "SDL_cocoavideo.h"
 #include "../../events/SDL_events_c.h"
-#include "SDL_assert.h"
 #include "SDL_hints.h"
 
 /* This define was added in the 10.9 SDK. */
 #ifndef kIOPMAssertPreventUserIdleDisplaySleep
 #define kIOPMAssertPreventUserIdleDisplaySleep kIOPMAssertionTypePreventUserIdleDisplaySleep
+#endif
+#ifndef NSAppKitVersionNumber10_8
+#define NSAppKitVersionNumber10_8 1187
 #endif
 
 @interface SDLApplication : NSApplication
@@ -143,6 +145,12 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
                    selector:@selector(localeDidChange:)
                        name:NSCurrentLocaleDidChangeNotification
                      object:nil];
+
+        [[NSAppleEventManager sharedAppleEventManager]
+            setEventHandler:self
+                andSelector:@selector(handleURLEvent:withReplyEvent:)
+            forEventClass:kInternetEventClass
+                andEventID:kAEGetURL];
     }
 
     return self;
@@ -260,12 +268,6 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
         [NSApp activateIgnoringOtherApps:YES];
     }
 
-    [[NSAppleEventManager sharedAppleEventManager]
-    setEventHandler:self
-        andSelector:@selector(handleURLEvent:withReplyEvent:)
-      forEventClass:kInternetEventClass
-         andEventID:kAEGetURL];
-
     /* If we call this before NSApp activation, macOS might print a complaint
      * about ApplePersistenceIgnoreState. */
     [SDLApplication registerUserDefaults];
@@ -306,7 +308,10 @@ LoadMainMenuNibIfAvailable(void)
     NSDictionary *infoDict;
     NSString *mainNibFileName;
     bool success = false;
-    
+
+    if (floor(NSAppKitVersionNumber) < NSAppKitVersionNumber10_8) {
+        return false;
+    }
     infoDict = [[NSBundle mainBundle] infoDictionary];
     if (infoDict) {
         mainNibFileName = [infoDict valueForKey:@"NSMainNibFile"];

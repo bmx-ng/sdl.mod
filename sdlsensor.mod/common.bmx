@@ -1,4 +1,4 @@
-' Copyright (c) 2014-2020 Bruce A Henderson
+' Copyright (c) 2014-2021 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -24,14 +24,14 @@ SuperStrict
 Extern
 
 	Function SDL_NumSensors:Int()
-	Function SDL_SensorGetDeviceType:Int(deviceIndex:Int)
+	Function SDL_SensorGetDeviceType:ESDLSensorType(deviceIndex:Int)
 	Function SDL_SensorGetDeviceName:Byte Ptr(deviceIndex:Int)
 	Function SDL_SensorGetDeviceNonPortableType:Int(deviceIndex:Int)
 	Function SDL_SensorGetDeviceInstanceID:Int(deviceIndex:Int)
 	Function SDL_SensorOpen:Byte Ptr(deviceIndex:Int)
 	Function SDL_SensorFromInstanceID:Byte Ptr(instanceId:Int)
 	Function SDL_SensorGetName:Byte Ptr(handle:Byte Ptr)
-	Function SDL_SensorGetType:Int(handle:Byte Ptr)
+	Function SDL_SensorGetType:ESDLSensorType(handle:Byte Ptr)
 	Function SDL_SensorGetNonPortableType:Int(handle:Byte Ptr)
 	Function SDL_SensorGetInstanceID:Int(handle:Byte Ptr)
 	Function SDL_SensorGetData:Int(handle:Byte Ptr, data:Float Ptr, numValues:Int)
@@ -40,10 +40,14 @@ Extern
 
 End Extern
 
-Const SDL_SENSOR_INVALID:Int = -1   ' Returned For an invalid sensor
-Const SDL_SENSOR_UNKNOWN:Int = 0    ' Unknown sensor Type
-Const SDL_SENSOR_ACCEL:Int = 1      ' Accelerometer
-Const SDL_SENSOR_GYRO:Int = 2       ' Gyroscope
-
+Rem
+bbdoc: The different sensors defined by SDL.
+End Rem
+Enum ESDLSensorType
+	INVALID = -1
+	UNKNOWN
+	ACCEL
+	GYRO
+End Enum
 
 Const SDL_STANDARD_GRAVITY:Float = 9.80665

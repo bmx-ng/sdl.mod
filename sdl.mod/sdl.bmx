@@ -282,6 +282,41 @@ End Rem
 Function SDLAndroidGetInternalStoragePath:String()
 	Return String.FromUTF8String(SDL_AndroidGetInternalStoragePath())
 End Function
+
+Rem
+bbdoc: Returns the API level of the current device.
+End Rem
+Function SDLGetAndroidSDKVersion:Int()
+	Return SDL_GetAndroidSDKVersion()
+End Function
+
+Rem
+bbdoc: Returns #True if the application is running on Android TV.
+End Rem
+Function SDLIsAndroidTV:Int()
+	Return SDL_IsAndroidTV()
+End Function
+
+Rem
+bbdoc: Returns #True if the application is running on a Chromebook.
+End Rem
+Function SDLIsChromebook:Int()
+	Return SDL_IsChromebook()
+End Function
+
+Rem
+bbdoc: Returns #True is the application is running on a Samsung DeX docking station.
+End Rem
+Function SDLIsDeXMode:Int()
+	Return SDL_IsDeXMode()
+End Function 
+
+Rem
+bbdoc: Triggers the Android system back button behavior.
+End Rem
+Function SDLAndroidBackButton()
+	SDL_AndroidBackButton()
+End Function
 ?
 Rem
 bbdoc: Return a flag indicating whether the clipboard exists and contains a text string that is non-empty.
@@ -433,6 +468,119 @@ about: On CPUs that include technologies such as hyperthreading, the number of l
 End Rem
 Function SDLGetCPUCount:Int()
 	Return SDL_GetCPUCount()
+End Function
+
+Rem
+bbdoc: Returns the L1 cache line size of the CPU.
+about: This is useful for determining multi-threaded structure padding or SIMD prefetch sizes.
+End Rem
+Function SDLGetCPUCacheLineSize:Int()
+	Return SDL_GetCPUCacheLineSize()
+End Function
+
+Rem
+bbdoc: Returns #True if the CPU has the RDTSC instruction.
+End Rem
+Function SDLHasRDTSC:Int()
+	Return SDL_HasRDTSC()
+End Function
+
+Rem
+bbdoc: Returns #True if the CPU has AltiVec features.
+End Rem
+Function SDLHasAltiVec:Int()
+	Return SDL_HasAltiVec()
+End Function
+
+Rem
+bbdoc: Returns #True if the CPU has MMX features.
+End Rem
+Function SDLHasMMX:Int()
+	Return SDL_HasMMX()
+End Function
+
+Rem
+bbdoc: Returns #True if the CPU has 3DNow! features.
+End Rem
+Function SDLHas3DNow:Int()
+	Return SDL_Has3DNow()
+End Function
+
+Rem
+bbdoc: Returns #True if the CPU has SSE features.
+End Rem
+Function SDLHasSSE:Int()
+	Return SDL_HasSSE()
+End Function
+
+Rem
+bbdoc: Returns #True if the CPU has SSE2 features.
+End Rem
+Function SDLHasSSE2:Int()
+	Return SDL_HasSSE2()
+End Function
+
+Rem
+bbdoc: Returns #True if the CPU has SSE3 features.
+End Rem
+Function SDLHasSSE3:Int()
+	Return SDL_HasSSE3()
+End Function
+
+Rem
+bbdoc: Returns #True if the CPU has SSE4.1 features.
+End Rem
+Function SDLHasSSE41:Int()
+	Return SDL_HasSSE41()
+End Function
+
+Rem
+bbdoc: Returns #True if the CPU has SSE4.2 features.
+End Rem
+Function SDLHasSSE42:Int()
+	Return SDL_HasSSE42()
+End Function
+
+Rem
+bbdoc: Returns #True if the CPU has AVX features.
+End Rem
+Function SDLHasAVX:Int()
+	Return SDL_HasAVX()
+End Function
+
+Rem
+bbdoc: Returns #True if the CPU has AVX2 features.
+End Rem
+Function SDLHasAVX2:Int()
+	Return SDL_HasAVX2()
+End Function
+
+Rem
+bbdoc: Returns #True if the CPU has AVX-512F (foundation) features.
+End Rem
+Function SDLHasAVX512F:Int()
+	Return SDL_HasAVX512F()
+End Function
+
+Rem
+bbdoc: Returns #True if the CPU has ARM SIMD (ARMv6) features.
+End Rem
+Function SDLHasARMSIMD:Int()
+	Return SDL_HasARMSIMD()
+End Function
+
+Rem
+bbdoc: Returns #True if the CPU has NEON (ARM SIMD) features.
+End Rem
+Function SDLHasNEON:Int()
+	Return SDL_HasNEON()
+End Function
+
+Rem
+bbdoc: Returns #True if the current device is a tablet.
+End Rem
+Function SDLIsTablet:Int()
+	Return SDL_IsTablet()
 End Function
 
 ' shutdown all the subsystems

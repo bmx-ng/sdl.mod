@@ -1,4 +1,4 @@
-' Copyright (c) 2014-2020 Bruce A Henderson
+' Copyright (c) 2014-2021 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -172,7 +172,12 @@ Type TSDLSystemDriver Extends TSystemDriver
 	End Method
 
 	Method OpenURL:Int( url$ ) Override
-		' TODO
+		Local u:Byte Ptr = url.ToUTF8String()
+		Local res:Int = SDL_OpenURL(u)
+		MemFree(u)
+		If Not res Then
+			Return True
+		End If
 	End Method
 
 	Method DesktopWidth:Int() Override

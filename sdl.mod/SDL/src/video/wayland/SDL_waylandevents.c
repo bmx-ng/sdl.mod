@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,7 +24,7 @@
 #if SDL_VIDEO_DRIVER_WAYLAND
 
 #include "SDL_stdinc.h"
-#include "SDL_assert.h"
+#include "SDL_timer.h"
 
 #include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_sysevents.h"
@@ -41,6 +41,7 @@
 #include "relative-pointer-unstable-v1-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
 #include "xdg-shell-unstable-v6-client-protocol.h"
+#include "keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
 
 #ifdef SDL_INPUT_LINUXEV
 #include <linux/input.h>
@@ -57,39 +58,8 @@
 #include <unistd.h>
 #include <xkbcommon/xkbcommon.h>
 
-struct SDL_WaylandInput {
-    SDL_VideoData *display;
-    struct wl_seat *seat;
-    struct wl_pointer *pointer;
-    struct wl_touch *touch;
-    struct wl_keyboard *keyboard;
-    SDL_WaylandDataDevice *data_device;
-    struct zwp_relative_pointer_v1 *relative_pointer;
-    struct zwp_confined_pointer_v1 *confined_pointer;
-    SDL_WindowData *pointer_focus;
-    SDL_WindowData *keyboard_focus;
-
-    /* Last motion location */
-    wl_fixed_t sx_w;
-    wl_fixed_t sy_w;
-
-    double dx_frac;
-    double dy_frac;
-
-    struct {
-        struct xkb_keymap *keymap;
-        struct xkb_state *state;
-    } xkb;
-
-    /* information about axis events on current frame */
-    struct {
-        SDL_bool is_x_discrete;
-        float x;
-
-        SDL_bool is_y_discrete;
-        float y;
-    } pointer_curr_axis_info;
-};
+/* Weston uses a ratio of 10 units per scroll tick */
+#define WAYLAND_WHEEL_AXIS_UNIT 10
 
 struct SDL_WaylandTouchPoint {
     SDL_TouchID id;
@@ -195,13 +165,61 @@ touch_surface(SDL_TouchID id)
     return NULL;
 }
 
+/* Returns the time till next repeat, or 0 if no key is down. */
+static void
+keyboard_repeat_handle(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t now)
+{
+    if (!repeat_info->is_key_down || !repeat_info->is_initialized) {
+        return;
+    }
+    while (repeat_info->next_repeat_ms <= now) {
+        if (repeat_info->scancode != SDL_SCANCODE_UNKNOWN) {
+            SDL_SendKeyboardKey(SDL_PRESSED, repeat_info->scancode);
+        }
+        if (repeat_info->text[0]) {
+            SDL_SendKeyboardText(repeat_info->text);
+        }
+        repeat_info->next_repeat_ms += 1000 / repeat_info->repeat_rate;
+    }
+}
+
+static void
+keyboard_repeat_clear(SDL_WaylandKeyboardRepeat* repeat_info) {
+    if (!repeat_info->is_initialized) {
+        return;
+    }
+    repeat_info->is_key_down = SDL_FALSE;
+}
+
+static void
+keyboard_repeat_set(SDL_WaylandKeyboardRepeat* repeat_info,
+                    uint32_t scancode, SDL_bool has_text, char text[8]) {
+    if (!repeat_info->is_initialized) {
+        return;
+    }
+    repeat_info->is_key_down = SDL_TRUE;
+    repeat_info->next_repeat_ms = SDL_GetTicks() + repeat_info->repeat_delay;
+    repeat_info->scancode = scancode;
+    if (has_text) {
+        memcpy(repeat_info->text, text, 8);
+    } else {
+        repeat_info->text[0] = '\0';
+    }
+}
+
 void
 Wayland_PumpEvents(_THIS)
 {
     SDL_VideoData *d = _this->driverdata;
+    struct SDL_WaylandInput *input = d->input;
     int err;
 
     WAYLAND_wl_display_flush(d->display);
+
+    if (input) {
+        uint32_t now = SDL_GetTicks();
+        keyboard_repeat_handle(&input->keyboard_repeat, now);
+    }
 
     if (SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_FALSE, 0)) {
         err = WAYLAND_wl_display_dispatch(d->display);
@@ -257,11 +275,16 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
 
     if (window) {
         input->pointer_focus = window;
+        input->pointer_enter_serial = serial;
         SDL_SetMouseFocus(window->sdlwindow);
         /* In the case of e.g. a pointer confine warp, we may receive an enter
          * event with no following motion event, but with the new coordinates
          * as part of the enter event. */
         pointer_handle_motion(data, pointer, serial, sx_w, sy_w);
+        /* If the cursor was changed while our window didn't have pointer
+         * focus, we might need to trigger another call to
+         * wl_pointer_set_cursor() for the new cursor to be displayed. */
+        SDL_SetCursor(NULL);
     }
 }
 
@@ -364,8 +387,8 @@ pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_t serial,
             default:
                 return;
         }
-            
-        Wayland_data_device_set_serial(input->data_device, serial); 
+
+        Wayland_data_device_set_serial(input->data_device, serial);
 
         SDL_SendMouseButton(window->sdlwindow, 0,
                             state ? SDL_PRESSED : SDL_RELEASED, sdl_button);
@@ -402,6 +425,9 @@ pointer_handle_axis_common_v1(struct SDL_WaylandInput *input,
             default:
                 return;
         }
+
+        x /= WAYLAND_WHEEL_AXIS_UNIT;
+        y /= WAYLAND_WHEEL_AXIS_UNIT;
 
         SDL_SendMouseWheel(window->sdlwindow, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
     }
@@ -460,7 +486,17 @@ pointer_handle_frame(void *data, struct wl_pointer *pointer)
 {
     struct SDL_WaylandInput *input = data;
     SDL_WindowData *window = input->pointer_focus;
-    float x = input->pointer_curr_axis_info.x, y = input->pointer_curr_axis_info.y;
+    float x, y;
+
+    if (input->pointer_curr_axis_info.is_x_discrete)
+        x = input->pointer_curr_axis_info.x;
+    else
+        x = input->pointer_curr_axis_info.x / WAYLAND_WHEEL_AXIS_UNIT;
+
+    if (input->pointer_curr_axis_info.is_y_discrete)
+        y = input->pointer_curr_axis_info.y;
+    else
+        y = input->pointer_curr_axis_info.y / WAYLAND_WHEEL_AXIS_UNIT;
 
     /* clear pointer_curr_axis_info for next frame */
     memset(&input->pointer_curr_axis_info, 0, sizeof input->pointer_curr_axis_info);
@@ -647,7 +683,31 @@ static void
 keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
                       uint32_t serial, struct wl_surface *surface)
 {
+    struct SDL_WaylandInput *input = data;
+
+    /* Stop key repeat before clearing keyboard focus */
+    keyboard_repeat_clear(&input->keyboard_repeat);
+
+    /* This will release any keys still pressed */ 
     SDL_SetKeyboardFocus(NULL);
+}
+
+static SDL_bool
+keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint32_t key)
+{
+    SDL_WindowData *window = input->keyboard_focus;
+    const xkb_keysym_t *syms;
+
+    if (!window || window->keyboard_device != input || !input->xkb.state) {
+        return SDL_FALSE;
+    }
+
+    // TODO can this happen?
+    if (WAYLAND_xkb_state_key_get_syms(input->xkb.state, key + 8, &syms) != 1) {
+        return SDL_FALSE;
+    }
+
+    return WAYLAND_xkb_keysym_to_utf8(syms[0], text, 8) > 0;
 }
 
 static void
@@ -656,39 +716,28 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
                     uint32_t state_w)
 {
     struct SDL_WaylandInput *input = data;
-    SDL_WindowData *window = input->keyboard_focus;
     enum wl_keyboard_key_state state = state_w;
-    const xkb_keysym_t *syms;
-    uint32_t scancode;
+    uint32_t scancode = SDL_SCANCODE_UNKNOWN;
     char text[8];
-    int size;
 
     if (key < SDL_arraysize(xfree86_scancode_table2)) {
         scancode = xfree86_scancode_table2[key];
 
-        // TODO when do we get WL_KEYBOARD_KEY_STATE_REPEAT?
-        if (scancode != SDL_SCANCODE_UNKNOWN)
+        if (scancode != SDL_SCANCODE_UNKNOWN) {
             SDL_SendKeyboardKey(state == WL_KEYBOARD_KEY_STATE_PRESSED ?
                                 SDL_PRESSED : SDL_RELEASED, scancode);
+        }
     }
 
-    if (!window || window->keyboard_device != input || !input->xkb.state)
-        return;
-
-    // TODO can this happen?
-    if (WAYLAND_xkb_state_key_get_syms(input->xkb.state, key + 8, &syms) != 1)
-        return;
-
-    if (state) {
-        size = WAYLAND_xkb_keysym_to_utf8(syms[0], text, sizeof text);
-
-        if (size > 0) {
-            text[size] = 0;
-
+    if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+        SDL_bool has_text = keyboard_input_get_text(text, input, key);
+        if (has_text) {
             Wayland_data_device_set_serial(input->data_device, serial);
-
             SDL_SendKeyboardText(text);
         }
+        keyboard_repeat_set(&input->keyboard_repeat, scancode, has_text, text);
+    } else {
+        keyboard_repeat_clear(&input->keyboard_repeat);
     }
 }
 
@@ -708,7 +757,10 @@ static void
 keyboard_handle_repeat_info(void *data, struct wl_keyboard *wl_keyboard,
                             int32_t rate, int32_t delay)
 {
-    /* unimplemented */
+    struct SDL_WaylandInput *input = data;
+    input->keyboard_repeat.repeat_rate = SDL_max(0, SDL_min(rate, 1000));
+    input->keyboard_repeat.repeat_delay = delay;
+    input->keyboard_repeat.is_initialized = SDL_TRUE;
 }
 
 static const struct wl_keyboard_listener keyboard_listener = {
@@ -785,13 +837,13 @@ data_source_handle_send(void *data, struct wl_data_source *wl_data_source,
 {
     Wayland_data_source_send((SDL_WaylandDataSource *)data, mime_type, fd);
 }
-                       
+
 static void
 data_source_handle_cancelled(void *data, struct wl_data_source *wl_data_source)
 {
     Wayland_data_source_destroy(data);
 }
-                       
+
 static void
 data_source_handle_dnd_drop_performed(void *data, struct wl_data_source *wl_data_source)
 {
@@ -834,7 +886,7 @@ Wayland_data_source_create(_THIS)
                      driver_data->data_device_manager);
         }
 
-        if (id == NULL) { 
+        if (id == NULL) {
             SDL_SetError("Wayland unable to create data source");
         } else {
             data_source = SDL_calloc(1, sizeof *data_source);
@@ -904,8 +956,8 @@ data_device_handle_enter(void *data, struct wl_data_device *wl_data_device,
 {
     SDL_WaylandDataDevice *data_device = data;
     SDL_bool has_mime = SDL_FALSE;
-    uint32_t dnd_action = WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE; 
-        
+    uint32_t dnd_action = WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE;
+
     data_device->drag_serial = serial;
 
     if (id != NULL) {
@@ -958,7 +1010,7 @@ data_device_handle_drop(void *data, struct wl_data_device *wl_data_device)
     const char *current_uri = NULL;
     const char *last_char = NULL;
     char *current_char = NULL;
-    
+
     if (data_device->drag_offer != NULL) {
         /* TODO: SDL Support more mime types */
         buffer = Wayland_data_offer_receive(data_device->drag_offer,
@@ -984,7 +1036,7 @@ data_device_handle_drop(void *data, struct wl_data_device *wl_data_device)
 static void
 data_device_handle_selection(void *data, struct wl_data_device *wl_data_device,
                              struct wl_data_offer *id)
-{    
+{
     SDL_WaylandDataDevice *data_device = data;
     SDL_WaylandDataOffer *offer = NULL;
 
@@ -1024,7 +1076,7 @@ Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version)
     input->sx_w = wl_fixed_from_int(0);
     input->sy_w = wl_fixed_from_int(0);
     d->input = input;
-    
+
     if (d->data_device_manager != NULL) {
         data_device = SDL_calloc(1, sizeof *data_device);
         if (data_device == NULL) {
@@ -1211,6 +1263,14 @@ lock_pointer_to_window(SDL_Window *window,
     w->locked_pointer = locked_pointer;
 }
 
+static void pointer_confine_destroy(struct SDL_WaylandInput *input)
+{
+    if (input->confined_pointer) {
+        zwp_confined_pointer_v1_destroy(input->confined_pointer);
+        input->confined_pointer = NULL;
+    }
+}
+
 int Wayland_input_lock_pointer(struct SDL_WaylandInput *input)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
@@ -1226,6 +1286,10 @@ int Wayland_input_lock_pointer(struct SDL_WaylandInput *input)
 
     if (!input->pointer)
         return -1;
+
+    /* If we have a pointer confine active, we must destroy it here because
+     * creating a locked pointer otherwise would be a protocol error. */
+    pointer_confine_destroy(input);
 
     if (!input->relative_pointer) {
         relative_pointer =
@@ -1265,6 +1329,9 @@ int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input)
 
     d->relative_mouse_mode = 0;
 
+    if (input->confined_pointer_window)
+        Wayland_input_confine_pointer(input->confined_pointer_window, input);
+
     return 0;
 }
 
@@ -1302,6 +1369,13 @@ int Wayland_input_confine_pointer(SDL_Window *window, struct SDL_WaylandInput *i
     if (input->confined_pointer)
         Wayland_input_unconfine_pointer(input);
 
+    input->confined_pointer_window = window;
+
+    /* We cannot create a confine if the pointer is already locked. Defer until
+     * the pointer is unlocked. */
+    if (d->relative_mouse_mode)
+        return 0;
+
     confined_pointer =
         zwp_pointer_constraints_v1_confine_pointer(d->pointer_constraints,
                                                    w->surface,
@@ -1318,9 +1392,37 @@ int Wayland_input_confine_pointer(SDL_Window *window, struct SDL_WaylandInput *i
 
 int Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input)
 {
-    if (input->confined_pointer) {
-        zwp_confined_pointer_v1_destroy(input->confined_pointer);
-        input->confined_pointer = NULL;
+    pointer_confine_destroy(input);
+    input->confined_pointer_window = NULL;
+    return 0;
+}
+
+int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *input)
+{
+    SDL_WindowData *w = window->driverdata;
+    SDL_VideoData *d = input->display;
+
+    if (!d->key_inhibitor_manager)
+        return -1;
+
+    if (w->key_inhibitor)
+        return 0;
+
+    w->key_inhibitor =
+        zwp_keyboard_shortcuts_inhibit_manager_v1_inhibit_shortcuts(d->key_inhibitor_manager,
+                                                                    w->surface,
+                                                                    input->seat);
+    
+    return 0;
+}
+
+int Wayland_input_ungrab_keyboard(SDL_Window *window)
+{
+    SDL_WindowData *w = window->driverdata;
+
+    if (w->key_inhibitor) {
+        zwp_keyboard_shortcuts_inhibitor_v1_destroy(w->key_inhibitor);
+        w->key_inhibitor = NULL;
     }
 
     return 0;

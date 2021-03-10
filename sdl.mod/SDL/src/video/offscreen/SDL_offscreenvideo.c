@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -51,13 +51,6 @@ static void OFFSCREEN_VideoQuit(_THIS);
 
 /* OFFSCREEN driver bootstrap functions */
 
-static int
-OFFSCREEN_Available(void)
-{
-    /* Consider it always available */
-    return (1);
-}
-
 static void
 OFFSCREEN_DeleteDevice(SDL_VideoDevice * device)
 {
@@ -106,7 +99,7 @@ OFFSCREEN_CreateDevice(int devindex)
 
 VideoBootStrap OFFSCREEN_bootstrap = {
     OFFSCREENVID_DRIVER_NAME, "SDL offscreen video driver",
-    OFFSCREEN_Available, OFFSCREEN_CreateDevice
+    OFFSCREEN_CreateDevice
 };
 
 int

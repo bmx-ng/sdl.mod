@@ -1,4 +1,4 @@
-' Copyright (c) 2015-2020 Bruce A Henderson
+' Copyright (c) 2015-2021 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -32,6 +32,41 @@ Extern
 	Function SDL_JoystickGetAxis:Int(handle:Byte Ptr, direction:Int)
 	Function SDL_JoystickClose(handle:Byte Ptr)
 	Function SDL_JoystickIsHaptic:Int(handle:Byte Ptr)
+	Function SDL_JoystickHasLED:Int(handle:Byte Ptr)
+	Function SDL_JoystickRumble:Int(handle:Byte Ptr, lowFrequencyRumble:Short, highFrequencyRumble:Short, durationMs:UInt)
+	Function SDL_JoystickRumbleTriggers:Int(handle:Byte Ptr, leftRumble:Short, rightRumble:Short, durationMs:UInt)
+	Function SDL_JoystickSetLED:Int(handle:Byte Ptr, red:Byte, green:Byte, blue:Byte)
+	Function SDL_JoystickCurrentPowerLevel:Int(handle:Byte Ptr)
+	Function SDL_JoystickGetHat:Byte(handle:Byte Ptr, hat:Int)
 	
 End Extern
 
+Rem
+bbdoc: Unknown power.
+end rem
+Const SDL_JOYSTICK_POWER_UNKNOWN:Int = -1
+
+Rem
+bbdoc: Power is empty ( <= 5% )
+end rem
+Const SDL_JOYSTICK_POWER_EMPTY:Int = 0
+
+Rem
+bbdoc: Power is low ( <= 20% )
+end rem
+Const SDL_JOYSTICK_POWER_LOW:Int = 1
+
+Rem
+bbdoc: Power is medium ( <= 70% )
+end rem
+Const SDL_JOYSTICK_POWER_MEDIUM:Int = 2
+
+Rem
+bbdoc: Power is full ( <= 100% )
+end rem
+Const SDL_JOYSTICK_POWER_FULL:Int = 3
+
+Rem
+bbdoc: Joystick is wired.
+end rem
+Const SDL_JOYSTICK_POWER_WIRED:Int = 4

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -41,7 +41,6 @@
 #include "SDL_cocoamousetap.h"
 #include "SDL_cocoaopengl.h"
 #include "SDL_cocoaopengles.h"
-#include "SDL_assert.h"
 
 /* #define DEBUG_COCOAWINDOW */
 
@@ -56,6 +55,9 @@
 
 #ifndef MAC_OS_X_VERSION_10_12
 #define NSEventModifierFlagCapsLock NSAlphaShiftKeyMask
+#endif
+#ifndef NSAppKitVersionNumber10_14
+#define NSAppKitVersionNumber10_14 1671
 #endif
 
 @interface SDLWindow : NSWindow <NSDraggingDestination>
@@ -158,6 +160,16 @@
 
     SDL_assert([desiredType isEqualToString:NSFilenamesPboardType]);
     NSArray *array = [pasteboard propertyListForType:@"NSFilenamesPboardType"];
+
+    /* Code addon to update the mouse location */
+    NSPoint point = [sender draggingLocation];
+    SDL_Mouse *mouse = SDL_GetMouse();
+    int x = (int)point.x;
+    int y = (int)(sdlwindow->h - point.y);
+    if (x >= 0 && x < sdlwindow->w && y >= 0 && y < sdlwindow->h) {
+        SDL_SendMouseMotion(sdlwindow, mouse->mouseID, 0, x, y);
+    }
+    /* Code addon to update the mouse location */
 
     for (NSString *path in array) {
         NSURL *fileURL = [NSURL fileURLWithPath:path];
@@ -1097,7 +1109,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     x = (int)point.x;
     y = (int)(window->h - point.y);
 
-    if (window->flags & SDL_WINDOW_INPUT_GRABBED) {
+    if (window->flags & SDL_WINDOW_MOUSE_GRABBED) {
         if (x < 0 || x >= window->w || y < 0 || y >= window->h) {
             if (x < 0) {
                 x = 0;
@@ -1833,17 +1845,7 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
         /* Hack to fix origin on Mac OS X 10.4
            This is no longer needed as of Mac OS X 10.15, according to bug 4822.
          */
-        NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-#if MAC_OS_X_VERSION_MAX_ALLOWED < 101000 /* NSOperatingSystemVersion added in the 10.10 SDK */
-        typedef struct {
-            NSInteger majorVersion;
-            NSInteger minorVersion;
-            NSInteger patchVersion;
-        } NSOperatingSystemVersion;
-#endif
-        NSOperatingSystemVersion version = { 10, 15, 0 };
-        if (![processInfo respondsToSelector:@selector(isOperatingSystemAtLeastVersion:)] ||
-            ![processInfo isOperatingSystemAtLeastVersion:version]) {
+        if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_14) {
             NSRect screenRect = [[nswindow screen] frame];
             if (screenRect.size.height >= 1.0f) {
                 rect.origin.y += (screenRect.size.height - rect.size.height);
@@ -1956,7 +1958,7 @@ Cocoa_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
 }
 
 void
-Cocoa_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+Cocoa_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;

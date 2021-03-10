@@ -1,4 +1,4 @@
-' Copyright (c) 2014-2020 Bruce A Henderson
+' Copyright (c) 2014-2021 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -73,6 +73,7 @@ Extern
 	Function SDL_GetDisplayName:Byte Ptr(index:Int)
 	Function SDL_GetDisplayDPI:Int(index:Int, ddpi:Float Ptr, hdpi:Float Ptr, vdpi:Float Ptr)
 	Function SDL_GetNumDisplayModes:Int(index:Int)
+	Function SDL_GetDisplayOrientation:Int(index:Int)
 
 	Function bmx_sdl_video_DisplayMode_new:Byte Ptr(format:UInt, width:Int, height:Int, refreshRate:Int)
 	Function bmx_sdl_video_DisplayMode_free(handle:Byte Ptr)
@@ -362,3 +363,28 @@ Rem
 bbdoc: sets context the release behavior; defaults to 1
 End Rem
 Const SDL_GL_CONTEXT_RELEASE_BEHAVIOR:Int = 23
+
+Rem
+bbdoc: The display orientation can't be determined
+End Rem
+Const SDL_ORIENTATION_UNKNOWN:Int = 0
+
+Rem
+bbdoc: The display is in landscape mode, with the right side up, relative to portrait mode
+End Rem
+Const SDL_ORIENTATION_LANDSCAPE:Int = 1
+
+Rem
+bbdoc: The display is in landscape mode, with the left side up, relative to portrait mode
+End Rem
+Const SDL_ORIENTATION_LANDSCAPE_FLIPPED:Int = 2
+
+Rem
+bbdoc: The display is in portrait mode
+End Rem
+Const SDL_ORIENTATION_PORTRAIT:Int = 3
+
+Rem
+bbdoc: The display is in portrait mode, upside down
+End Rem
+Const SDL_ORIENTATION_PORTRAIT_FLIPPED:Int = 4

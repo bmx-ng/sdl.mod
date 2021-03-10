@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -128,6 +128,11 @@ SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled);
 
 /* Request permission */
 SDL_bool Android_JNI_RequestPermission(const char *permission);
+
+/* Show toast notification */
+int Android_JNI_ShowToast(const char* message, int duration, int gravity, int xOffset, int yOffset);
+
+int Android_JNI_OpenURL(const char *url);
 
 int SDL_GetAndroidSDKVersion(void);
 

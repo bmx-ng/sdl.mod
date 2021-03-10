@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -182,6 +182,7 @@ typedef struct AudioBootStrap
 } AudioBootStrap;
 
 /* Not all of these are available in a given build. Use #ifdefs, etc. */
+extern AudioBootStrap PIPEWIRE_bootstrap;
 extern AudioBootStrap PULSEAUDIO_bootstrap;
 extern AudioBootStrap ALSA_bootstrap;
 extern AudioBootStrap JACK_bootstrap;
@@ -207,6 +208,7 @@ extern AudioBootStrap openslES_bootstrap;
 extern AudioBootStrap ANDROIDAUDIO_bootstrap;
 extern AudioBootStrap PSPAUDIO_bootstrap;
 extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
+extern AudioBootStrap OS2AUDIO_bootstrap;
 
 #endif /* SDL_sysaudio_h_ */
 

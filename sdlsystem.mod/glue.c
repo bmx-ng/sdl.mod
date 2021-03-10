@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2014-2020 Bruce A Henderson
+ Copyright (c) 2014-2021 Bruce A Henderson
 
  This software is provided 'as-is', without any express or implied
  warranty. In no event will the authors be held liable for any damages
@@ -203,6 +203,18 @@ void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 					bbSDLSystemEmitEvent(BBEVENT_WINDOWRESTORE, source, event->window.windowID, 0, 0, 0, &bbNullObject);
 					return;
 				
+			}
+		case SDL_DISPLAYEVENT:
+			switch (event->display.event) {
+				case SDL_DISPLAYEVENT_ORIENTATION:
+					bbSDLSystemEmitEvent(BBEVENT_DISPLAYORIENTATION, source, event->display.display, 0, 0, 0, &bbNullObject);
+				return;
+				case SDL_DISPLAYEVENT_CONNECTED:
+					bbSDLSystemEmitEvent(BBEVENT_DISPLAYCONNECT, source, event->display.display, 0, 0, 0, &bbNullObject);
+				return;
+				case SDL_DISPLAYEVENT_DISCONNECTED:
+					bbSDLSystemEmitEvent(BBEVENT_DISPLAYDISCONNECT, source, event->display.display, 0, 0, 0, &bbNullObject);
+				return;
 			}
 	}	
 	

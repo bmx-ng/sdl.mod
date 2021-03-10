@@ -1,4 +1,4 @@
-' Copyright (c) 2015-2020 Bruce A Henderson
+' Copyright (c) 2015-2021 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -21,6 +21,7 @@
 '
 SuperStrict
 
+Import SDL.SDLSensor
 Import SDL.SDLJoystick
 
 Extern
@@ -39,6 +40,22 @@ Extern
 	Function SDL_GameControllerGetAxisFromString:ESDLGameControllerAxis(txt:Byte Ptr)
 	Function SDL_GameControllerGetButtonFromString:ESDLGameControllerButton(txt:Byte Ptr)
 	Function SDL_GameControllerNameForIndex:Byte Ptr(index:Int)
+	Function SDL_GameControllerTypeForIndex:ESDLGameControllerType(index:Int)
+	Function SDL_GameControllerGetType:ESDLGameControllerType(handle:Byte Ptr)
+	Function SDL_GameControllerGetSerial:Byte Ptr(handle:Byte Ptr)
+	Function SDL_GameControllerHasAxis:Int(handle:Byte Ptr, axis:ESDLGameControllerAxis)
+	Function SDL_GameControllerHasButton:Int(handle:Byte Ptr, button:ESDLGameControllerButton)
+	Function SDL_GameControllerGetNumTouchpads:Int(handle:Byte Ptr)
+	Function SDL_GameControllerGetNumTouchpadFingers:Int(handle:Byte Ptr, touchpad:Int)
+	Function SDL_GameControllerGetTouchpadFinger:Int(handle:Byte Ptr, touchpad:Int, finger:Int, state:Byte Ptr, x:Float Ptr, y:Float Ptr, pressure:Float Ptr)
+	Function SDL_GameControllerHasSensor:Int(handle:Byte Ptr, sensorType:ESDLSensorType)
+	Function SDL_GameControllerSetSensorEnabled:Int(handle:Byte Ptr, sensorType:ESDLSensorType, enabled:Int)
+	Function SDL_GameControllerIsSensorEnabled:Int(handle:Byte Ptr, sensorType:ESDLSensorType)
+	Function SDL_GameControllerGetSensorData:Int(handle:Byte Ptr, sensorType:ESDLSensorType, data:Float Ptr, numValues:Int)
+	Function SDL_GameControllerRumble:Int(handle:Byte Ptr, lowFrequencyRumble:Short, highFrequencyRumble:Short, durationMs:UInt)
+	Function SDL_GameControllerRumbleTriggers:Int(handle:Byte Ptr, leftRumble:Short, rightRumble:Short, durationMs:UInt)
+	Function SDL_GameControllerHasLED:Int(handle:Byte Ptr)
+	Function SDL_GameControllerSetLED:Int(handle:Byte Ptr, red:Byte, green:Byte, blue:Byte)
 	
 End Extern
 
@@ -69,4 +86,28 @@ Enum ESDLGameControllerButton
 	DPAD_DOWN
 	DPAD_LEFT
 	DPAD_RIGHT
+	MISC1
+	PADDLE1
+	PADDLE2
+	PADDLE3
+	PADDLE4
+	TOUCHPAD
+End Enum
+
+Enum ESDLGameControllerType
+	UNKNOWN = 0,
+    XBOX360,
+    XBOXONE,
+    PS3,
+    PS4,
+    NINTENDO_SWITCH_PRO,
+    VIRTUAL,
+    PS5
+End Enum
+
+Enum ESDLGameControllerBindType
+	NONE = 0
+	BUTTON
+	AXIS
+	HAT
 End Enum

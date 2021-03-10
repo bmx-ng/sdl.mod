@@ -1,4 +1,4 @@
-' Copyright (c) 2015-2020 Bruce A Henderson
+' Copyright (c) 2015-2021 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 SuperStrict
 
 Rem
-bbdoc: 
+bbdoc: SDL Joystick driver
 End Rem
 Module SDL.SDLJoystick
 
@@ -31,6 +31,10 @@ Import Pub.Joystick
 Import BRL.Map
 
 Import "common.bmx"
+
+Private
+Global _hatPositions:Float[] = [-1, 0, 0.25, 0.125, 0.5, -1, 0.375, -1, 0.75, 0.875]
+Public
 
 Type TSDLJoystickDriver Extends TJoystickDriver
 
@@ -114,6 +118,9 @@ Type TSDLJoystickDriver Extends TJoystickDriver
 	End Method
 	
 	Method JoyHat#( port:Int=0 ) Override
+		SampleJoy port
+		Local pos:Int = SDL_JoystickGetHat(currentJoystick.joystickPtr, 0)
+		Return _hatPositions[pos]
 	End Method
 	
 	Method JoyWheel#( port:Int=0 ) Override
@@ -182,7 +189,7 @@ Type TSDLJoystickDriver Extends TJoystickDriver
 End Type
 
 Rem
-bbdoc: 
+bbdoc: An SDL joystick instance.
 End Rem
 Type TSDLJoystick
 	Field joystickPtr:Byte Ptr
@@ -193,10 +200,50 @@ Type TSDLJoystick
 	End Method
 	
 	Rem
-	bbdoc: Returns True if the joystick has haptic features.
+	bbdoc: Returns whether the joystick has an LED.
+	returns: #True, or #False if this joystick does not have a modifiable LED.
+	End Rem
+	Method HasLED:Int()
+		Return SDL_JoystickHasLED(joystickPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns #True if the joystick has haptic features.
 	End Rem
 	Method IsHaptic:Int()
 		Return SDL_JoystickIsHaptic(joystickPtr)
+	End Method
+	
+	Rem
+	bbdoc: Returns the battery level of this joystick.
+	returns: One of #SDL_JOYSTICK_POWER_UNKNOWN, #SDL_JOYSTICK_POWER_EMPTY, #SDL_JOYSTICK_POWER_LOW, #SDL_JOYSTICK_POWER_MEDIUM, #SDL_JOYSTICK_POWER_FULL, or #SDL_JOYSTICK_POWER_WIRED.
+	End Rem
+	Method PowerLevel:Int()
+		Return SDL_JoystickCurrentPowerLevel(joystickPtr)
+	End Method
+	
+	Rem
+	bbdoc: Starts a rumble effect.
+	returns: 0, or -1 if rumble isn't supported on this joystick.
+	about: Each call to this method cancels any previous rumble effect, and calling it with 0 rumble intensity stops any rumbling.
+	End Rem
+	Method Rumble:Int(lowFrequencyRumble:Short, highFrequencyRumble:Short, durationMs:UInt)
+		Return SDL_JoystickRumble(joystickPtr, lowFrequencyRumble, highFrequencyRumble, durationMs)
+	End Method
+	
+	Rem
+	bbdoc: 0, or -1 if trigger rumble isn't supported on this joystick.
+	End Rem
+	Method RumbleTriggers:Int(leftRumble:Short, rightRumble:Short, durationMs:UInt)
+		Return SDL_JoystickRumbleTriggers(joystickPtr, leftRumble, rightRumble, durationMs)
+	End Method
+	
+	Rem
+	bbdoc: Updates the joystick's LED color.
+	returns: 0, or -1 if this joystick does not have a modifiable LED.
+	End Rem
+	Method SetLED:Int(red:Byte, green:Byte, blue:Byte)
+		Return SDL_JoystickSetLED(joystickPtr, red, green, blue)
 	End Method
 	
 	Method Delete()

@@ -83,6 +83,10 @@ Extern
 	Function SDL_HasSSE3:Int()
 	Function SDL_HasSSE41:Int()
 	Function SDL_HasSSE42:Int()
+	Function SDL_Has3DNow:Int()
+	Function SDL_HasAVX512F:Int()
+	Function SDL_HasARMSIMD:Int()
+	Function SDL_HasNEON:Int()
 
 	Function SDL_RWFromFile:Byte Ptr(file:Byte Ptr, _mode$z)
 	Function bmx_SDL_RWtell:Long(handle:Byte Ptr)
@@ -98,6 +102,11 @@ Extern
 	Function SDL_AndroidGetExternalStoragePath:Byte Ptr()
 	Function SDL_AndroidGetExternalStorageState:Int()
 	Function SDL_AndroidGetInternalStoragePath:Byte Ptr()
+	Function SDL_GetAndroidSDKVersion:Int()
+	Function SDL_IsAndroidTV:Int()
+	Function SDL_IsChromebook:Int()
+	Function SDL_IsDeXMode:Int()
+	Function SDL_AndroidBackButton()
 ?
 	Function SDL_HasClipboardText:Int()
 	Function bmx_SDL_GetClipboardText:String()
@@ -117,7 +126,9 @@ Extern
 	
 	Function SDL_GetPixelFormatName:Byte Ptr(format:UInt)
 	Function SDL_GetTicks:UInt()
+	Function SDL_IsTablet:Int()
 	
+	Function SDL_OpenURL:Int(url:Byte Ptr)
 End Extern
 
 
@@ -323,3 +334,4 @@ Const SDL_PIXELFORMAT_ARGB32:UInt = SDL_PIXELFORMAT_BGRA8888
 Const SDL_PIXELFORMAT_BGRA32:UInt = SDL_PIXELFORMAT_ARGB8888
 Const SDL_PIXELFORMAT_ABGR32:UInt = SDL_PIXELFORMAT_RGBA8888
 ?
+

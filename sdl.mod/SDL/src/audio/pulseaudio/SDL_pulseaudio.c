@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,7 +26,6 @@
    Stéphan Kochen: stephan .a.t. kochen.nl
 */
 #include "../../SDL_internal.h"
-#include "SDL_assert.h"
 #include "SDL_hints.h"
 
 #if SDL_AUDIO_DRIVER_PULSEAUDIO
@@ -104,6 +103,8 @@ static int (*PULSEAUDIO_pa_stream_connect_record) (pa_stream *, const char *,
 static pa_stream_state_t (*PULSEAUDIO_pa_stream_get_state) (pa_stream *);
 static size_t (*PULSEAUDIO_pa_stream_writable_size) (pa_stream *);
 static size_t (*PULSEAUDIO_pa_stream_readable_size) (pa_stream *);
+static int (*PULSEAUDIO_pa_stream_begin_write) (pa_stream *, void **, size_t*);
+static int (*PULSEAUDIO_pa_stream_cancel_write) (pa_stream *);
 static int (*PULSEAUDIO_pa_stream_write) (pa_stream *, const void *, size_t,
     pa_free_cb_t, int64_t, pa_seek_mode_t);
 static pa_operation * (*PULSEAUDIO_pa_stream_drain) (pa_stream *,
@@ -217,6 +218,8 @@ load_pulseaudio_syms(void)
     SDL_PULSEAUDIO_SYM(pa_stream_writable_size);
     SDL_PULSEAUDIO_SYM(pa_stream_readable_size);
     SDL_PULSEAUDIO_SYM(pa_stream_write);
+    SDL_PULSEAUDIO_SYM(pa_stream_begin_write);
+    SDL_PULSEAUDIO_SYM(pa_stream_cancel_write);
     SDL_PULSEAUDIO_SYM(pa_stream_drain);
     SDL_PULSEAUDIO_SYM(pa_stream_disconnect);
     SDL_PULSEAUDIO_SYM(pa_stream_peek);
@@ -295,31 +298,38 @@ ConnectToPulseServer_Internal(pa_mainloop **_mainloop, pa_context **_context)
         return SDL_SetError("pa_mainloop_new() failed");
     }
 
-    *_mainloop = mainloop;
-
     mainloop_api = PULSEAUDIO_pa_mainloop_get_api(mainloop);
     SDL_assert(mainloop_api);  /* this never fails, right? */
 
     context = PULSEAUDIO_pa_context_new(mainloop_api, getAppName());
     if (!context) {
+        PULSEAUDIO_pa_mainloop_free(mainloop);
         return SDL_SetError("pa_context_new() failed");
     }
-    *_context = context;
 
     /* Connect to the PulseAudio server */
     if (PULSEAUDIO_pa_context_connect(context, NULL, 0, NULL) < 0) {
+        PULSEAUDIO_pa_context_unref(context);
+        PULSEAUDIO_pa_mainloop_free(mainloop);
         return SDL_SetError("Could not setup connection to PulseAudio");
     }
 
     do {
         if (PULSEAUDIO_pa_mainloop_iterate(mainloop, 1, NULL) < 0) {
+            PULSEAUDIO_pa_context_unref(context);
+            PULSEAUDIO_pa_mainloop_free(mainloop);
             return SDL_SetError("pa_mainloop_iterate() failed");
         }
         state = PULSEAUDIO_pa_context_get_state(context);
         if (!PA_CONTEXT_IS_GOOD(state)) {
+            PULSEAUDIO_pa_context_unref(context);
+            PULSEAUDIO_pa_mainloop_free(mainloop);
             return SDL_SetError("Could not connect to PulseAudio");
         }
     } while (state != PA_CONTEXT_READY);
+
+    *_context = context;
+    *_mainloop = mainloop;
 
     return 0;  /* connected and ready! */
 }
@@ -360,7 +370,7 @@ PULSEAUDIO_PlayDevice(_THIS)
     /* Write the audio data */
     struct SDL_PrivateAudioData *h = this->hidden;
     if (SDL_AtomicGet(&this->enabled)) {
-        if (PULSEAUDIO_pa_stream_write(h->stream, h->mixbuf, h->mixlen, NULL, 0LL, PA_SEEK_RELATIVE) < 0) {
+        if (PULSEAUDIO_pa_stream_write(h->stream, h->pabuf, h->mixlen, NULL, 0LL, PA_SEEK_RELATIVE) < 0) {
             SDL_OpenedAudioDeviceDisconnected(this);
         }
     }
@@ -369,7 +379,21 @@ PULSEAUDIO_PlayDevice(_THIS)
 static Uint8 *
 PULSEAUDIO_GetDeviceBuf(_THIS)
 {
-    return (this->hidden->mixbuf);
+    struct SDL_PrivateAudioData *h = this->hidden;
+    size_t nbytes = h->mixlen;
+    int ret;
+
+    ret = PULSEAUDIO_pa_stream_begin_write(h->stream, &h->pabuf, &nbytes);
+
+    if (ret != 0) {
+        /* fall back it intermediate buffer */
+        h->pabuf = h->mixbuf;
+    } else if (nbytes < h->mixlen) {
+        PULSEAUDIO_pa_stream_cancel_write(h->stream);
+        h->pabuf = h->mixbuf;
+    }
+
+    return (Uint8 *)h->pabuf;
 }
 
 
@@ -594,6 +618,7 @@ PULSEAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 
     /* Reduced prebuffering compared to the defaults. */
 #ifdef PA_STREAM_ADJUST_LATENCY
+    paattr.fragsize = this->spec.size;
     /* 2x original requested bufsize */
     paattr.tlength = h->mixlen * 4;
     paattr.prebuf = -1;
@@ -602,6 +627,7 @@ PULSEAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     paattr.minreq = h->mixlen;
     flags = PA_STREAM_ADJUST_LATENCY;
 #else
+    paattr.fragsize = this->spec.size;
     paattr.tlength = h->mixlen*2;
     paattr.prebuf = h->mixlen*2;
     paattr.maxlength = h->mixlen*2;

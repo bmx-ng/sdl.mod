@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -51,12 +51,6 @@ static int UIKit_VideoInit(_THIS);
 static void UIKit_VideoQuit(_THIS);
 
 /* DUMMY driver bootstrap functions */
-
-static int
-UIKit_Available(void)
-{
-    return 1;
-}
 
 static void UIKit_DeleteDevice(SDL_VideoDevice * device)
 {
@@ -152,7 +146,7 @@ UIKit_CreateDevice(int devindex)
 
 VideoBootStrap UIKIT_bootstrap = {
     UIKITVID_DRIVER_NAME, "SDL UIKit video driver",
-    UIKit_Available, UIKit_CreateDevice
+    UIKit_CreateDevice
 };
 
 
@@ -164,12 +158,19 @@ UIKit_VideoInit(_THIS)
     if (UIKit_InitModes(_this) < 0) {
         return -1;
     }
+
+	SDL_InitGCKeyboard();
+	SDL_InitGCMouse();
+
     return 0;
 }
 
 void
 UIKit_VideoQuit(_THIS)
 {
+	SDL_QuitGCKeyboard();
+	SDL_QuitGCMouse();
+
     UIKit_QuitModes(_this);
 }
 
@@ -278,7 +279,10 @@ UIKit_ForceUpdateHomeIndicator()
 #if !defined(SDL_VIDEO_DRIVER_COCOA)
 void SDL_NSLog(const char *text)
 {
-    NSLog(@"%s", text);
+    @autoreleasepool {
+        NSString *str = [NSString stringWithUTF8String:text];
+        NSLog(@"%@", str);
+    }
 }
 #endif /* SDL_VIDEO_DRIVER_COCOA */
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,7 +23,6 @@
 #if SDL_VIDEO_DRIVER_UIKIT
 
 #include "SDL_video.h"
-#include "SDL_assert.h"
 #include "SDL_hints.h"
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
@@ -430,7 +429,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
                     }
 
                     if (mod & KMOD_SHIFT) {
-                        /* If character uses shift, press shift down */
+                        /* If character uses shift, press shift */
                         SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LSHIFT);
                     }
 
@@ -439,7 +438,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
                     SDL_SendKeyboardKey(SDL_RELEASED, code);
 
                     if (mod & KMOD_SHIFT) {
-                        /* If character uses shift, press shift back up */
+                        /* If character uses shift, release shift */
                         SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LSHIFT);
                     }
                 }

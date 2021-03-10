@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -103,6 +103,12 @@ static const AudioBootStrap *const bootstrap[] = {
 #endif
 #if SDL_AUDIO_DRIVER_JACK
     &JACK_bootstrap,
+#endif
+#if SDL_AUDIO_DRIVER_PIPEWIRE
+    &PIPEWIRE_bootstrap,
+#endif
+#if SDL_AUDIO_DRIVER_OS2
+    &OS2AUDIO_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_DISK
     &DISKAUDIO_bootstrap,
@@ -574,7 +580,7 @@ SDL_BufferQueueDrainCallback(void *userdata, Uint8 *stream, int len)
 
     if (len > 0) {  /* fill any remaining space in the stream with silence. */
         SDL_assert(SDL_CountDataQueue(device->buffer_queue) == 0);
-        SDL_memset(stream, device->spec.silence, len);
+        SDL_memset(stream, device->callbackspec.silence, len);
     }
 }
 
@@ -730,7 +736,7 @@ SDL_RunAudio(void *devicep)
         /* !!! FIXME: this should be LockDevice. */
         SDL_LockMutex(device->mixer_lock);
         if (SDL_AtomicGet(&device->paused)) {
-            SDL_memset(data, device->spec.silence, data_len);
+            SDL_memset(data, device->callbackspec.silence, data_len);
         } else {
             callback(udata, data, data_len);
         }
@@ -1178,8 +1184,8 @@ prepare_audiospec(const SDL_AudioSpec * orig, SDL_AudioSpec * prepared)
             const char *env = SDL_getenv("SDL_AUDIO_CHANNELS");
             if ((!env) || ((prepared->channels = (Uint8) SDL_atoi(env)) == 0)) {
                 prepared->channels = 2; /* a reasonable default */
+                break;
             }
-            break;
         }
     case 1:                    /* Mono */
     case 2:                    /* Stereo */

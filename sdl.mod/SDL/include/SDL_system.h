@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -59,11 +59,19 @@ extern DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex( int displayIndex );
 
 typedef struct IDirect3DDevice9 IDirect3DDevice9;
 /**
-   \brief Returns the D3D device associated with a renderer, or NULL if it's not a D3D renderer.
+   \brief Returns the D3D9 device associated with a renderer, or NULL if it's not a D3D9 renderer.
 
    Once you are done using the device, you should release it to avoid a resource leak.
  */
 extern DECLSPEC IDirect3DDevice9* SDLCALL SDL_RenderGetD3D9Device(SDL_Renderer * renderer);
+
+typedef struct ID3D11Device ID3D11Device;
+/**
+   \brief Returns the D3D11 device associated with a renderer, or NULL if it's not a D3D11 renderer.
+
+   Once you are done using the device, you should release it to avoid a resource leak.
+ */
+extern DECLSPEC ID3D11Device* SDLCALL SDL_RenderGetD3D11Device(SDL_Renderer * renderer);
 
 /**
    \brief Returns the DXGI Adapter and Output indices for the specified display index.
@@ -123,6 +131,7 @@ extern DECLSPEC void * SDLCALL SDL_AndroidGetActivity(void);
 /**
    \brief Return API level of the current device
 
+    API level 30: Android 11
     API level 29: Android 10
     API level 28: Android 9
     API level 27: Android 8.1
@@ -197,6 +206,31 @@ extern DECLSPEC int SDLCALL SDL_AndroidGetExternalStorageState(void);
    written to by other applications.
  */
 extern DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath(void);
+
+/**
+   \brief Request permissions at runtime.
+
+   This blocks the calling thread until the permission is granted or
+   denied. Returns SDL_TRUE if the permission was granted.
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_AndroidRequestPermission(const char *permission);
+
+/**
+   \brief Shows android toast notification
+
+   \note Shows toast in UI thread [https://developer.android.com/guide/topics/ui/notifiers/toasts]
+
+   \param message   : text message to be shown
+        duration  : 0 - short [https://developer.android.com/reference/android/widget/Toast#LENGTH_SHORT],
+                    1 - long  [https://developer.android.com/reference/android/widget/Toast#LENGTH_LONG]
+        gravity   : the location at which the notification should appear on the screen.
+                    It's an optional parameter. Set -1 if you don't want specify any gravity or
+                    choose some value from https://developer.android.com/reference/android/view/Gravity
+        xOffset   : set this parameter only when gravity >=0
+        yOffset   : set this parameter only when gravity >=0
+   \return 0 if success, -1 if any error occurs.
+*/
+extern DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int duration, int gravity, int xOffset, int yOffset);
 
 #endif /* __ANDROID__ */
 

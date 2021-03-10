@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -175,8 +175,10 @@ Android_PumpEvents_NonBlocking(_THIS)
                 SDL_UnlockMutex(Android_ActivityMutex);
             }
 
-            ANDROIDAUDIO_PauseDevices();
-            openslES_PauseDevices();
+            if (videodata->pauseAudio) {
+                ANDROIDAUDIO_PauseDevices();
+                openslES_PauseDevices();
+            }
 
             backup_context = 0;
         }
@@ -191,8 +193,10 @@ Android_PumpEvents_NonBlocking(_THIS)
             SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
             SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_RESTORED, 0, 0);
 
-            ANDROIDAUDIO_ResumeDevices();
-            openslES_ResumeDevices();
+            if (videodata->pauseAudio) {
+                ANDROIDAUDIO_ResumeDevices();
+                openslES_ResumeDevices();
+            }
 
             /* Restore the GL Context from here, as this operation is thread dependent */
             if (!isContextExternal && !SDL_HasEvent(SDL_QUIT)) {

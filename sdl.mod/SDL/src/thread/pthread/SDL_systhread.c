@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,8 +18,8 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
 #include "../../SDL_internal.h"
+
 #include "SDL_system.h"
 #include "SDL_hints.h"
 
@@ -60,7 +60,6 @@
 #include <kernel/OS.h>
 #endif
 
-#include "SDL_assert.h"
 
 #ifndef __NACL__
 /* List of signals to mask in the subthreads */
@@ -208,6 +207,7 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     int pri_policy;
     pthread_t thread = pthread_self();
     const char *policyhint = SDL_GetHint(SDL_HINT_THREAD_PRIORITY_POLICY);
+    const SDL_bool timecritical_realtime_hint = SDL_GetHintBoolean(SDL_HINT_THREAD_FORCE_REALTIME_TIME_CRITICAL, SDL_FALSE);
 
     if (pthread_getschedparam(thread, &policy, &sched) != 0) {
         return SDL_SetError("pthread_getschedparam() failed");
@@ -223,11 +223,21 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
         break;
     case SDL_THREAD_PRIORITY_HIGH:
     case SDL_THREAD_PRIORITY_TIME_CRITICAL:
+#if defined(__MACOSX__) || defined(__IPHONEOS__) || defined(__TVOS__)
+        /* Apple requires SCHED_RR for high priority threads */
         pri_policy = SCHED_RR;
         break;
+#else
+        pri_policy = SCHED_OTHER;
+        break;
+#endif
     default:
         pri_policy = policy;
         break;
+    }
+
+    if (timecritical_realtime_hint && priority == SDL_THREAD_PRIORITY_TIME_CRITICAL) {
+        pri_policy = SCHED_RR;
     }
 
     if (policyhint) {

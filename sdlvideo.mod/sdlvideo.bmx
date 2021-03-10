@@ -1,4 +1,4 @@
-' Copyright (c) 2014-2020 Bruce A Henderson
+' Copyright (c) 2014-2021 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -622,6 +622,14 @@ Type TSDLDisplay
 	End Rem
 	Method GetDPI:Int(ddpi:Float Var, hdpi:Float Var, vdpi:Float Var)
 		Return SDL_GetDisplayDPI(index, Varptr ddpi, Varptr hdpi, Varptr vdpi)
+	End Method
+	
+	Rem
+	bbdoc: Gets the orientation of a display
+	returns: The orientation of the display, or #SDL_ORIENTATION_UNKNOWN if it isn't available.
+	End Rem
+	Method GetOrientation:Int()
+		Return SDL_GetDisplayOrientation(index)
 	End Method
 	
 	Rem

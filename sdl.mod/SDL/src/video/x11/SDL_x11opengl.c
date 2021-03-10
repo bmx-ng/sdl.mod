@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,7 +23,6 @@
 #if SDL_VIDEO_DRIVER_X11
 
 #include "SDL_x11video.h"
-#include "SDL_assert.h"
 #include "SDL_hints.h"
 
 /* GLX implementation of SDL OpenGL support */
@@ -32,11 +31,11 @@
 #include "SDL_loadso.h"
 #include "SDL_x11opengles.h"
 
-#if defined(__IRIX__) || defined(__NetBSD__)
+#if defined(__IRIX__) || defined(__NetBSD__) || defined(__OpenBSD__)
 /*
  * IRIX doesn't have a GL library versioning system.
- * NetBSD has different GL library versions depending on how the library was
- * installed (package vs. xsrc).
+ * NetBSD and OpenBSD have different GL library versions depending on how
+ * the library was installed.
  */
 #define DEFAULT_OPENGL  "libGL.so"
 #elif defined(__MACOSX__)
