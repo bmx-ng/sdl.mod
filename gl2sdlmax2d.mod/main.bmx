@@ -263,12 +263,17 @@ Function DefaultTextureFShaderSource:String()
 	str :+ "#version 100~n"
 	str :+ "precision mediump float;~n"
 	str :+ "uniform sampler2D u_texture0;~n"
+	str :+ "uniform bool u_maskblend;~n"
 	str :+ "varying vec4 v4_col;~n"
 	str :+ "varying vec2 v2_tex;~n"
 	str :+ "void main(void) {~n"
-	str :+ "  vec4 tex=texture2D(u_texture0, v2_tex);~n"
-	str :+ "	gl_FragColor.rgb=tex.rgb*v4_col.rgb;~n"
-	str :+ "    gl_FragColor.a=tex.a*v4_col.a;~n"
+	str :+ "    vec4 tex=texture2D(u_texture0, v2_tex) * v4_col;~n"
+	str :+ "    if (u_maskblend) {~n"
+	str :+ "        if (tex.a < 0.5) {~n"
+	str :+ "            discard;~n"
+	str :+ "        }~n"
+	str :+ "    }~n"
+	str :+ "    gl_FragColor = tex;~n"
 	str :+ "}~n"
 	?Not opengles
 	str :+ "#version 120~n"
@@ -515,6 +520,7 @@ Type TGLSLProgram
 
 	Field uniform_ProjMatrix:Int	'NOTE: Acts as glModelViewProjectionMatrix.
 	Field uniform_Texture0:Int
+	Field uniform_maskblend:Int = -1
 	'Field uniform_Color:Int
 
 	Method Create:TGLSLProgram( vs:TGLSLShader, fs:TGLSLShader )
@@ -580,6 +586,9 @@ Type TGLSLProgram
 
 		uniform_ProjMatrix = glGetUniformLocation( id, "u_pmatrix" )
 		uniform_Texture0 = glGetUniformLocation( id, "u_texture0" )
+		?opengles
+		uniform_maskblend = glGetUniformLocation( id, "u_maskblend" )
+		?
 		'uniform_Color = glGetUniformLocation( id, "u_color" )
 
 	End Method
@@ -819,14 +828,25 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 	Method SetBlend( blend ) Override
 
 		If state_blend = blend Return
+
+		?opengles
+		If state_blend = MASKBLEND And activeProgram And activeProgram.uniform_maskblend >= 0 Then
+			glUniform1i( activeProgram.uniform_maskblend, 0 )
+		End If
+		?
+
 		state_blend=blend
 
 		Select blend
-		?Not opengles
 		Case MASKBLEND
+		?Not opengles
 			glDisable( GL_BLEND )
 			glEnable( GL_ALPHA_TEST )
 			glAlphaFunc( GL_GEQUAL, 0.5 )
+		?opengles
+		If activeProgram And activeProgram.uniform_maskblend >= 0 Then
+			glUniform1i( activeProgram.uniform_maskblend, 1 )
+		EndIf
 		?
 		Case SOLIDBLEND
 			glDisable( GL_BLEND )
@@ -1307,12 +1327,22 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 			activeProgram.EnableData( vert_array, uv_array, col_array, u_pmatrix.grid )
 
+			?opengles
+			If activeProgram.uniform_maskblend >= 0 Then
+				glUniform1i( activeProgram.uniform_maskblend, 0 )
+			EndIf
+			?
+
 			Select blend_id
-			?Not opengles
 			Case MASKBLEND
+			?Not opengles
 				glDisable( GL_BLEND )
 				glEnable( GL_ALPHA_TEST )
 				glAlphaFunc( GL_GEQUAL, 0.5 )
+			?opengles
+				If activeProgram.uniform_maskblend >= 0 Then
+					glUniform1i( activeProgram.uniform_maskblend, 1 )
+				End If
 			?
 			Case SOLIDBLEND
 				glDisable( GL_BLEND )
