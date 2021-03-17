@@ -54,6 +54,7 @@ Import "-framework CoreAudio"
 Import "-framework IOKit"
 Import "-framework CoreVideo"
 Import "-framework ForceFeedback"
+Import "-framework GameController"
 
 ?linuxx86
 ModuleInfo "CC_OPTS: -mmmx -m3dnow -msse -msse2 -DHAVE_LINUX_VERSION_H"
