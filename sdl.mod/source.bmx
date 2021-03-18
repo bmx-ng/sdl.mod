@@ -322,7 +322,6 @@ Import "SDL/src/filesystem/cocoa/SDL_sysfilesystem.m"
 Import "SDL/src/haptic/darwin/SDL_syshaptic.c"
 Import "SDL/src/hidapi/mac/hid.c"
 Import "SDL/src/joystick/darwin/SDL_iokitjoystick.c"
-Import "SDL/src/joystick/iphoneos/SDL_mfijoystick.m"
 Import "SDL/src/loadso/dlopen/SDL_sysloadso.c"
 Import "SDL/src/locale/macosx/SDL_syslocale.m"
 Import "SDL/src/misc/macosx/SDL_sysurl.m"
@@ -350,6 +349,8 @@ Import "SDL/src/video/cocoa/SDL_cocoaopengles.m"
 Import "SDL/src/video/cocoa/SDL_cocoashape.m"
 Import "SDL/src/video/cocoa/SDL_cocoavideo.m"
 Import "SDL/src/video/cocoa/SDL_cocoawindow.m"
+
+Import SDL.macosmfi
 
 ?Not android
  ' linux desktop + raspberrypi
