@@ -119,6 +119,7 @@ SDL_DisplayMode * bmx_sdl_video_DisplayMode_new(Uint32 format, int width, int he
 	mode->w = width;
 	mode->h = height;
 	mode->refresh_rate = refreshRate;
+	return mode;
 }
 
 void bmx_sdl_video_DisplayMode_free(SDL_DisplayMode * mode) {
