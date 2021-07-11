@@ -363,6 +363,8 @@ int mapkey(SDL_Keycode keycode) {
 			return KEY_NUMDECIMAL;
 		case SDLK_KP_DIVIDE:
 			return KEY_NUMDIVIDE;
+		case SDLK_KP_ENTER:
+			return KEY_ENTER;
 		case SDLK_F1:
 			return KEY_F1;
 		case SDLK_F2:
