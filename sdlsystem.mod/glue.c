@@ -202,6 +202,9 @@ void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 				case SDL_WINDOWEVENT_RESTORED:
 					bbSDLSystemEmitEvent(BBEVENT_WINDOWRESTORE, source, event->window.windowID, 0, 0, 0, &bbNullObject);
 					return;
+				case SDL_WINDOWEVENT_CLOSE:
+					bbSDLSystemEmitEvent(BBEVENT_WINDOWCLOSE, source, event->window.windowID, 0, 0, 0, &bbNullObject);
+					return;
 				
 			}
 		case SDL_DISPLAYEVENT:
