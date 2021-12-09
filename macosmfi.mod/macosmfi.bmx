@@ -2,7 +2,7 @@ SuperStrict
 
 Module SDL.macosmfi
 
-?osx
+?ios
 ModuleInfo "CC_OPTS: -mmmx -msse -msse2 -DTARGET_API_MAC_CARBON -DTARGET_API_MAC_OSX"
 ModuleInfo "CC_OPTS: -fobjc-arc"
 
