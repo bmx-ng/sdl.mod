@@ -434,12 +434,22 @@ Type TSDLWindow
 	End Method
 	
 	Rem
-	bbdoc: 
+	bbdoc: Returns the native window handle for this window.
 	End Rem
 	Method GetWindowHandle:Byte Ptr()
 		Return bmx_sdl_video_GetWindowHandle(windowPtr)
 	End Method
 	
+	Rem
+	bbdoc: Moves the mouse cursor to the given position within the window.
+	about: This method generates a mouse motion event.
+
+	Note that this method will appear to succeed, but not actually move the mouse when used over Microsoft Remote Desktop.
+	End Rem
+	Method WarpMouse(x:Int, y:Int)
+		SDL_WarpMouseInWindow(windowPtr, x, y)
+	End Method
+
 End Type
 
 Rem

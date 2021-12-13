@@ -126,6 +126,7 @@ Extern
 	Function SDL_DestroyWindow(handle:Byte Ptr)
 	Function SDL_RestoreWindow(handle:Byte Ptr)
 	Function SDL_SetWindowIcon(handle:Byte Ptr, surface:Byte Ptr)
+	Function SDL_WarpMouseInWindow(handle:Byte Ptr, x:Int, y:Int)
 
 	Function SDL_GetGrabbedWindow:Byte Ptr()
 	Function SDL_IsScreenSaverEnabled:Int()
