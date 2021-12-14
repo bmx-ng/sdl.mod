@@ -19,7 +19,7 @@
 '    3. This notice may not be removed or altered from any source
 '    distribution.
 '
-Strict
+SuperStrict
 
 Module SDL.SDLGraphics
 
@@ -46,7 +46,7 @@ Type TGraphicsContext
 	Field height:Int
 	Field depth:Int
 	Field hertz:Int
-	Field flags:Int
+	Field flags:Long
 	Field sync:Int
 	Field x:Int
 	Field y:Int
@@ -64,7 +64,7 @@ Type TSDLGraphics Extends TGraphics
 		Return SDLGraphicsDriver()
 	End Method
 
-	Method GetSettings( width:Int Var,height:Int Var,depth:Int Var,hertz:Int Var,flags:Int Var,x:Int Var,y:Int Var ) Override
+	Method GetSettings( width:Int Var,height:Int Var,depth:Int Var,hertz:Int Var,flags:Long Var,x:Int Var,y:Int Var ) Override
 		Assert _context
 		'Local w:Int,h:Int,d:Int,r:Int,f:Int
 		'bbSDLGraphicsGetSettings _context,w,h,d,r,f
@@ -133,19 +133,19 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 		Return modes
 	End Method
 
-	Method AttachGraphics:TSDLGraphics( widget:Byte Ptr,flags:Int ) Override
+	Method AttachGraphics:TSDLGraphics( widget:Byte Ptr,flags:Long ) Override
 		Local t:TSDLGraphics=New TSDLGraphics
 		't._context=bbGLGraphicsAttachGraphics( widget,flags )
 		Return t
 	End Method
 
-	Method CreateGraphics:TSDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Int,x:Int,y:Int ) Override
+	Method CreateGraphics:TSDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Long,x:Int,y:Int ) Override
 		Local t:TSDLGraphics=New TSDLGraphics
 		t._context=SDLGraphicsCreateGraphics( width,height,depth,hertz,flags,x,y )
 		Return t
 	End Method
 
-	Method SDLGraphicsCreateGraphics:TGraphicsContext(width:Int,height:Int,depth:Int,hertz:Int,flags:Int,x:Int,y:Int)
+	Method SDLGraphicsCreateGraphics:TGraphicsContext(width:Int,height:Int,depth:Int,hertz:Int,flags:Long,x:Int,y:Int)
 		Local context:TGraphicsContext = New TGraphicsContext
 
 		Local windowFlags:UInt = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL
@@ -231,7 +231,7 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 		_currentContext = context
 	End Method
 
-	Method Flip( sync:Int ) Override
+	Method Flip:int( sync:Int ) Override
 		'BRL  SDL
 		'-1   -1   sdl: adaptive vsync, brl: "use graphics object's refresh rate"
 		' 1    1   vsync
@@ -239,7 +239,7 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 
 		'bbSDLGraphicsFlip sync
 		If Not _currentContext Then
-			Return
+			Return 0
 		End If
 
 		If sync <> _currentContext.sync Then
@@ -254,7 +254,7 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 		End If
 	End Method
 
-	Function GraphicsHook:Object( id,data:Object,context:Object )
+	Function GraphicsHook:Object( id:Int,data:Object,context:Object )
 		Local ev:TEvent=TEvent(data)
 		If Not ev Return data
 
@@ -313,10 +313,20 @@ End Function
 SDL_Init(SDL_INIT_VIDEO)
 
 ' cleanup context on exit
-OnEnd(bbSDLExit)
+'OnEnd(bbSDLExit)
 
 ' set mouse warp function
 _sdl_WarpMouse = bmx_SDL_WarpMouseInWindow
+
+Private
+
+Function bmx_SDL_WarpMouseInWindow( x:Int, y:Int )
+	If _currentContext Then
+		_currentContext.window.WarpMouse(x, y)
+	End If
+End Function
+
+Public
 
 SetGraphicsDriver SDLGraphicsDriver()
 

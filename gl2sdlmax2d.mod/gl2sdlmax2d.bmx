@@ -1,4 +1,4 @@
-Strict
+SuperStrict
 
 Rem
 bbdoc: Graphics/OpenGL 2+ Max2D
@@ -8,11 +8,14 @@ Legacy fixed functionality is included for testing purposes if GLMAX2D_USE_LEGAC
 End Rem
 Module SDL.GL2SDLMax2D
 
-ModuleInfo "Version: 1.00"
+ModuleInfo "Version: 1.01"
 ModuleInfo "Author: Mark Sibly, Bruce Henderson, Emil Andersson"
 ModuleInfo "License: zlib/libpng"
 ModuleInfo "Copyright: Blitz Research Ltd"
 
+ModuleInfo "History: 1.01"
+ModuleInfo "History: Changed to SuperStrict"
+ModuleInfo "History: Extended flags to Long"
 ModuleInfo "History: 1.00"
 ModuleInfo "History: Initial version."
 

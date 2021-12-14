@@ -60,33 +60,7 @@ Import "../../sdl.mod/sdl.mod/SDL/include/*.h"
 Import "glue.c"
 
 Extern
-
 	Function bbSDLGraphicsGraphicsModes:Int( display:Int, buf:Byte Ptr,size:Int )
-	Function bbSDLGraphicsShareContexts()
-	'Function bbSDLGraphicsAttachGraphics:Byte Ptr( widget:Byte Ptr,flags )
-	Function bbSDLGraphicsCreateGraphics:Byte Ptr( width:Int,height:Int,depth:Int,hertz:Int,flags:Int )
-	Function bbSDLGraphicsGetSettings( context:Byte Ptr,width:Int Var,height:Int Var,depth:Int Var,hertz:Int Var,flags:Int Var )
-	Function bbSDLGraphicsClose( context:Byte Ptr )	
-	Function bbSDLGraphicsSetGraphics( context:Byte Ptr )
-	Function bbSDLGraphicsFlip( sync:Int )
-	Function bbSDLExit()
-	Function bbSDLGraphicsGetHandle:Byte Ptr(context:Byte Ptr)
-	
-	Function SDL_GetNumVideoDisplays:Int()
-	
-	
-	' system stuff
-'	Function SDL_ShowCursor(visible:Int)
-	Function bmx_SDL_WarpMouseInWindow(x:Int, y:Int)
-		
-'	Function bmx_SDL_GetDisplayWidth:Int(display:Int)
-'	Function bmx_SDL_GetDisplayHeight:Int(display:Int)
-'	Function bmx_SDL_GetDisplayDepth:Int(display:Int)
-'	Function bmx_SDL_GetDisplayhertz:Int(display:Int)
-
-'	Function bmx_SDL_Poll()
-'	Function bmx_SDL_WaitEvent()
-	
 End Extern
 Rem
 Const SDL_WINDOW_FULLSCREEN:Int = $00000001         ' fullscreen window

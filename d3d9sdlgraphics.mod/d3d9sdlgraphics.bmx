@@ -1,4 +1,4 @@
-Strict
+SuperStrict
 
 Module sdl.d3d9sdlgraphics
 
@@ -34,7 +34,7 @@ Type TD3D9AutoRelease
 	Field unk:IUnknown_
 End Type
 
-Function OpenD3DDevice:Int( hwnd:Byte Ptr,width:Int,height:Int,depth:Int,hertz:Int,flags:Int)
+Function OpenD3DDevice:Int( hwnd:Byte Ptr,width:Int,height:Int,depth:Int,hertz:Int,flags:Long)
 	If _d3dDevRefs
 		If Not _presentParams.Windowed Return False
 		If depth<>0 Return False
@@ -144,7 +144,7 @@ Global UseDX9RenderLagFix:Int = 0
 
 Type TD3D9SDLGraphics Extends TGraphics
 
-	Method Attach:TD3D9SDLGraphics( hwnd:Byte Ptr,flags:Int )
+	Method Attach:TD3D9SDLGraphics( hwnd:Byte Ptr,flags:Long )
 		Local rect:Int[4]
 		GetClientRect hwnd,rect
 		Local width:Int=rect[2]-rect[0]
@@ -161,7 +161,7 @@ Type TD3D9SDLGraphics Extends TGraphics
 		Return Self
 	End Method
 	
-	Method Create:TD3D9SDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Int,x:Int,y:Int)
+	Method Create:TD3D9SDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Long,x:Int,y:Int)
 	
 		
 		_g = SDLGraphicsDriver().CreateGraphics( width, height, depth, hertz, flags | GRAPHICS_WIN32_DX, x, y )
@@ -250,15 +250,15 @@ Type TD3D9SDLGraphics Extends TGraphics
 		Return _driver
 	End Method
 	
-	Method GetSettings:Int( width:Int Var,height:Int Var,depth:Int Var,hertz:Int Var,flags:Int Var,x:Int Var,y:Int Var ) Override
+	Method GetSettings( width:Int Var,height:Int Var,depth:Int Var,hertz:Int Var,flags:Long Var,x:Int Var,y:Int Var ) Override
 		'
 		ValidateSize
 		'
 		_g.GetSettings(width, height, depth, hertz, flags, x, y)
 	End Method
 
-	Method Close:Int() Override
-		If Not _hwnd Return False
+	Method Close() Override
+		If Not _hwnd Return
 		CloseD3DDevice
 		If Not _attached Then
 			_g.Close()
@@ -359,11 +359,11 @@ Type TD3D9SDLGraphicsDriver Extends TGraphicsDriver
 		Return _modes
 	End Method
 	
-	Method AttachGraphics:TD3D9SDLGraphics( widget:Byte Ptr,flags:Int ) Override
+	Method AttachGraphics:TD3D9SDLGraphics( widget:Byte Ptr,flags:Long ) Override
 		Return New TD3D9SDLGraphics.Attach( widget:Byte Ptr,flags:Int )
 	End Method
 	
-	Method CreateGraphics:TD3D9SDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Int,x:Int,y:Int) Override
+	Method CreateGraphics:TD3D9SDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Long,x:Int,y:Int) Override
 		Return New TD3D9SDLGraphics.Create( width,height,depth,hertz,flags,x,y )
 	End Method
 
@@ -375,7 +375,7 @@ Type TD3D9SDLGraphicsDriver Extends TGraphicsDriver
 		_graphics=TD3D9SDLGraphics( g )
 	End Method
 	
-	Method Flip( sync:Int ) Override
+	Method Flip:Int( sync:Int ) Override
 		Local present:Int = _graphics.Flip(sync)
 		If UseDX9RenderLagFix Then
 			Local pixelsdrawn:Int
