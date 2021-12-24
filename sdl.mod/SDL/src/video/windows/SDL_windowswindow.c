@@ -162,7 +162,7 @@ WIN_SetWindowPositionInternal(_THIS, SDL_Window * window, UINT flags)
         top = HWND_NOTOPMOST;
     }
 
-    WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_TRUE);    
+    WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_TRUE);
 
     data->expected_resize = SDL_TRUE;
     SetWindowPos(hwnd, top, x, y, w, h, flags);
@@ -186,6 +186,7 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool cre
     data->hdc = GetDC(hwnd);
     data->hinstance = (HINSTANCE) GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
     data->created = created;
+    data->high_surrogate = 0;
     data->mouse_button_flags = 0;
     data->last_pointer_update = (LPARAM)-1;
     data->videodata = videodata;
@@ -280,15 +281,8 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool cre
     }
     if (GetFocus() == hwnd) {
         window->flags |= SDL_WINDOW_INPUT_FOCUS;
-        SDL_SetKeyboardFocus(data->window);
-
-        if (window->flags & SDL_WINDOW_MOUSE_GRABBED) {
-            RECT rect;
-            GetClientRect(hwnd, &rect);
-            ClientToScreen(hwnd, (LPPOINT) & rect);
-            ClientToScreen(hwnd, (LPPOINT) & rect + 1);
-            ClipCursor(&rect);
-        }
+        SDL_SetKeyboardFocus(window);
+        WIN_UpdateClipCursor(window);
     }
 
     /* Enable multi-touch */
@@ -364,7 +358,7 @@ WIN_CreateWindow(_THIS, SDL_Window * window)
         return 0;
 #else
         return SDL_SetError("Could not create GLES window surface (EGL support not configured)");
-#endif /* SDL_VIDEO_OPENGL_EGL */ 
+#endif /* SDL_VIDEO_OPENGL_EGL */
     }
 #endif /* SDL_VIDEO_OPENGL_ES2 */
 
@@ -559,9 +553,9 @@ WIN_ShowWindow(_THIS, SDL_Window * window)
     DWORD style;
     HWND hwnd;
     int nCmdShow;
-    
+
     hwnd = ((SDL_WindowData *)window->driverdata)->hwnd;
-    nCmdShow = SW_SHOW;
+    nCmdShow = SDL_GetHintBoolean(SDL_HINT_WINDOW_NO_ACTIVATION_WHEN_SHOWN, SDL_FALSE) ? SW_SHOWNA : SW_SHOW;
     style = GetWindowLong(hwnd, GWL_EXSTYLE);
     if (style & WS_EX_NOACTIVATE) {
         nCmdShow = SW_SHOWNOACTIVATE;
@@ -629,6 +623,18 @@ WIN_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
     style |= GetWindowStyle(window);
 
     SetWindowLong(hwnd, GWL_STYLE, style);
+}
+
+void
+WIN_SetWindowAlwaysOnTop(_THIS, SDL_Window * window, SDL_bool on_top)
+{
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    HWND hwnd = data->hwnd;
+    if (on_top) {
+        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+    } else {
+        SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+    }
 }
 
 void
@@ -719,6 +725,32 @@ WIN_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
     return succeeded ? 0 : -1;
 }
 
+void*
+WIN_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size)
+{
+    SDL_VideoDisplay* display = SDL_GetDisplayForWindow(window);
+    SDL_DisplayData* data = (SDL_DisplayData*)display->driverdata;
+    HDC hdc;
+    BOOL succeeded = FALSE;
+    WCHAR filename[MAX_PATH];
+    DWORD fileNameSize = MAX_PATH;
+    void* iccProfileData = NULL;
+
+    hdc = CreateDCW(data->DeviceName, NULL, NULL, NULL);
+    if (hdc) {
+        succeeded = GetICMProfileW(hdc, &fileNameSize, filename);
+        DeleteDC(hdc);
+    }
+
+    if (succeeded) {
+        iccProfileData = SDL_LoadFile(WIN_StringToUTF8(filename), size);
+        if (!iccProfileData)
+            SDL_SetError("Could not open ICC profile");
+    }
+
+    return iccProfileData;
+}
+
 int
 WIN_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
 {
@@ -780,6 +812,12 @@ void WIN_UngrabKeyboard(SDL_Window *window)
         UnhookWindowsHookEx(data->keyboard_hook);
         data->keyboard_hook = NULL;
     }
+}
+
+void
+WIN_SetWindowMouseRect(_THIS, SDL_Window * window)
+{
+    WIN_UpdateClipCursor(window);
 }
 
 void
@@ -947,18 +985,6 @@ void WIN_OnWindowEnter(_THIS, SDL_Window * window)
     if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
         WIN_SetWindowPositionInternal(_this, window, SWP_NOCOPYBITS | SWP_NOSIZE | SWP_NOACTIVATE);
     }
-
-#ifdef WM_MOUSELEAVE
-    {
-        TRACKMOUSEEVENT trackMouseEvent;
-
-        trackMouseEvent.cbSize = sizeof(TRACKMOUSEEVENT);
-        trackMouseEvent.dwFlags = TME_LEAVE;
-        trackMouseEvent.hwndTrack = data->hwnd;
-
-        TrackMouseEvent(&trackMouseEvent);
-    }
-#endif /* WM_MOUSELEAVE */
 }
 
 void
@@ -978,7 +1004,8 @@ WIN_UpdateClipCursor(SDL_Window *window)
         return;
     }
 
-    if ((mouse->relative_mode || (window->flags & SDL_WINDOW_MOUSE_GRABBED)) &&
+    if ((mouse->relative_mode || (window->flags & SDL_WINDOW_MOUSE_GRABBED) ||
+         (window->mouse_rect.w > 0 && window->mouse_rect.h > 0)) &&
         (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
         if (mouse->relative_mode && !mouse->relative_mode_warp) {
             if (GetWindowRect(data->hwnd, &rect)) {
@@ -1000,12 +1027,32 @@ WIN_UpdateClipCursor(SDL_Window *window)
                 }
             }
         } else {
-            if (GetClientRect(data->hwnd, &rect) && !IsRectEmpty(&rect)) {
+            if (GetClientRect(data->hwnd, &rect)) {
                 ClientToScreen(data->hwnd, (LPPOINT) & rect);
                 ClientToScreen(data->hwnd, (LPPOINT) & rect + 1);
+                if (window->mouse_rect.w > 0 && window->mouse_rect.h > 0) {
+                    RECT mouse_rect, intersection;
+
+                    mouse_rect.left = rect.left + window->mouse_rect.x;
+                    mouse_rect.top = rect.top + window->mouse_rect.y;
+                    mouse_rect.right = mouse_rect.left + window->mouse_rect.w - 1;
+                    mouse_rect.bottom = mouse_rect.top + window->mouse_rect.h - 1;
+                    if (IntersectRect(&intersection, &rect, &mouse_rect)) {
+                        SDL_memcpy(&rect, &intersection, sizeof(rect));
+                    } else if ((window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0) {
+                        /* Mouse rect was invalid, just do the normal grab */
+                    } else {
+                        SDL_zero(rect);
+                    }
+                }
                 if (SDL_memcmp(&rect, &clipped_rect, sizeof(rect)) != 0) {
-                    if (ClipCursor(&rect)) {
-                        data->cursor_clipped_rect = rect;
+                    if (!IsRectEmpty(&rect)) {
+                        if (ClipCursor(&rect)) {
+                            data->cursor_clipped_rect = rect;
+                        }
+                    } else {
+                        ClipCursor(NULL);
+                        SDL_zero(data->cursor_clipped_rect);
                     }
                 }
             }
@@ -1070,6 +1117,34 @@ WIN_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept)
 {
     const SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     DragAcceptFiles(data->hwnd, accept ? TRUE : FALSE);
+}
+
+int
+WIN_FlashWindow(_THIS, SDL_Window * window, SDL_FlashOperation operation)
+{
+    FLASHWINFO desc;
+
+    SDL_zero(desc);
+    desc.cbSize = sizeof(desc);
+    desc.hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
+    switch (operation) {
+    case SDL_FLASH_CANCEL:
+        desc.dwFlags = FLASHW_STOP;
+        break;
+    case SDL_FLASH_BRIEFLY:
+        desc.dwFlags = FLASHW_TRAY;
+        desc.uCount = 1;
+        break;
+    case SDL_FLASH_UNTIL_FOCUSED:
+        desc.dwFlags = (FLASHW_TRAY | FLASHW_TIMERNOFG);
+        break;
+    default:
+        return SDL_Unsupported();
+    }
+
+    FlashWindowEx(&desc);
+
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */

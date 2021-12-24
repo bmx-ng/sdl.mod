@@ -85,6 +85,8 @@ typedef enum MONITOR_DPI_TYPE {
     MDT_DEFAULT = MDT_EFFECTIVE_DPI
 } MONITOR_DPI_TYPE;
 
+#else
+#include <shellscalingapi.h>
 #endif /* WINVER < 0x0603 */
 
 typedef BOOL  (*PFNSHFullScreen)(HWND, DWORD);
@@ -188,6 +190,7 @@ typedef struct SDL_VideoData
     TSFSink *ime_ippasink;
 
     BYTE pre_hook_key_state[256];
+    UINT _SDL_WAKEUP;
 } SDL_VideoData;
 
 extern SDL_bool g_WindowsEnableMessageLoop;

@@ -31,8 +31,6 @@
 #include "SDL_thread.h"
 #include "SDL_mutex.h"
 
-#ifdef SDL_JOYSTICK_HIDAPI
-
 #if defined(HAVE__WCSDUP) && !defined(HAVE_WCSDUP)
 #define wcsdup _wcsdup
 #endif
@@ -40,7 +38,7 @@
 #include <libusb.h>
 #include <locale.h> /* setlocale */
 
-#include "hidapi.h"
+#include "../hidapi/hidapi.h"
 
 #ifdef NAMESPACE
 namespace NAMESPACE
@@ -440,6 +438,95 @@ err:
 	return str;
 }
 
+struct usb_string_cache_entry {
+	uint16_t vid;
+	uint16_t pid;
+	wchar_t *vendor;
+	wchar_t *product;
+};
+
+static struct usb_string_cache_entry *usb_string_cache = NULL;
+static size_t usb_string_cache_size = 0;
+static size_t usb_string_cache_insert_pos = 0;
+
+static int usb_string_cache_grow()
+{
+	struct usb_string_cache_entry *new_cache;
+	size_t allocSize;
+	size_t new_cache_size;
+
+	new_cache_size = usb_string_cache_size + 8;
+	allocSize = sizeof(struct usb_string_cache_entry) * new_cache_size;
+	new_cache = (struct usb_string_cache_entry *)realloc(usb_string_cache, allocSize);
+	if (!new_cache)
+		return -1;
+
+	usb_string_cache = new_cache;
+	usb_string_cache_size = new_cache_size;
+
+	return 0;
+}
+
+static void usb_string_cache_destroy()
+{
+	size_t i;
+	for (i = 0; i < usb_string_cache_insert_pos; i++) {
+		free(usb_string_cache[i].vendor);
+		free(usb_string_cache[i].product);
+	}
+	free(usb_string_cache);
+
+	usb_string_cache = NULL;
+	usb_string_cache_size = 0;
+	usb_string_cache_insert_pos = 0;
+}
+
+static struct usb_string_cache_entry *usb_string_cache_insert()
+{
+	struct usb_string_cache_entry *new_entry = NULL;
+	if (usb_string_cache_insert_pos >= usb_string_cache_size) {
+		if (usb_string_cache_grow() < 0)
+			return NULL;
+	}
+	new_entry = &usb_string_cache[usb_string_cache_insert_pos];
+	usb_string_cache_insert_pos++;
+	return new_entry;
+}
+
+static const struct usb_string_cache_entry *usb_string_cache_find(struct libusb_device_descriptor *desc, struct libusb_device_handle *handle)
+{
+	struct usb_string_cache_entry *entry = NULL;
+	size_t i;
+
+	/* Search for existing string cache entry */
+	for (i = 0; i < usb_string_cache_insert_pos; i++) {
+		entry = &usb_string_cache[i];
+		if (entry->vid != desc->idVendor)
+			continue;
+		if (entry->pid != desc->idProduct)
+			continue;
+		return entry;
+	}
+
+	/* Not found, create one. */
+	entry = usb_string_cache_insert();
+	if (!entry)
+		return NULL;
+
+	entry->vid = desc->idVendor;
+	entry->pid = desc->idProduct;
+	if (desc->iManufacturer > 0)
+		entry->vendor = get_usb_string(handle, desc->iManufacturer);
+	else
+		entry->vendor = NULL;
+	if (desc->iProduct > 0)
+		entry->product = get_usb_string(handle, desc->iProduct);
+	else
+		entry->product = NULL;
+
+	return entry;
+}
+
 static char *make_path(libusb_device *dev, int interface_number)
 {
 	char str[64];
@@ -473,6 +560,8 @@ int HID_API_EXPORT hid_init(void)
 
 int HID_API_EXPORT hid_exit(void)
 {
+	usb_string_cache_destroy();
+
 	if (usb_context) {
 		libusb_exit(usb_context);
 		usb_context = NULL;
@@ -506,6 +595,7 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x15e4, /* Numark */
 		0x162e, /* Joytech */
 		0x1689, /* Razer Onza */
+		0x1949, /* Lab126, Inc. */
 		0x1bad, /* Harmonix */
 		0x20d6, /* PowerA */
 		0x24c6, /* PowerA */
@@ -616,6 +706,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 
 							if (res >= 0) {
 								struct hid_device_info *tmp;
+								const struct usb_string_cache_entry *string_cache;
 
 								/* VID/PID match. Create the record. */
 								tmp = (struct hid_device_info*) calloc(1, sizeof(struct hid_device_info));
@@ -637,12 +728,24 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 										get_usb_string(handle, desc.iSerialNumber);
 
 								/* Manufacturer and Product strings */
-								if (desc.iManufacturer > 0)
-									cur_dev->manufacturer_string =
-										get_usb_string(handle, desc.iManufacturer);
-								if (desc.iProduct > 0)
-									cur_dev->product_string =
-										get_usb_string(handle, desc.iProduct);
+								if (dev_vid && dev_pid) {
+									string_cache = usb_string_cache_find(&desc, handle);
+									if (string_cache) {
+										if (string_cache->vendor) {
+											cur_dev->manufacturer_string = wcsdup(string_cache->vendor);
+										}
+										if (string_cache->product) {
+											cur_dev->product_string = wcsdup(string_cache->product);
+										}
+									}
+								} else {
+									if (desc.iManufacturer > 0)
+										cur_dev->manufacturer_string =
+											get_usb_string(handle, desc.iManufacturer);
+									if (desc.iProduct > 0)
+										cur_dev->product_string =
+											get_usb_string(handle, desc.iProduct);
+								}
 
 #ifdef INVASIVE_GET_USAGE
 {
@@ -926,8 +1029,9 @@ static int read_thread(void *param)
 	return 0;
 }
 
-static void init_xboxone(libusb_device_handle *device_handle, struct libusb_config_descriptor *conf_desc)
+static void init_xboxone(libusb_device_handle *device_handle, unsigned short idVendor, unsigned short idProduct, struct libusb_config_descriptor *conf_desc)
 {
+	static const int VENDOR_MICROSOFT = 0x045e;
 	static const int XB1_IFACE_SUBCLASS = 71;
 	static const int XB1_IFACE_PROTOCOL = 208;
 	int j, k, res;
@@ -935,26 +1039,36 @@ static void init_xboxone(libusb_device_handle *device_handle, struct libusb_conf
 	for (j = 0; j < conf_desc->bNumInterfaces; j++) {
 		const struct libusb_interface *intf = &conf_desc->interface[j];
 		for (k = 0; k < intf->num_altsetting; k++) {
-			const struct libusb_interface_descriptor *intf_desc;
-			intf_desc = &intf->altsetting[k];
-
-			if (intf_desc->bInterfaceNumber != 0 &&
-			    intf_desc->bAlternateSetting == 0 &&
-			    intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
+			const struct libusb_interface_descriptor *intf_desc = &intf->altsetting[k];
+			if (intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
 			    intf_desc->bInterfaceSubClass == XB1_IFACE_SUBCLASS &&
 			    intf_desc->bInterfaceProtocol == XB1_IFACE_PROTOCOL) {
-				res = libusb_claim_interface(device_handle, intf_desc->bInterfaceNumber);
-				if (res < 0) {
-					LOG("can't claim interface %d: %d\n", intf_desc->bInterfaceNumber, res);
-					continue;
+				int bSetAlternateSetting = 0;
+
+				/* Newer Microsoft Xbox One controllers have a high speed alternate setting */
+				if (idVendor == VENDOR_MICROSOFT &&
+				    intf_desc->bInterfaceNumber == 0 && intf_desc->bAlternateSetting == 1) {
+					bSetAlternateSetting = 1;
+				} else if (intf_desc->bInterfaceNumber != 0 && intf_desc->bAlternateSetting == 0) {
+					bSetAlternateSetting = 1;
 				}
 
-				res = libusb_set_interface_alt_setting(device_handle, intf_desc->bInterfaceNumber, intf_desc->bAlternateSetting);
-				if (res < 0) {
-					LOG("xbox init: can't set alt setting %d: %d\n", intf_desc->bInterfaceNumber, res);
-				}
+				if (bSetAlternateSetting) {
+					res = libusb_claim_interface(device_handle, intf_desc->bInterfaceNumber);
+					if (res < 0) {
+						LOG("can't claim interface %d: %d\n", intf_desc->bInterfaceNumber, res);
+						continue;
+					}
 
-				libusb_release_interface(device_handle, intf_desc->bInterfaceNumber);
+					LOG("Setting alternate setting for VID/PID 0x%x/0x%x interface %d to %d\n",  idVendor, idProduct, intf_desc->bInterfaceNumber, intf_desc->bAlternateSetting);
+
+					res = libusb_set_interface_alt_setting(device_handle, intf_desc->bInterfaceNumber, intf_desc->bAlternateSetting);
+					if (res < 0) {
+						LOG("xbox init: can't set alt setting %d: %d\n", intf_desc->bInterfaceNumber, res);
+					}
+
+					libusb_release_interface(device_handle, intf_desc->bInterfaceNumber);
+				}
 			}
 		}
 	}
@@ -1036,7 +1150,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 
 						/* Initialize XBox One controllers */
 						if (is_xboxone(desc.idVendor, intf_desc)) {
-							init_xboxone(dev->device_handle, conf_desc);
+							init_xboxone(dev->device_handle, desc.idVendor, desc.idProduct, conf_desc);
 						}
 
 						/* Store off the string descriptor indexes */
@@ -1626,5 +1740,3 @@ uint16_t get_usb_code_for_current_locale(void)
 #ifdef NAMESPACE
 }
 #endif
-
-#endif /* SDL_JOYSTICK_HIDAPI */

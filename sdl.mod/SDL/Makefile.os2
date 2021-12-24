@@ -1,9 +1,16 @@
 # Open Watcom makefile to build SDL2.dll for OS/2
 # wmake -f Makefile.os2
+#
+# If you have GNU libiconv installed (iconv2.dll), you
+# can compile against it by specifying LIBICONV=1, e.g.:
+# wmake -f Makefile.os2 LIBICONV=1
 
 LIBNAME = SDL2
-VERSION = 2.0.15
+VERSION = 2.0.19
 DESCRIPTION = Simple DirectMedia Layer 2
+
+LIBICONV=0
+ICONVLIB=$(LIBICONV_LIB)
 
 LIBHOME = .
 DLLFILE = $(LIBHOME)/$(LIBNAME).dll
@@ -12,11 +19,9 @@ LNKFILE = $(LIBNAME).lnk
 
 INCPATH = -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h"
 INCPATH+= -Iinclude
-INCPATH+= -I"src/core/os2" -I"src/core/os2/geniconv"
 
-LIBM = libm.lib
-LIBS = mmpm2.lib libuls.lib libconv.lib $(LIBM)
-
+LIBM = SDL2libm.lib
+LIBS = mmpm2.lib $(LIBM)
 CFLAGS = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier -ei
 # max warnings:
 CFLAGS+= -wx
@@ -24,6 +29,14 @@ CFLAGS+= -wx
 CFLAGS+= -wcd=303
 # building dll:
 CFLAGS+= -bd
+# iconv:
+LIBICONV_LIB=iconv2.lib
+!ifeq LIBICONV 1
+CFLAGS+= -DHAVE_ICONV=1 -DHAVE_ICONV_H=1
+LIBS+= $(ICONVLIB)
+!else
+LIBS+= libuls.lib libconv.lib
+!endif
 # the include paths :
 CFLAGS+= $(INCPATH)
 # building SDL itself (for DECLSPEC):
@@ -47,10 +60,10 @@ SRCS+= SDL_audio.c SDL_audiocvt.c SDL_audiodev.c SDL_audiotypecvt.c SDL_mixer.c 
 SRCS+= SDL_events.c SDL_quit.c SDL_keyboard.c SDL_mouse.c SDL_windowevents.c &
        SDL_clipboardevents.c SDL_dropevents.c SDL_displayevents.c SDL_gesture.c &
        SDL_sensor.c SDL_touch.c
-SRCS+= SDL_haptic.c SDL_gamecontroller.c SDL_joystick.c
+SRCS+= SDL_haptic.c SDL_hidapi.c SDL_gamecontroller.c SDL_joystick.c
 SRCS+= SDL_render.c yuv_rgb.c SDL_yuv.c SDL_yuv_sw.c SDL_blendfillrect.c &
        SDL_blendline.c SDL_blendpoint.c SDL_drawline.c SDL_drawpoint.c &
-       SDL_render_sw.c SDL_rotate.c
+       SDL_render_sw.c SDL_rotate.c SDL_triangle.c
 SRCS+= SDL_blit.c SDL_blit_0.c SDL_blit_1.c SDL_blit_A.c SDL_blit_auto.c &
        SDL_blit_copy.c SDL_blit_N.c SDL_blit_slow.c SDL_fillrect.c SDL_bmp.c &
        SDL_pixels.c SDL_rect.c SDL_RLEaccel.c SDL_shape.c SDL_stretch.c &
@@ -60,15 +73,18 @@ SRCS+= SDL_syscond.c SDL_sysmutex.c SDL_syssem.c SDL_systhread.c SDL_systls.c
 SRCS+= SDL_systimer.c
 SRCS+= SDL_sysloadso.c
 SRCS+= SDL_sysfilesystem.c
-SRCS+= SDL_os2joystick.c SDL_syshaptic.c SDL_sysjoystick.c
-SRCS+= SDL_virtualjoystick.c
+SRCS+= SDL_os2joystick.c SDL_syshaptic.c SDL_sysjoystick.c SDL_virtualjoystick.c
+SRCS+= SDL_hidapijoystick.c SDL_hidapi_rumble.c SDL_hidapi_gamecube.c SDL_hidapi_luna.c SDL_hidapi_ps4.c SDL_hidapi_ps5.c SDL_hidapi_stadia.c SDL_hidapi_switch.c SDL_hidapi_xbox360.c SDL_hidapi_xbox360w.c SDL_hidapi_xboxone.c SDL_hidapi_steam.c
 SRCS+= SDL_dummyaudio.c SDL_diskaudio.c
 SRCS+= SDL_nullvideo.c SDL_nullframebuffer.c SDL_nullevents.c
 SRCS+= SDL_dummysensor.c
 SRCS+= SDL_locale.c SDL_syslocale.c
 SRCS+= SDL_url.c SDL_sysurl.c
 
-SRCS+= SDL_os2.c geniconv.c os2cp.c os2iconv.c sys2utf8.c
+SRCS+= SDL_os2.c
+!ifeq LIBICONV 0
+SRCS+= geniconv.c os2cp.c os2iconv.c sys2utf8.c
+!endif
 SRCS+= SDL_os2audio.c
 SRCS+= SDL_os2video.c SDL_os2util.c SDL_os2dive.c SDL_os2vman.c &
        SDL_os2mouse.c SDL_os2messagebox.c
@@ -83,12 +99,13 @@ MOBJS= $(MSRCS:.c=.obj)
 
 .c: ./src;./src/dynapi;./src/audio;./src/cpuinfo;./src/events;./src/file;./src/haptic;./src/joystick;./src/power;./src/render;./src/render/software;./src/sensor;./src/stdlib;./src/thread;./src/timer;./src/video;./src/video/yuv2rgb;./src/atomic;./src/audio/disk;
 .c: ./src/haptic/dummy;./src/joystick/dummy;./src/joystick/virtual;./src/audio/dummy;./src/video/dummy;./src/sensor/dummy;
-.c: ./src/core/os2;./src/core/os2/geniconv;./src/audio/os2;./src/loadso/os2;./src/filesystem/os2;./src/joystick/os2;./src/thread/os2;./src/timer/os2;./src/video/os2;
-.c: ./src/locale/;./src/locale/unix;./src/misc;./src/misc/dummy
+.c: ./src/core/os2;./src/audio/os2;./src/loadso/os2;./src/filesystem/os2;./src/joystick/os2;./src/thread/os2;./src/timer/os2;./src/video/os2;
+.c: ./src/core/os2/geniconv;
+.c: ./src/locale/;./src/locale/unix;./src/misc;./src/misc/dummy;./src/joystick/hidapi;./src/hidapi
 
 all: $(DLLFILE) $(LIBFILE) .symbolic
 
-$(DLLFILE): $(OBJS) $(LIBM) $(LNKFILE)
+$(DLLFILE): $(OBJS) $(LIBM) $(LIBICONV_LIB) $(LNKFILE)
     @echo * Linking: $@
     wlink @$(LNKFILE)
 
@@ -123,9 +140,16 @@ SDL_blendpoint.obj: SDL_blendpoint.c
 SDL_RLEaccel.obj: SDL_RLEaccel.c
     wcc386 $(CFLAGS) -wcd=201 -fo=$^@ $<
 
+# c99 mode needed because of structs with flexible array members in libusb.h
+SDL_hidapi.obj: SDL_hidapi.c
+    wcc386 $(CFLAGS) -za99 -fo=$^@ $<
+
 .c: ./src/libm;
 $(LIBM): $(MOBJS)
     wlib -q -b -n -c -pa -s -t -zld -ii -io $@ $(MOBJS)
+
+$(LIBICONV_LIB):  "src/core/os2/iconv2.lbc"
+    wlib -q -b -n -c -pa -s -t -zld -ii -io $@ @$<
 
 $(LNKFILE):
     @echo * Creating linker file: $@
@@ -149,6 +173,7 @@ clean: .SYMBOLIC
     @if exist *.err rm *.err
     @if exist $(LNKFILE) rm $(LNKFILE)
     @if exist $(LIBM) rm $(LIBM)
+    @if exist $(LIBICONV_LIB) rm $(LIBICONV_LIB)
 
 distclean: .SYMBOLIC clean
     @if exist $(LIBHOME)/*.exp rm $(LIBHOME)/*.exp

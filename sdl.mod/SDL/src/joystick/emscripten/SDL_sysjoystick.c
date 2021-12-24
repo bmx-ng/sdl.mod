@@ -414,14 +414,20 @@ EMSCRIPTEN_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
     return SDL_FALSE;
 }
 
-static SDL_bool
-EMSCRIPTEN_JoystickHasLED(SDL_Joystick *joystick)
+static Uint32
+EMSCRIPTEN_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
-    return SDL_FALSE;
+    return 0;
 }
 
 static int
 EMSCRIPTEN_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    return SDL_Unsupported();
+}
+
+static int
+EMSCRIPTEN_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
@@ -445,8 +451,9 @@ SDL_JoystickDriver SDL_EMSCRIPTEN_JoystickDriver =
     EMSCRIPTEN_JoystickOpen,
     EMSCRIPTEN_JoystickRumble,
     EMSCRIPTEN_JoystickRumbleTriggers,
-    EMSCRIPTEN_JoystickHasLED,
+    EMSCRIPTEN_JoystickGetCapabilities,
     EMSCRIPTEN_JoystickSetLED,
+    EMSCRIPTEN_JoystickSendEffect,
     EMSCRIPTEN_JoystickSetSensorsEnabled,
     EMSCRIPTEN_JoystickUpdate,
     EMSCRIPTEN_JoystickClose,
