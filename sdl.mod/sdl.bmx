@@ -108,6 +108,12 @@ Import "include/haikux64/*.h"
 '       SDL/src/thread/SDL_thread.c
 '          Added thread register/unregister.
 '
+'       SDL/src/atomic/SDL_spinlock.c
+'          Added the following for llvm-mingw support.
+'		#elif (defined(__WIN32__) && defined(__GNUC__) && defined(__clang__)) && (defined(_M_ARM) || defined(_M_ARM64))
+'   		SDL_COMPILE_TIME_ASSERT(locksize, sizeof(*lock) == sizeof(long));
+'    		return (InterlockedExchange((long*)lock, 1) == 0);
+'
 '
 Import "-limm32"
 Import "-lole32"
