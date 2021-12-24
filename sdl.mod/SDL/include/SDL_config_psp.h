@@ -132,7 +132,7 @@
 #define SDL_THREAD_PSP  1
 
 /* Enable the PSP timer support (src/timer/psp/\*.c) */
-#define SDL_TIMERS_PSP  1
+#define SDL_TIMER_PSP  1
 
 /* Enable the PSP joystick driver (src/joystick/psp/\*.c) */
 #define SDL_JOYSTICK_PSP        1
@@ -157,6 +157,9 @@
 
 /* PSP doesn't have haptic device (src/haptic/dummy/\*.c) */
 #define SDL_HAPTIC_DISABLED    1
+
+/* PSP doesn't have HIDAPI available */
+#define SDL_HIDAPI_DISABLED    1
 
 /* PSP can't load shared object (src/loadso/dummy/\*.c) */
 #define SDL_LOADSO_DISABLED    1

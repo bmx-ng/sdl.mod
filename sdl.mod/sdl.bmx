@@ -1,4 +1,4 @@
-' Copyright (c) 2014-2020 Bruce A Henderson
+' Copyright (c) 2014-2021 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -32,17 +32,21 @@ ModuleInfo "License: zlib/libpng"
 ModuleInfo "History: 1.00"
 ModuleInfo "History: Initial Release."
 
+?win32
+Import "-lsetupapi"
 ?win32x86
 ModuleInfo "CC_OPTS: -mmmx -msse -msse2"
 
 Import "include/win32x86/*.h"
-Import "-lsetupapi"
 
 ?win32x64
 ModuleInfo "CC_OPTS: -mmmx -msse -msse2"
 
 Import "include/win32x64/*.h"
-Import "-lsetupapi"
+
+?win32arm64
+
+Import "include/win32arm64/*.h"
 
 ?osx
 ModuleInfo "CC_OPTS: -mmmx -msse -msse2 -DTARGET_API_MAC_CARBON -DTARGET_API_MAC_OSX"
