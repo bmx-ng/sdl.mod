@@ -269,6 +269,7 @@ static void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_clas
             if (!(udev_class & SDL_UDEV_DEVICE_JOYSTICK)) {
                 return;
             }
+#ifdef HAVE_INOTIFY
             if (SDL_classic_joysticks) {
                 if (!IsJoystickJSNode(devpath)) {
                     return;
@@ -278,6 +279,7 @@ static void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_clas
                     return;
                 }
             }
+#endif
             MaybeAddDevice(devpath);
             break;
             
