@@ -36,7 +36,6 @@ Import "-framework Metal"
 Import "source.bmx"
 ?linux
 Import "source.bmx"
-Import "-linotify"
 ?raspberrypi
 Import "-lrt"
 ?win32
