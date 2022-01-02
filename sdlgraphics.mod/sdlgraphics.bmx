@@ -94,7 +94,7 @@ Type TSDLGraphics Extends TGraphics
 
 	Method GetHandle:Byte Ptr()
 		If _context Then
-			Return _context.window.GetWindowHandle()
+			Return _context.window.GetHandle()
 		End If
 	End Method
 
