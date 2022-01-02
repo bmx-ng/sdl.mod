@@ -181,12 +181,25 @@ Type TSDLRenderer
 	End Method
 	
 	Rem
-	bbdoc: 
+	bbdoc: Fills some number of rectangles on the current rendering target with the drawing color.
+	returns: 0 on success or a negative error code on failure; call #SDLGetError for more information.
 	End Rem
 	Method FillRects:Int(rects:Int Ptr, count:Int)
 		Return SDL_RenderFillRects(rendererPtr, rects, count)
 	End Method
 	
+	Rem
+	bbdoc: Renders a list of triangles, optionally using a texture and indices into the vertex array Color and alpha modulation is done per vertex.
+	returns: 0 on success, or -1 if the operation is not supported
+	End Rem
+	Method Geometry:Int(texture:TSDLTexture, vertices:SDLVertex Ptr, numVertices:Int, indices:Int Ptr, numIndices:Int)
+		If texture Then
+			Return SDL_RenderGeometry(rendererPtr, texture.texturePtr, vertices, numVertices, indices, numIndices)
+		Else
+			Return SDL_RenderGeometry(rendererPtr, Null, vertices, numVertices, indices, numIndices)
+		End If
+	End Method
+
 	Rem
 	bbdoc: 
 	End Rem
@@ -194,6 +207,15 @@ Type TSDLRenderer
 		bmx_SDL_RenderGetClipRect(rendererPtr, Varptr x, Varptr y, Varptr w, Varptr h)
 	End Method
 	
+	Rem
+	bbdoc: Gets information about the rendering context.
+	End Rem
+	Method GetInfo:SDLRendererInfo()
+		Local info:SDLRendererInfo
+		SDL_GetRendererInfo(rendererPtr, VarPtr info)
+		return info
+	End Method
+
 	Rem
 	bbdoc: Gets whether integer scales are forced for resolution-independent rendering.
 	End Rem
@@ -252,6 +274,8 @@ Type TSDLRenderer
 	
 	Rem
 	bbdoc: Sets whether to force integer scales for resolution-independent rendering.
+	about: Restricts the logical viewport to integer values - that is, when a resolution is between two multiples
+	of a logical size, the viewport size is rounded down to the lower multiple.
 	End Rem
 	Method SetIntegerScale:Int(enable:Int)
 		Return SDL_RenderSetIntegerScale(rendererPtr, enable)
@@ -259,6 +283,15 @@ Type TSDLRenderer
 	
 	Rem
 	bbdoc: Sets a device independent resolution for rendering.
+	about: Uses the viewport and scaling functionality to allow a fixed logical resolution for rendering, 
+	regardless of the actual output resolution. If the actual output resolution doesn't have the same aspect ratio 
+	the output rendering will be centered within the output display.
+
+	If the output display is a window, mouse and touch events in the window will be filtered and scaled so they
+	seem to arrive within the logical resolution. The SDL_HINT_MOUSE_RELATIVE_SCALING hint controls whether relative motion
+	events are also scaled.
+
+	If this method results in scaling or subpixel drawing by the rendering backend, it will be handled using the appropriate quality hints.
 	End Rem
 	Method SetLogicalSize:Int(w:Int, h:Int)
 		Return SDL_RenderSetLogicalSize(rendererPtr, w, h)
@@ -273,6 +306,7 @@ Type TSDLRenderer
 	
 	Rem
 	bbdoc: Sets the drawing area for rendering on the current target.
+	about: Use defaults (-1) to set viewport to entire target.
 	End Rem
 	Method SetViewport:Int(x:Int = -1, y:Int = -1, w:Int = -1, h:Int = -1)
 		Return bmx_SDL_RenderSetViewport(rendererPtr, x, y, w, h)
