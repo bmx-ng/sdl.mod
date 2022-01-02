@@ -88,6 +88,7 @@ Extern
 	Function bmx_sdl_video_GetWindowDisplayMode:Byte Ptr(handle:Byte Ptr)
 	Function bmx_sdl_video_SetWindowTitle(handle:Byte Ptr, title:String)
 	Function bmx_sdl_video_GetWindowHandle:Byte Ptr(handle:Byte Ptr)
+	Function bmx_sdl_video_GetWindowDisplayHandle:Byte Ptr(handle:Byte Ptr)
 
 	Function SDL_GetWindowDisplayIndex:Int(handle:Byte Ptr)
 	Function SDL_GetWindowPixelFormat:UInt(handle:Byte Ptr)

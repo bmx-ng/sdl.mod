@@ -436,10 +436,17 @@ Type TSDLWindow
 	Rem
 	bbdoc: Returns the native window handle for this window.
 	End Rem
-	Method GetWindowHandle:Byte Ptr()
+	Method GetHandle:Byte Ptr()
 		Return bmx_sdl_video_GetWindowHandle(windowPtr)
 	End Method
 	
+	Rem
+	bbdoc: Returns the native window handle for this window.
+	End Rem
+	Method GetDisplayHandle:Byte Ptr()
+		Return bmx_sdl_video_GetWindowDisplayHandle(windowPtr)
+	End Method
+
 	Rem
 	bbdoc: Moves the mouse cursor to the given position within the window.
 	about: This method generates a mouse motion event.
