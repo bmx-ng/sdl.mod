@@ -308,11 +308,11 @@ void * bmx_sdl_video_GetWindowDisplayHandle(SDL_Window * window) {
 		switch (info.subsystem) {
 #ifdef SDL_VIDEO_DRIVER_X11
 			case SDL_SYSWM_X11:
-				return wmi.info.x11.display;
+				return info.x11.display;
 #endif
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 			case SDL_SYSWM_WAYLAND:
-				return wmi.info.wl.display;
+				return info.wl.display;
 #endif
 		}
 	}
