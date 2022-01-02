@@ -90,6 +90,8 @@ Extern
 	Function SDL_SetRenderDrawColor:Int(handle:Byte Ptr, r:Byte, g:Byte, b:Byte, a:Byte)
 	Function SDL_SetRenderTarget:Int(handle:Byte Ptr, texture:Byte Ptr)
 	Function SDL_GetRenderer:Byte Ptr(window:Byte Ptr)
+	Function SDL_RenderGeometry:Int(handle:Byte Ptr, texture:Byte Ptr, vertices:SDLVertex Ptr, numVertices:Int, indices:Int Ptr, numIndices:Int)
+	Function SDL_GetRendererInfo(handle:Byte Ptr, info:SDLRendererInfo Var)
 
 	Function SDL_GetTextureAlphaMod:Int(handle:Byte Ptr, alpha:Byte Ptr)
 	Function SDL_GetTextureBlendMode:Int(handle:Byte Ptr, blendMode:Int Ptr)
@@ -166,3 +168,40 @@ bbdoc: the renderer supports rendering to texture
 End Rem
 Const SDL_RENDERER_TARGETTEXTURE:Int = $08
 
+Struct SDLFPoint
+	Field x:Float
+	Field y:Float
+End Struct
+
+Struct SDLColor
+	Field r:Byte
+	Field g:Byte
+	Field b:Byte
+	Field a:Byte
+
+	Method New(r:Byte, g:Byte, b:Byte, a:Byte)
+		self.r = r
+		self.g = g
+		self.b = b
+		self.a = a
+	End Method
+End Struct
+
+Struct SDLVertex
+	Field position:SDLFPoint
+    Field color:SDLColor
+    Field texCoord:SDLFPoint
+End Struct
+
+Struct SDLRendererInfo
+	Field name:Byte Ptr
+	Field flags:UInt
+	Field numTextureFormats:UInt
+	Field StaticArray textureFormats:UInt[16]
+	Field maxTextureWidth:Int
+	Field maxTextureHeight:Int
+
+	Method GetName:String()
+		Return String.FromUTF8String(name)
+	End Method
+End Struct
