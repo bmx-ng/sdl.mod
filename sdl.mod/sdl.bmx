@@ -72,6 +72,12 @@ ModuleInfo "CC_OPTS: -I/usr/include/dbus-1.0 -I/usr/lib/x86_64-linux-gnu/dbus-1.
 ModuleInfo "CC_OPTS: -I/usr/lib64/dbus-1.0/include"
 
 Import "include/linuxx64/*.h"
+?linuxarm64 and not raspberrypi
+ModuleInfo "CC_OPTS: -DHAVE_LINUX_VERSION_H"
+ModuleInfo "CC_OPTS: -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include"
+ModuleInfo "CC_OPTS: -I/usr/lib64/dbus-1.0/include"
+
+Import "include/linuxarm64/*.h"
 ?raspberrypi
 ModuleInfo "LD_OPTS: -L%PWD%/lib/raspberrypi"
 ModuleInfo "CC_OPTS: -I/usr/include/dbus-1.0 -I/usr/lib/arm-linux-gnueabihf/dbus-1.0/include/ -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include"
