@@ -276,6 +276,10 @@ void * bmx_sdl_video_GetWindowHandle(SDL_Window * window) {
 			case SDL_SYSWM_X11:
 				return info.info.x11.window;
 #endif
+#ifdef SDL_VIDEO_DRIVER_WAYLAND
+			case SDL_SYSWM_WAYLAND:
+				return info.info.wl.surface;
+#endif
 #ifdef SDL_VIDEO_DRIVER_DIRECTFB
 			case SDL_SYSWM_DIRECTFB:
 				return info.info.dfb.window;
@@ -297,6 +301,23 @@ void * bmx_sdl_video_GetWindowHandle(SDL_Window * window) {
 	return NULL;
 }
 
+void * bmx_sdl_video_GetWindowDisplayHandle(SDL_Window * window) {
+	struct SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	if (SDL_GetWindowWMInfo(window, &info)) {
+		switch (info.subsystem) {
+#ifdef SDL_VIDEO_DRIVER_X11
+			case SDL_SYSWM_X11:
+				return wmi.info.x11.display;
+#endif
+#ifdef SDL_VIDEO_DRIVER_WAYLAND
+			case SDL_SYSWM_WAYLAND:
+				return wmi.info.wl.display;
+#endif
+		}
+	}
+	return NULL;
+}
 // --------------------------------------------------------
 /*
 // For re-generating pixel formats consts, for sdl.sdl common.bmx
