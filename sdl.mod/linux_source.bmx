@@ -70,7 +70,6 @@ Import "SDL/src/video/x11/SDL_x11video.c"
 Import "SDL/src/video/x11/SDL_x11window.c"
 Import "SDL/src/video/x11/SDL_x11xinput2.c"
 Import "SDL/src/video/x11/edid-parse.c"
-Import "SDL/src/video/x11/imKStoUCS.c"
 Import "SDL/src/audio/esd/SDL_esdaudio.c"
 Import "SDL/src/audio/pulseaudio/SDL_pulseaudio.c"
 ?raspberrypi
