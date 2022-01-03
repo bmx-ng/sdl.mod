@@ -614,7 +614,11 @@ LINUX_InotifyJoystickDetect(void)
 static int
 filter_entries(const struct dirent *entry)
 {
+#ifdef HAVE_INOTIFY
     return IsJoystickDeviceNode(entry->d_name);
+#else
+    return 0;
+#endif
 }
 static int
 sort_entries(const struct dirent **a, const struct dirent **b)
