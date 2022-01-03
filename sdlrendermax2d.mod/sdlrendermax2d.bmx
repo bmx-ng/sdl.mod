@@ -208,12 +208,14 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		drawColor.r = Min(Max(red,0),255)
 		drawColor.g = Min(Max(green,0),255)
 		drawColor.b = Min(Max(blue,0),255)
+		renderer.SetDrawColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a)
 	End Method
 
 	Method SetColor( color:SColor8 ) Override
 		drawColor.r=color.r
 		drawColor.g=color.g
 		drawColor.b=color.b
+		renderer.SetDrawColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a)
 	End Method
 
 	Method SetClsColor( red:Int,green:Int,blue:Int ) Override
@@ -260,39 +262,96 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 	End Method
 
 	Method DrawRect( x0#,y0#,x1#,y1#,tx#,ty# ) Override
-		Local StaticArray points:Float[8]
-		points[0] = x0*ix+y0*iy+tx
-		points[1] = x0*jx+y0*jy+ty
-		points[2] = x1*ix+y0*iy+tx
-		points[3] = x1*jx+y0*jy+ty
-		points[4] = x1*ix+y1*iy+tx
-		points[5] = x1*jx+y1*jy+ty
-		points[6] = x0*ix+y1*iy+tx
-		points[7] = x0*jx+y1*jy+ty
-		renderer.DrawLines(points, 4)
+		Local StaticArray vertices:SDLVertex[4]
+		Local vert:SDLVertex Ptr = vertices
+
+		vert.position.x = x0 * ix + y0 * iy + tx
+		vert.position.y = x0 * jx + y0 * jy + ty
+		vert.color = _driver.drawColor
+
+		vert :+ 1
+
+		vert.position.x = x1 * ix + y0 * iy + tx
+		vert.position.y = x1 * jx + y0 * jy + ty
+		vert.color = _driver.drawColor
+
+		vert :+ 1
+
+		vert.position.x = x1 * ix + y1 * iy + tx
+		vert.position.y = x1 * jx + y1 * jy + ty
+		vert.color = _driver.drawColor
+
+		vert :+ 1
+
+		vert.position.x = x0 * ix + y1 * iy + tx
+		vert.position.y = x0 * jx + y1 * jy + ty
+		vert.color = _driver.drawColor
+
+		Local StaticArray indices:Int[6]
+		indices[0] = 0
+		indices[1] = 2
+		indices[2] = 1
+		indices[3] = 0
+		indices[4] = 3
+		indices[5] = 2
+
+		renderer.Geometry(Null, vertices, 4, indices, 6)
 	End Method
 	
 	Method DrawOval( x0#,y0#,x1#,y1#,tx#,ty# ) Override
-		Local StaticArray points:Float[24]
+
+		Local StaticArray vertices:SDLVertex[50]
+		Local vert:SDLVertex Ptr = vertices
+		Local vc:int
+
+		Local StaticArray indices:Int[147]
+		local ic:int
 
 		Local xr#=(x1-x0)*.5
 		Local yr#=(y1-y0)*.5
-		Local segs:Int=Abs(xr)+Abs(yr)
-		
-		segs=Max(segs,12)&~3
+		local r:Float = (xr + yr) * 0.5
+
+		Local segs:Int = Min(49, 360 / acos(2 * (1 - 0.5 / r)^2 - 1))
 
 		x0:+xr
 		y0:+yr
+
+		' center
+		vert.position.x = x0 * ix + y0 * iy + tx
+		vert.position.y = x0 * jx + y0 * jy + ty
+		vert.color = _driver.drawColor
+
+		vert :+ 1
+		vc :+ 1
 		
 		For Local i:Int=0 Until segs
 			Local th#=i*360#/segs
 			Local x#=x0+Cos(th)*xr
 			Local y#=y0-Sin(th)*yr
-			points[i * 2] = x*ix+y*iy+tx
-			points[i * 2 + 1] = x*jx+y*jy+ty
+
+			vert.position.x = x * ix + y * iy + tx
+			vert.position.y = x * jx + y * jy + ty
+			vert.color = _driver.drawColor
+
+			vert :+ 1
+			vc :+ 1
 		Next
-		renderer.DrawLines(points, segs)
-		
+
+		For Local i:Int=0 Until segs - 1
+			indices[i * 3] = 0
+			indices[i * 3 + 1] = i + 1
+			indices[i * 3 + 2] = i + 2
+			ic :+ 3
+		Next
+
+		' connect last & first
+		Local i:Int = segs - 1
+		indices[i * 3] = 0
+		indices[i * 3 + 1] = i + 1
+		indices[i * 3 + 2] = 1
+		ic :+ 3
+
+		renderer.Geometry(Null, vertices, vc, indices, ic)
 	End Method
 	
 	Method DrawPoly( xy#[],handle_x#,handle_y#,origin_x#,origin_y# ) Override
