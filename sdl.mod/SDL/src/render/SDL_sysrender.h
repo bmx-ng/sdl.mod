@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -114,6 +114,14 @@ typedef struct SDL_VertexSolid
 } SDL_VertexSolid;
 
 
+typedef enum
+{
+    SDL_RENDERLINEMETHOD_POINTS,
+    SDL_RENDERLINEMETHOD_LINES,
+    SDL_RENDERLINEMETHOD_GEOMETRY,
+} SDL_RenderLineMethod;
+
+
 /* Define the SDL renderer structure */
 struct SDL_Renderer
 {
@@ -213,6 +221,9 @@ struct SDL_Renderer
 
     /* Whether or not to scale relative mouse motion */
     SDL_bool relative_scaling;
+
+    /* The method of drawing lines */
+    SDL_RenderLineMethod line_method;
 
     /* Remainder from scaled relative motion */
     float xrel;

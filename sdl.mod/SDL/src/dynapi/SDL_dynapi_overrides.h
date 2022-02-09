@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -855,3 +855,4 @@
 #define SDL_GameControllerHasRumbleTriggers SDL_GameControllerHasRumbleTriggers_REAL
 #define SDL_hid_ble_scan SDL_hid_ble_scan_REAL
 #define SDL_PremultiplyAlpha SDL_PremultiplyAlpha_REAL
+#define SDL_AndroidSendMessage SDL_AndroidSendMessage_REAL

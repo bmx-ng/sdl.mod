@@ -1,4 +1,24 @@
-
+' Copyright (c) 2021-2022 Bruce A Henderson
+'
+' This software is provided 'as-is', without any express or implied
+' warranty. In no event will the authors be held liable for any damages
+' arising from the use of this software.
+'
+' Permission is granted to anyone to use this software for any purpose,
+' including commercial applications, and to alter it and redistribute it
+' freely, subject to the following restrictions:
+'
+'    1. The origin of this software must not be misrepresented; you must not
+'    claim that you wrote the original software. If you use this software
+'    in a product, an acknowledgment in the product documentation would be
+'    appreciated but is not required.
+'
+'    2. Altered source versions must be plainly marked as such, and must not be
+'    misrepresented as being the original software.
+'
+'    3. This notice may not be removed or altered from any source
+'    distribution.
+'
 SuperStrict
 
 Rem
@@ -107,6 +127,7 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 
 	Field renderer:TSDLRenderer
 	Field ix#,iy#,jx#,jy#
+	Field state_blend:Int
 
 	Method Create:TSDLRenderMax2DDriver()
 		If Not SDLGraphicsDriver() Return Null
@@ -164,34 +185,34 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 	End Method
 
 	Method SetBlend( blend:Int ) Override
-		rem
 		If blend=state_blend Return
 		state_blend=blend
 		Select blend
 		Case MASKBLEND
-			glDisable GL_BLEND
-			glEnable GL_ALPHA_TEST
-			glAlphaFunc GL_GEQUAL,.5
+			'glDisable GL_BLEND
+			'glEnable GL_ALPHA_TEST
+			'glAlphaFunc GL_GEQUAL,.5
 		Case SOLIDBLEND
-			glDisable GL_BLEND
-			glDisable GL_ALPHA_TEST
+			'glDisable GL_BLEND
+			'glDisable GL_ALPHA_TEST
 		Case ALPHABLEND
-			glEnable GL_BLEND
-			glBlendFunc GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA
-			glDisable GL_ALPHA_TEST
+			renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND)
+			'glEnable GL_BLEND
+			'glBlendFunc GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA
+			'glDisable GL_ALPHA_TEST
 		Case LIGHTBLEND
-			glEnable GL_BLEND
-			glBlendFunc GL_SRC_ALPHA,GL_ONE
-			glDisable GL_ALPHA_TEST
+			renderer.SetDrawBlendMode(BLENDMODE_LIGHTBLEND)
+			'glEnable GL_BLEND
+			'glBlendFunc GL_SRC_ALPHA,GL_ONE
+			'glDisable GL_ALPHA_TEST
 		Case SHADEBLEND
-			glEnable GL_BLEND
-			glBlendFunc GL_DST_COLOR,GL_ZERO
-			glDisable GL_ALPHA_TEST
+			'glEnable GL_BLEND
+			'glBlendFunc GL_DST_COLOR,GL_ZERO
+			'glDisable GL_ALPHA_TEST
 		Default
-			glDisable GL_BLEND
-			glDisable GL_ALPHA_TEST
+			'glDisable GL_BLEND
+			'glDisable GL_ALPHA_TEST
 		End Select
-		end rem
 	End Method
 
 	Method SetAlpha( alpha# ) Override

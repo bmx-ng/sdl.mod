@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -817,7 +817,7 @@ VITA_GXM_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *
                         break;  /* can't go any further on this draw call, different texture/blendmode copy up next. */
                     } else {
                         finalcmd = nextcmd;  /* we can combine copy operations here. Mark this one as the furthest okay command. */
-                        count += cmd->data.draw.count;
+                        count += nextcmd->data.draw.count;
                     }
                     nextcmd = nextcmd->next;
                 }

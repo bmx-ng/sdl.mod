@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -269,7 +269,6 @@ static void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_clas
             if (!(udev_class & SDL_UDEV_DEVICE_JOYSTICK)) {
                 return;
             }
-#ifdef HAVE_INOTIFY
             if (SDL_classic_joysticks) {
                 if (!IsJoystickJSNode(devpath)) {
                     return;
@@ -279,7 +278,6 @@ static void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_clas
                     return;
                 }
             }
-#endif
             MaybeAddDevice(devpath);
             break;
             
@@ -614,11 +612,7 @@ LINUX_InotifyJoystickDetect(void)
 static int
 filter_entries(const struct dirent *entry)
 {
-#ifdef HAVE_INOTIFY
     return IsJoystickDeviceNode(entry->d_name);
-#else
-    return 0;
-#endif
 }
 static int
 sort_entries(const struct dirent **a, const struct dirent **b)
