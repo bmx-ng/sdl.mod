@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -411,6 +411,19 @@ extern "C" {
  *  events for a small subset of program execution.
  */
 #define SDL_HINT_EVENT_LOGGING   "SDL_EVENT_LOGGING"
+
+/**
+ *  \brief  A variable controlling whether raising the window should be done more forcefully
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - No forcing (the default)
+ *    "1"       - Extra level of forcing
+ *
+ *  At present, this is only an issue under MS Windows, which makes it nearly impossible to
+ *  programmatically move a window to the foreground, for "security" reasons. See
+ *  http://stackoverflow.com/a/34414846 for a discussion.
+ */
+#define SDL_HINT_FORCE_RAISEWINDOW    "SDL_HINT_FORCE_RAISEWINDOW"
 
 /**
  *  \brief  A variable controlling how 3D acceleration is used to accelerate the SDL screen surface.
@@ -1058,6 +1071,19 @@ extern "C" {
  *  will result in undefined behavior.
  */
 #define SDL_HINT_RENDER_BATCHING  "SDL_RENDER_BATCHING"
+
+/**
+ *  \brief  A variable controlling how the 2D render API renders lines
+ *
+ *  This variable can be set to the following values:
+ *    "0"     - Use the default line drawing method (Bresenham's line algorithm as of SDL 2.0.20)
+ *    "1"     - Use the driver point API using Bresenham's line algorithm (correct, draws many points)
+ *    "2"     - Use the driver line API (occasionally misses line endpoints based on hardware driver quirks, was the default before 2.0.20)
+ *    "3"     - Use the driver geometry API (correct, draws thicker diagonal lines)
+ *
+ *  This variable should be set when the renderer is created.
+ */
+#define SDL_HINT_RENDER_LINE_METHOD "SDL_RENDER_LINE_METHOD"
 
 /**
  *  \brief  A variable controlling whether to enable Direct3D 11+'s Debug Layer.
@@ -1810,6 +1836,27 @@ extern "C" {
  *  always ignored.
  */
 #define SDL_HINT_AUDIO_INCLUDE_MONITORS "SDL_AUDIO_INCLUDE_MONITORS"
+
+/**
+ *  \brief  A variable that forces X11 windows to create as a custom type.
+ *
+ *  This is currently only used for X11 and ignored elsewhere.
+ *
+ *  During SDL_CreateWindow, SDL uses the _NET_WM_WINDOW_TYPE X11 property
+ *  to report to the window manager the type of window it wants to create.
+ *  This might be set to various things if SDL_WINDOW_TOOLTIP or
+ *  SDL_WINDOW_POPUP_MENU, etc, were specified. For "normal" windows that
+ *  haven't set a specific type, this hint can be used to specify a custom
+ *  type. For example, a dock window might set this to
+ *  "_NET_WM_WINDOW_TYPE_DOCK".
+ *
+ *  If not set or set to "", this hint is ignored. This hint must be set
+ *  before the SDL_CreateWindow() call that it is intended to affect.
+ *
+ *  This hint is available since SDL 2.0.22. Before then, virtual devices are
+ *  always ignored.
+ */
+#define SDL_HINT_X11_WINDOW_TYPE "SDL_X11_WINDOW_TYPE"
 
 
 /**

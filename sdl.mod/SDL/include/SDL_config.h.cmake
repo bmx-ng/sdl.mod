@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -251,6 +251,7 @@
 
 #cmakedefine HAVE_MMDEVICEAPI_H @HAVE_MMDEVICEAPI_H@
 #cmakedefine HAVE_AUDIOCLIENT_H @HAVE_AUDIOCLIENT_H@
+#cmakedefine HAVE_TPCSHRD_H @HAVE_TPCSHRD_H@
 #cmakedefine HAVE_SENSORSAPI_H @HAVE_SENSORSAPI_H@
 
 #cmakedefine HAVE_XINPUT_GAMEPAD_EX @HAVE_XINPUT_GAMEPAD_EX@
@@ -276,6 +277,8 @@
 #cmakedefine SDL_VIDEO_DISABLED @SDL_VIDEO_DISABLED@
 #cmakedefine SDL_POWER_DISABLED @SDL_POWER_DISABLED@
 #cmakedefine SDL_FILESYSTEM_DISABLED @SDL_FILESYSTEM_DISABLED@
+#cmakedefine SDL_LOCALE_DISABLED @SDL_LOCALE_DISABLED@
+#cmakedefine SDL_MISC_DISABLED @SDL_MISC_DISABLED@
 
 /* Enable various audio drivers */
 #cmakedefine SDL_AUDIO_DRIVER_ALSA @SDL_AUDIO_DRIVER_ALSA@
@@ -488,6 +491,13 @@
 #cmakedefine SDL_FILESYSTEM_EMSCRIPTEN @SDL_FILESYSTEM_EMSCRIPTEN@
 #cmakedefine SDL_FILESYSTEM_OS2 @SDL_FILESYSTEM_OS2@
 #cmakedefine SDL_FILESYSTEM_VITA @SDL_FILESYSTEM_VITA@
+#cmakedefine SDL_FILESYSTEM_PSP @SDL_FILESYSTEM_PSP@
+
+/* Enable misc subsystem */
+#cmakedefine SDL_MISC_DUMMY @SDL_MISC_DUMMY@
+
+/* Enable locale subsystem */
+#cmakedefine SDL_LOCALE_DUMMY @SDL_LOCALE_DUMMY@
 
 /* Enable assembly routines */
 #cmakedefine SDL_ASSEMBLY_ROUTINES @SDL_ASSEMBLY_ROUTINES@

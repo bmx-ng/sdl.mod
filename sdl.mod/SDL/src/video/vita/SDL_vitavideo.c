@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -259,8 +259,7 @@ VITA_CreateWindow(_THIS, SDL_Window * window)
     // Vita can only have one window
     if (Vita_Window != NULL)
     {
-        SDL_SetError("Only one window supported");
-        return -1;
+        return SDL_SetError("Only one window supported");
     }
 
     Vita_Window = window;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -103,6 +103,7 @@ keycode_to_SDL(int keycode)
         case AKEYCODE_BUTTON_THUMBR:
             button = SDL_CONTROLLER_BUTTON_RIGHTSTICK;
             break;
+        case AKEYCODE_MENU:
         case AKEYCODE_BUTTON_START:
             button = SDL_CONTROLLER_BUTTON_START;
             break;

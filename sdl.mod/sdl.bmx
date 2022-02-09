@@ -1,4 +1,4 @@
-' Copyright (c) 2014-2021 Bruce A Henderson
+' Copyright (c) 2014-2022 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -45,7 +45,7 @@ ModuleInfo "CC_OPTS: -mmmx -msse -msse2"
 Import "include/win32x64/*.h"
 
 ?win32arm64
-
+ModuleInfo "CC_OPTS: -DHAVE_GCC_ATOMICS"
 Import "include/win32arm64/*.h"
 
 ?osx
@@ -113,12 +113,6 @@ Import "include/haikux64/*.h"
 ' Source changes : 
 '       SDL/src/thread/SDL_thread.c
 '          Added thread register/unregister.
-'
-'       SDL/src/atomic/SDL_spinlock.c
-'          Added the following for llvm-mingw support.
-'		#elif (defined(__WIN32__) && defined(__GNUC__) && defined(__clang__)) && (defined(_M_ARM) || defined(_M_ARM64))
-'   		SDL_COMPILE_TIME_ASSERT(locksize, sizeof(*lock) == sizeof(long));
-'    		return (InterlockedExchange((long*)lock, 1) == 0);
 '
 '
 Import "-limm32"

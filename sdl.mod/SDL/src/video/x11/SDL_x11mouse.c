@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -294,14 +294,15 @@ X11_ShowCursor(SDL_Cursor * cursor)
         SDL_VideoDevice *video = SDL_GetVideoDevice();
         Display *display = GetDisplay();
         SDL_Window *window;
-        SDL_WindowData *data;
 
         for (window = video->windows; window; window = window->next) {
-            data = (SDL_WindowData *)window->driverdata;
-            if (x11_cursor != None) {
-                X11_XDefineCursor(display, data->xwindow, x11_cursor);
-            } else {
-                X11_XUndefineCursor(display, data->xwindow);
+            SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+            if (data) {
+                if (x11_cursor != None) {
+                    X11_XDefineCursor(display, data->xwindow, x11_cursor);
+                } else {
+                    X11_XUndefineCursor(display, data->xwindow);
+                }
             }
         }
         X11_XFlush(display);

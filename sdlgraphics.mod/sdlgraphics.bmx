@@ -1,4 +1,4 @@
-' Copyright (c) 2014-2021 Bruce A Henderson
+' Copyright (c) 2014-2022 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -90,12 +90,6 @@ Type TSDLGraphics Extends TGraphics
 			_context.window.Destroy()
 		End If
 		_context=Null
-	End Method
-
-	Method GetHandle:Byte Ptr()
-		If _context Then
-			Return _context.window.GetHandle()
-		End If
 	End Method
 
 	Method Resize(width:Int, height:Int) Override
@@ -284,6 +278,20 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 
 	Method CanResize:Int() Override
 		Return True
+	End Method
+
+	Method ToString:String() Override
+		Return "TSDLGraphicsDriver"
+	End Method
+
+	Method GetHandle:Byte Ptr(handleType:EGraphicsHandleType = EGraphicsHandleType.Window) Override
+		If _currentContext Then
+			If handleType = EGraphicsHandleType.Window Then
+				Return _currentContext.window.GetHandle()
+			Else
+				Return _currentContext.window.GetDisplayHandle()
+			End If
+		End If
 	End Method
 
 End Type
