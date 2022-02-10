@@ -32,6 +32,8 @@ ModuleInfo "License: zlib/libpng"
 ModuleInfo "History: 1.00"
 ModuleInfo "History: Initial Release."
 
+ModuleInfo "CC_OPTS: -DSDL_dynapi_h_ -DSDL_DYNAMIC_API=0"
+
 ?win32
 Import "-lsetupapi"
 ?win32x86
