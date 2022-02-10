@@ -189,29 +189,17 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		state_blend=blend
 		Select blend
 		Case MASKBLEND
-			'glDisable GL_BLEND
-			'glEnable GL_ALPHA_TEST
-			'glAlphaFunc GL_GEQUAL,.5
+			renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND)
 		Case SOLIDBLEND
-			'glDisable GL_BLEND
-			'glDisable GL_ALPHA_TEST
+			renderer.SetDrawBlendMode(SDL_BLENDMODE_NONE)
 		Case ALPHABLEND
 			renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND)
-			'glEnable GL_BLEND
-			'glBlendFunc GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA
-			'glDisable GL_ALPHA_TEST
 		Case LIGHTBLEND
-			renderer.SetDrawBlendMode(BLENDMODE_LIGHTBLEND)
-			'glEnable GL_BLEND
-			'glBlendFunc GL_SRC_ALPHA,GL_ONE
-			'glDisable GL_ALPHA_TEST
+			renderer.SetDrawBlendMode(SDL_BLENDMODE_ADD)
 		Case SHADEBLEND
-			'glEnable GL_BLEND
-			'glBlendFunc GL_DST_COLOR,GL_ZERO
-			'glDisable GL_ALPHA_TEST
+			renderer.SetDrawBlendMode(SDL_BLENDMODE_MOD)
 		Default
-			'glDisable GL_BLEND
-			'glDisable GL_ALPHA_TEST
+			renderer.SetDrawBlendMode(SDL_BLENDMODE_NONE)
 		End Select
 	End Method
 
@@ -453,6 +441,22 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		indices[3] = 0
 		indices[4] = 3
 		indices[5] = 2
+
+		Select state_blend
+			Case ALPHABLEND
+				texture.SetBlendMode(SDL_BLENDMODE_BLEND)
+			Case MASKBLEND
+				texture.SetBlendMode(SDL_BLENDMODE_BLEND)
+			Case SOLIDBLEND
+				texture.SetBlendMode(SDL_BLENDMODE_NONE)
+			Case LIGHTBLEND
+				texture.SetBlendMode(SDL_BLENDMODE_ADD)
+			Case SHADEBLEND
+				texture.SetBlendMode(SDL_BLENDMODE_MOD)
+			Default
+				texture.SetBlendMode(SDL_BLENDMODE_NONE)
+		End Select
+
 
 		renderer.Geometry(texture, vertices, 4, indices, 6)
 	End Method
