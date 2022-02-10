@@ -114,6 +114,10 @@ Import "include/haikux64/*.h"
 '       SDL/src/thread/SDL_thread.c
 '          Added thread register/unregister.
 '
+'       SDL/src/joystick/linux/SDL_sysjoystick.c
+'          Wrapped some uses of joystick Node in HAVE_INOTIFY ifdefs.
+'
+'
 '
 Import "-limm32"
 Import "-lole32"
