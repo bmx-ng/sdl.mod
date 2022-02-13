@@ -166,7 +166,7 @@ Type TD3D9SDLGraphics Extends TGraphics
 		
 		_g = SDLGraphicsDriver().CreateGraphics( width, height, depth, hertz, flags | GRAPHICS_WIN32_DX, x, y )
 		
-		_hwnd = _g.context.window.GetHandle()
+		_hwnd = _g._context.window.GetHandle()
 		
 		Local rect:Int[4]
 
