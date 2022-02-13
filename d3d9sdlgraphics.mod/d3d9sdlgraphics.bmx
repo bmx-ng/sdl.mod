@@ -254,7 +254,7 @@ Type TD3D9SDLGraphics Extends TGraphics
 		
 		_g = SDLGraphicsDriver().CreateGraphics( width, height, depth, hertz, flags | GRAPHICS_WIN32_DX, x, y )
 		
-		_hwnd = _g.GetHandle()
+		_hwnd = _g.context.window.GetHandle()
 		
 		Local rect:Int[4]
 
@@ -549,6 +549,10 @@ Type TD3D9SDLGraphicsDriver Extends TGraphicsDriver
 	
 	Method GetDirect3D:IDirect3D9()
 		Return _d3d
+	End Method
+	
+	Method ToString:String() Override
+		Return "TD3D9SDLGraphicsDriver"
 	End Method
 	
 End Type
