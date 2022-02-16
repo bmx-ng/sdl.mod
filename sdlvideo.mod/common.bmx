@@ -164,87 +164,96 @@ Const SDL_WINDOWPOS_CENTERED:Int = $2FFF0000
 Rem
 bbdoc: fullscreen window
 End Rem
-Const SDL_WINDOW_FULLSCREEN:UInt = $00000001
+Const SDL_WINDOW_FULLSCREEN:ULong = $00000001:ULong Shl 32
 Rem
 bbdoc: window usable with OpenGL context
 End Rem
-Const SDL_WINDOW_OPENGL:UInt = $00000002
+Const SDL_WINDOW_OPENGL:ULong = $00000002:ULong Shl 32
 Rem
 bbdoc: window is visible
 End Rem
-Const SDL_WINDOW_SHOWN:UInt = $00000004
+Const SDL_WINDOW_SHOWN:ULong = $00000004:ULong Shl 32
 Rem
 bbdoc: window is not visible
 End Rem
-Const SDL_WINDOW_HIDDEN:UInt = $00000008
+Const SDL_WINDOW_HIDDEN:ULong = $00000008:ULong Shl 32
 Rem
 bbdoc: no window decoration
 End Rem
-Const SDL_WINDOW_BORDERLESS:UInt = $00000010
+Const SDL_WINDOW_BORDERLESS:ULong = $00000010:ULong Shl 32
 Rem
 bbdoc: window can be resized
 End Rem
-Const SDL_WINDOW_RESIZABLE:UInt = $00000020
+Const SDL_WINDOW_RESIZABLE:ULong = $00000020:ULong Shl 32
 Rem
 bbdoc: window is minimized
 End Rem
-Const SDL_WINDOW_MINIMIZED:UInt = $00000040
+Const SDL_WINDOW_MINIMIZED:ULong = $00000040:ULong Shl 32
 Rem
 bbdoc: window is maximized
 End Rem
-Const SDL_WINDOW_MAXIMIZED:UInt = $00000080
+Const SDL_WINDOW_MAXIMIZED:ULong = $00000080:ULong Shl 32
 Rem
 bbdoc: window has grabbed input focus
 End Rem
-Const SDL_WINDOW_INPUT_GRABBED:UInt = $00000100
+Const SDL_WINDOW_INPUT_GRABBED:ULong = $00000100:ULong Shl 32
 Rem
 bbdoc: window has input focus
 End Rem
-Const SDL_WINDOW_INPUT_FOCUS:UInt = $00000200
+Const SDL_WINDOW_INPUT_FOCUS:ULong = $00000200:ULong Shl 32
 Rem
 bbdoc: window has mouse focus
 End Rem
-Const SDL_WINDOW_MOUSE_FOCUS:UInt = $00000400
+Const SDL_WINDOW_MOUSE_FOCUS:ULong = $00000400:ULong Shl 32
 Rem
 bbdoc: full screen desktop
 End Rem
-Const SDL_WINDOW_FULLSCREEN_DESKTOP:UInt = SDL_WINDOW_FULLSCREEN | $00001000
+Const SDL_WINDOW_FULLSCREEN_DESKTOP:ULong = SDL_WINDOW_FULLSCREEN | ($00001000:ULong Shl 32)
 Rem
 bbdoc: window not created by SDL
 End Rem
-Const SDL_WINDOW_FOREIGN:UInt = $00000800
+Const SDL_WINDOW_FOREIGN:ULong = $00000800:ULong Shl 32
 Rem
 bbdoc: window should be created in high-DPI mode if supported
 End Rem
-Const SDL_WINDOW_ALLOW_HIGHDPI:UInt = $00002000
+Const SDL_WINDOW_ALLOW_HIGHDPI:ULong = $00002000:ULong Shl 32
 Rem
 bbdoc: window has mouse captured (unrelated to INPUT_GRABBED)
 End Rem
-Const SDL_WINDOW_MOUSE_CAPTURE:UInt = $00004000
+Const SDL_WINDOW_MOUSE_CAPTURE:ULong = $00004000:ULong Shl 32
 Rem
 bbdoc: window should always be above others
 End Rem
-Const SDL_WINDOW_ALWAYS_ON_TOP:UInt = $00008000
+Const SDL_WINDOW_ALWAYS_ON_TOP:ULong = $00008000:ULong Shl 32
 Rem
 bbdoc: window should not be added to the taskbar
 End Rem
-Const SDL_WINDOW_SKIP_TASKBAR:UInt = $00010000
+Const SDL_WINDOW_SKIP_TASKBAR:ULong = $00010000:ULong Shl 32
 Rem
 bbdoc: window should be treated as a utility window
 End Rem
-Const SDL_WINDOW_UTILITY:UInt = $00020000
+Const SDL_WINDOW_UTILITY:ULong = $00020000:ULong Shl 32
 Rem
 bbdoc: window should be treated as a tooltip
 End Rem
-Const SDL_WINDOW_TOOLTIP:UInt = $00040000
+Const SDL_WINDOW_TOOLTIP:ULong = $00040000:ULong Shl 32
 Rem
 bbdoc: window should be treated as a popup menu
 End Rem
-Const SDL_WINDOW_POPUP_MENU:UInt = $00080000
+Const SDL_WINDOW_POPUP_MENU:ULong = $00080000:ULong Shl 32
+Rem
+bbdoc: window has grabbed keyboard input
+End Rem
+Const SDL_WINDOW_KEYBOARD_GRABBED:ULong = $00100000:ULong Shl 32
 Rem
 bbdoc: window usable for Vulkan surface
 End Rem
-Const SDL_WINDOW_VULKAN:UInt = $10000000
+Const SDL_WINDOW_VULKAN:ULong = $10000000:ULong Shl 32
+Rem
+bbdoc: window usable for Metal view
+End Rem
+Const SDL_WINDOW_METAL:ULong = $20000000:ULong Shl 32
+
 
 Rem
 bbdoc: the minimum number of bits for the red channel of the color buffer; defaults to 3

@@ -49,8 +49,8 @@ Type TSDLWindow
 	bbdoc: Creates a window with the specified position, dimensions, and flags.
 	returns: The window that was created or Null on failure.
 	End Rem
-	Function Create:TSDLWindow(title:String, x:Int, y:Int, w:Int, h:Int, flags:UInt)
-		Return _create(bmx_sdl_video_CreateWindow(title, x, y, w, h, flags))
+	Function Create:TSDLWindow(title:String, x:Int, y:Int, w:Int, h:Int, flags:ULong)
+		Return _create(bmx_sdl_video_CreateWindow(title, x, y, w, h, UInt(flags Shr 32)))
 	End Function
 	
 	Rem
@@ -255,11 +255,11 @@ Type TSDLWindow
 	Rem
 	bbdoc: Sets the window's fullscreen state.
 	returns: 0 on success or a negative error code on failure.
-	about: @flags may be SDL_WINDOW_FULLSCREEN, for "real" fullscreen with a videomode change; SDL_WINDOW_FULLSCREEN_DESKTOP
+	about: @flags may be #SDL_WINDOW_FULLSCREEN, for "real" fullscreen with a videomode change; #SDL_WINDOW_FULLSCREEN_DESKTOP
 	for "fake" fullscreen that takes the size of the desktop; and 0 for windowed mode.
 	End Rem
-	Method SetFullScreen:Int(flags:UInt)
-		Return SDL_SetWindowFullscreen(windowPtr, flags)
+	Method SetFullScreen:Int(flags:ULong)
+		Return SDL_SetWindowFullscreen(windowPtr, UInt(flags Shr 32))
 	End Method
 	
 	Rem

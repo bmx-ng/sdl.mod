@@ -142,53 +142,27 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 	Method SDLGraphicsCreateGraphics:TGraphicsContext(width:Int,height:Int,depth:Int,hertz:Int,flags:Long,x:Int,y:Int)
 		Local context:TGraphicsContext = New TGraphicsContext
 
-		Local windowFlags:UInt = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL
-		Local gFlags:UInt
-		Local glFlags:UInt = flags & SDL_GRAPHICS_GL
+		If depth > 0 Then
+			flags :| SDL_WINDOW_FULLSCREEN
 
-		If flags & SDL_GRAPHICS_NATIVE Then
-
-			flags :~ SDL_GRAPHICS_NATIVE
-
-			gFlags = flags & (SDL_GRAPHICS_BACKBUFFER | SDL_GRAPHICS_ALPHABUFFER | SDL_GRAPHICS_DEPTHBUFFER | SDL_GRAPHICS_STENCILBUFFER | SDL_GRAPHICS_ACCUMBUFFER)
-
-			flags :~ SDL_GRAPHICS_GL
-
-			flags :~ (SDL_GRAPHICS_BACKBUFFER | SDL_GRAPHICS_ALPHABUFFER | SDL_GRAPHICS_DEPTHBUFFER | SDL_GRAPHICS_STENCILBUFFER | SDL_GRAPHICS_ACCUMBUFFER)
-
-			windowFlags :| flags
-
-			If glFlags Then
-				If gFlags & SDL_GRAPHICS_BACKBUFFER Then SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)
-				If gFlags & SDL_GRAPHICS_ALPHABUFFER Then SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1)
-				If gFlags & SDL_GRAPHICS_DEPTHBUFFER Then SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24)
-				If gFlags & SDL_GRAPHICS_STENCILBUFFER Then SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1)
-			End If
-
-		Else
-
-			If depth Then
-				windowFlags :| SDL_WINDOW_FULLSCREEN
-				' mode = MODE_DISPLAY
-			Else
-				If flags & $80000000 Then
-					windowFlags :| SDL_WINDOW_FULLSCREEN_DESKTOP
-				End If
-				' mode = MODE_WINDOW
-			End If
-
-			gFlags = flags & (GRAPHICS_BACKBUFFER | GRAPHICS_ALPHABUFFER | GRAPHICS_DEPTHBUFFER | GRAPHICS_STENCILBUFFER | GRAPHICS_ACCUMBUFFER)
-
-			If glFlags Then
-				If gFlags & GRAPHICS_BACKBUFFER Then SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)
-				If gFlags & GRAPHICS_ALPHABUFFER Then SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1)
-				If gFlags & GRAPHICS_DEPTHBUFFER Then SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24)
-				If gFlags & GRAPHICS_STENCILBUFFER Then SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1)
+			If flags & GRAPHICS_FULLSCREEN_DESKTOP Then
+				flags :| SDL_WINDOW_FULLSCREEN_DESKTOP
 			End If
 		End If
 
+		If depth = 0 And flags & GRAPHICS_BORDERLESS Then
+			flags :| SDL_WINDOW_BORDERLESS
+		End If
 
-		'End If
+		If flags & SDL_GRAPHICS_GL Then
+			flags :| SDL_WINDOW_OPENGL
+
+			If flags & GRAPHICS_BACKBUFFER Then SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)
+			If flags & GRAPHICS_ALPHABUFFER Then SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1)
+			If flags & GRAPHICS_DEPTHBUFFER Then SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24)
+			If flags & GRAPHICS_STENCILBUFFER Then SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1)
+		End If
+
 		If x < 0 Then
 			x = SDL_WINDOWPOS_CENTERED
 		End If
@@ -196,8 +170,8 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 			y = SDL_WINDOWPOS_CENTERED
 		End If
 
-		context.window = TSDLWindow.Create(AppTitle, x, y, width, height, windowFlags)
-		If glFlags Then
+		context.window = TSDLWindow.Create(AppTitle, x, y, width, height, ULong(flags))
+		If flags & SDL_GRAPHICS_GL Then
 			context.context = context.window.GLCreateContext()
 			SDL_GL_SetSwapInterval(-1)
 			context.sync = -1
