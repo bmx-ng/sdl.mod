@@ -164,8 +164,12 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 
 		SDLGraphicsDriver().SetGraphics gfx
 
-		renderer = TSDLRenderer.Create(gfx._context.window)
-		'ResetGLContext t
+		Local flags:UInt
+		If gfx._context.flags & GRAPHICS_SWAPINTERVAL1 Then
+			flags :| SDL_RENDERER_PRESENTVSYNC
+		End If
+
+		renderer = TSDLRenderer.Create(gfx._context.window, -1, flags)
 		
 		t.MakeCurrent
 	End Method
@@ -243,9 +247,9 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 	
 	Method SetViewport( x:Int,y:Int,w:Int,h:Int ) Override
 		If x=0 And y=0 And w=GraphicsWidth() And h=GraphicsHeight()
-			renderer.SetViewport()
+			renderer.SetClipRect()
 		Else
-			renderer.SetViewport(x, y, w, h)
+			renderer.SetClipRect(x, y, w, h)
 		EndIf
 	End Method
 

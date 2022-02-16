@@ -92,6 +92,7 @@ Extern
 	Function SDL_GetRenderer:Byte Ptr(window:Byte Ptr)
 	Function SDL_RenderGeometry:Int(handle:Byte Ptr, texture:Byte Ptr, vertices:SDLVertex Ptr, numVertices:Int, indices:Int Ptr, numIndices:Int)
 	Function SDL_GetRendererInfo(handle:Byte Ptr, info:SDLRendererInfo Var)
+	Function SDL_GetRenderDriverInfo:Int(index:Int, info:SDLRendererInfo Var)
 
 	Function SDL_GetTextureAlphaMod:Int(handle:Byte Ptr, alpha:Byte Ptr)
 	Function SDL_GetTextureBlendMode:Int(handle:Byte Ptr, blendMode:Int Ptr)
@@ -168,6 +169,7 @@ bbdoc: the renderer supports rendering to texture
 End Rem
 Const SDL_RENDERER_TARGETTEXTURE:Int = $08
 
+
 Struct SDLFPoint
 	Field x:Float
 	Field y:Float
@@ -193,14 +195,35 @@ Struct SDLVertex
     Field texCoord:SDLFPoint
 End Struct
 
+Rem
+bbdoc: A structure that contains information on the capabilities of a render driver or the current render context.
+End Rem
 Struct SDLRendererInfo
 	Field name:Byte Ptr
+	Rem
+	bbdoc: A mask of supported renderer flags
+	End Rem
 	Field flags:UInt
+	Rem
+	bbdoc: The number of available texture formats
+	End Rem
 	Field numTextureFormats:UInt
+	Rem
+	bbdoc: The available texture formats
+	End Rem
 	Field StaticArray textureFormats:UInt[16]
+	Rem
+	bbdoc: The maximum texture width
+	End Rem
 	Field maxTextureWidth:Int
+	Rem
+	bbdoc: The maximum texture height
+	End Rem
 	Field maxTextureHeight:Int
 
+	Rem
+	bbdoc: Returns the name of the renderer
+	End Rem
 	Method GetName:String()
 		Return String.FromUTF8String(name)
 	End Method

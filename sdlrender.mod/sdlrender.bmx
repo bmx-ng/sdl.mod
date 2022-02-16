@@ -48,6 +48,13 @@ Type TSDLRenderer
 	Rem
 	bbdoc: Creates a 2D rendering context for a window.
 	about: Note that providing no flags gives priority to available #SDL_RENDERER_ACCELERATED renderers
+	@flags can be one or more of the following values -
+	|----------------------------|------------------------------------------------|
+	| SDL_RENDERER_SOFTWARE      | the renderer is a software fallback            |
+    | SDL_RENDERER_ACCELERATED   | the renderer uses hardware acceleration        |
+    | SDL_RENDERER_PRESENTVSYNC  | present is synchronized with the refresh rate  |
+    | SDL_RENDERER_TARGETTEXTURE | the renderer supports rendering to texture     |
+	|----------------------------|------------------------------------------------|
 	End Rem
 	Function Create:TSDLRenderer(window:TSDLWindow, index:Int = -1, flags:UInt = 0)
 		Return _create(SDL_CreateRenderer(window.windowPtr, index, flags))
@@ -467,5 +474,10 @@ Function SDLGetNumRenderDrivers:Int()
 	Return SDL_GetNumRenderDrivers()
 End Function
 
-
-
+Rem
+bbdoc: Gets info about a specific 2D rendering driver for the current display.
+returns: 0 on success or a negative error code on failure; call #SDLGetError for more information.
+End Rem
+Function SDLGetRenderDriverInfo:Int(index:Int, info:SDLRendererInfo Var)
+	Return SDL_GetRenderDriverInfo(index, info)
+End Function
