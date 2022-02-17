@@ -171,6 +171,27 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 		End If
 
 		context.window = TSDLWindow.Create(AppTitle, x, y, width, height, ULong(flags))
+
+		If depth > 0 Then
+			Local display:TSDLDisplay = context.window.GetDisplay()
+			Local mode:SDLDisplayMode
+			Select depth
+				Case 32
+					mode.format = SDL_PIXELFORMAT_RGBA8888
+				Case 24
+					mode.format = SDL_PIXELFORMAT_RGB888
+			End Select
+			mode.width = width
+			mode.height = height
+			mode.refreshRate = hertz
+
+			Local closest:SDLDisplayMode
+
+			If SDL_GetClosestDisplayMode(display.index, mode, closest) <> Null Then
+				context.window.SetDisplayMode(closest)
+			End If
+		End If
+
 		If flags & SDL_GRAPHICS_GL Then
 			context.context = context.window.GLCreateContext()
 			SDL_GL_SetSwapInterval(-1)

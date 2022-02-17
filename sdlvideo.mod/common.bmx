@@ -64,9 +64,6 @@ Extern
 	Function bmx_sdl_video_VideoInit:Int(driver:String)
 	Function bmx_sdl_video_GetDisplayBounds:Int(index:Int, w:Int Ptr, h:Int Ptr)
 	Function bmx_sdl_video_GetDisplayUsableBounds:Int(index:Int, w:Int Ptr, h:Int Ptr)
-	Function bmx_sdl_video_GetDisplayMode:Byte Ptr(index:Int, modeIndex:Int)
-	Function bmx_sdl_video_GetDesktopDisplayMode:Byte Ptr(index:Int)
-	Function bmx_sdl_video_GetCurrentDisplayMode:Byte Ptr(index:Int)
 	Function bmx_sdl_video_SDL_GetCurrentVideoDriver:String()
 
 	Function SDL_GetNumVideoDisplays:Int()
@@ -93,7 +90,8 @@ Extern
 	Function SDL_GetWindowDisplayIndex:Int(handle:Byte Ptr)
 	Function SDL_GetWindowPixelFormat:UInt(handle:Byte Ptr)
 	Function SDL_GetWindowID:UInt(handle:Byte Ptr)
-	Function SDL_SetWindowDisplayMode:Int(handle:Byte Ptr, Mode:Byte Ptr)
+	Function SDL_SetWindowDisplayMode:Int(handle:Byte Ptr, mode:SDLDisplayMode Var)
+	Function SDL_GetWindowDisplayMode:Int(handle:Byte ptr, mode:SDLDisplayMode Var)
 	Function SDL_ShowWindow(handle:Byte Ptr)
 	Function SDL_HideWindow(handle:Byte Ptr)
 	Function SDL_RaiseWindow(handle:Byte Ptr)
@@ -128,6 +126,10 @@ Extern
 	Function SDL_RestoreWindow(handle:Byte Ptr)
 	Function SDL_SetWindowIcon(handle:Byte Ptr, surface:Byte Ptr)
 	Function SDL_WarpMouseInWindow(handle:Byte Ptr, x:Int, y:Int)
+	Function SDL_GetDisplayMode:Int(displayIndex:Int, modeIndex:Int, mode:SDLDisplayMode Var)
+	Function SDL_GetDesktopDisplayMode:Int(displayIndex:Int, mode:SDLDisplayMode Var)
+	Function SDL_GetCurrentDisplayMode:Int(displayIndex:Int, mode:SDLDisplayMode Var)
+	Function SDL_GetClosestDisplayMode:SDLDisplayMode Ptr(displayIndex:Int, mode:SDLDisplayMode Var, closest:SDLDisplayMode Var)
 
 	Function SDL_GetGrabbedWindow:Byte Ptr()
 	Function SDL_IsScreenSaverEnabled:Int()
@@ -399,3 +401,29 @@ Rem
 bbdoc: The display is in portrait mode, upside down
 End Rem
 Const SDL_ORIENTATION_PORTRAIT_FLIPPED:Int = 4
+
+Rem
+bbdoc: A structure that contains the description of a display mode.
+End Rem
+Struct SDLDisplayMode
+	Rem
+	bbdoc: pixel format
+	End Rem
+	Field format:UInt
+	Rem
+	bbdoc: width, in screen coordinates
+	End Rem
+	Field width:Int
+	Rem
+	bbdoc: height, in screen coordinates
+	End Rem
+	Field height:Int
+	Rem
+	bbdoc: refresh rate (or zero for unspecified)
+	End Rem
+	Field refreshRate:Int
+	Rem
+	bbdoc: driver-specific data, initialize to 0
+	End Rem
+	Field driverdata:Byte Ptr
+End Struct

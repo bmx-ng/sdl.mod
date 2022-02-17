@@ -67,16 +67,16 @@ Type TSDLWindow
 	about: This only affects the display mode used when the window is fullscreen. To change the window size when the window is not fullscreen,
 	use #SetSize().
 	End Rem
-	Method SetDisplayMode:Int(Mode:TSDLDisplayMode)
-		Return SDL_SetWindowDisplayMode(windowPtr, Mode.modePtr)
+	Method SetDisplayMode:Int(mode:SDLDisplayMode Var)
+		Return SDL_SetWindowDisplayMode(windowPtr, mode)
 	End Method
 	
 	Rem
 	bbdoc: Gets information about the display mode to use when a window is visible at fullscreen.
 	returns: The display mode on success or Null on failure.
 	End Rem
-	Method GetDisplayMode:TSDLDisplayMode()
-		Return TSDLDisplayMode._create(bmx_sdl_video_GetWindowDisplayMode(windowPtr))
+	Method GetDisplayMode:Int(mode:SDLDisplayMode Var)
+		Return SDL_GetWindowDisplayMode(windowPtr, mode)
 	End Method
 	
 	Rem
@@ -671,87 +671,24 @@ Type TSDLDisplay
 	bbdoc: Gets information about a specific display mode.
 	returns: A display mode or Null on failure.
 	End Rem
-	Method GetDisplayMode:TSDLDisplayMode(modeIndex:Int)
-		If modeIndex >= 0 And modeIndex < SDL_GetNumDisplayModes(index) Then
-			Return TSDLDisplayMode._create(bmx_sdl_video_GetDisplayMode(index, modeIndex), index)
-		End If
+	Method GetDisplayMode:Int(modeIndex:Int, mode:SDLDisplayMode Var)
+		Return SDL_GetDisplayMode(index, modeIndex, mode)
 	End Method
 	
 	Rem
 	bbdoc: Gets information about the desktop display mode.
 	returns: A display mode or Null on failure.
 	End Rem
-	Method GetDesktopDisplayMode:TSDLDisplayMode()
-		Return TSDLDisplayMode._create(bmx_sdl_video_GetDesktopDisplayMode(index), index)
+	Method GetDesktopDisplayMode:Int(mode:SDLDisplayMode Var)
+		Return SDL_GetDesktopDisplayMode(index, mode)
 	End Method
 	
 	Rem
 	bbdoc: Gets information about the current display mode.
 	returns: A display mode or Null on failure.
 	End Rem
-	Method GetCurrentDisplayMode:TSDLDisplayMode()
-		Return TSDLDisplayMode._create(bmx_sdl_video_GetCurrentDisplayMode(index), index)
-	End Method
-
-End Type
-
-Rem
-bbdoc: The description of a display mode.
-End Rem
-Type TSDLDisplayMode
-
-	Field displayIndex:Int
-	Field modePtr:Byte Ptr
-	
-	Function _create:TSDLDisplayMode(modePtr:Byte Ptr, displayIndex:Int = -1)
-		If modePtr Then
-			Local this:TSDLDisplayMode = New TSDLDisplayMode
-			this.displayIndex = displayIndex
-			this.modePtr = modePtr
-			Return this
-		End If
-	End Function
-	
-	Rem
-	bbdoc: Creates a new custom display mode, useful for calling #GetClosestDisplayMode.
-	End Rem
-	Function Create:TSDLDisplayMode(format:UInt, width:Int, height:Int, refreshRate:Int)
-		Return _create(bmx_sdl_video_DisplayMode_new(format, width, height, refreshRate))
-	End Function
-	
-	Rem
-	bbdoc: One of the SDL pixel formats.
-	End Rem
-	Method Format:UInt()
-		Return bmx_sdl_video_DisplayMode_format(modePtr)
-	End Method
-	
-	Rem
-	bbdoc: The width, in screen coordinates.
-	End Rem
-	Method Width:Int()
-		Return bmx_sdl_video_DisplayMode_width(modePtr)
-	End Method
-	
-	Rem
-	bbdoc: The height, in screen coordinates.
-	End Rem
-	Method Height:Int()
-		Return bmx_sdl_video_DisplayMode_height(modePtr)
-	End Method
-	
-	Rem
-	bbdoc: The refresh rate (in Hz), or 0 for unspecified.
-	End Rem
-	Method RefreshRate:Int()
-		Return bmx_sdl_video_DisplayMode_refreshRate(modePtr)
-	End Method
-	
-	Rem
-	bbdoc: Driver-specific data.
-	End Rem
-	Method DriverData:Byte Ptr()
-		Return bmx_sdl_video_DisplayMode_driverData(modePtr)
+	Method GetCurrentDisplayMode:Int(mode:SDLDisplayMode Var)
+		Return SDL_GetCurrentDisplayMode(index, mode)
 	End Method
 
 	Rem
@@ -762,19 +699,11 @@ Type TSDLDisplayMode
 	The modes are scanned with size being first priority, format being second priority, and finally checking the refresh rate.
 	If all the available modes are too small, then Null is returned.
 	End Rem
-	Method GetClosestDisplayMode:TSDLDisplayMode(display:TSDLDisplay)
-		Return _create(bmx_sdl_video_GetClosestDisplayMode(modePtr, display.index), display.index)
+	Method GetClosestDisplayMode:SDLDisplayMode Ptr(mode:SDLDisplayMode, closest:SDLDisplayMode Var)
+		Return SDL_GetClosestDisplayMode(index, mode, closest)
 	End Method
-	
-	Method Delete()
-		If modePtr Then
-			bmx_sdl_video_DisplayMode_free(modePtr)
-			modePtr = Null
-		End If
-	End Method
-	
-End Type
 
+End Type
 
 Rem
 bbdoc: Returns the list of built-in video drivers.
