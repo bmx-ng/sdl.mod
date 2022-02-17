@@ -74,86 +74,11 @@ int bmx_sdl_video_GetDisplayUsableBounds(int index, int * w, int * h) {
 	return res;
 }
 
-SDL_DisplayMode * bmx_sdl_video_GetDisplayMode(int index, int modeIndex) {
-	SDL_DisplayMode * mode = (SDL_DisplayMode*)calloc(1, sizeof(SDL_DisplayMode));
-	if (!SDL_GetDisplayMode(index, modeIndex, mode)) {
-		return mode;
-	} else {
-		free(mode);
-		return NULL;
-	}
-}
-
-SDL_DisplayMode * bmx_sdl_video_GetDesktopDisplayMode(int index) {
-	SDL_DisplayMode * mode = (SDL_DisplayMode*)calloc(1, sizeof(SDL_DisplayMode));
-	if (!SDL_GetDesktopDisplayMode(index, mode)) {
-		return mode;
-	} else {
-		free(mode);
-		return NULL;
-	}
-}
-
-SDL_DisplayMode * bmx_sdl_video_GetCurrentDisplayMode(int index) {
-	SDL_DisplayMode * mode = (SDL_DisplayMode*)calloc(1, sizeof(SDL_DisplayMode));
-	if (!SDL_GetCurrentDisplayMode(index, mode)) {
-		return mode;
-	} else {
-		free(mode);
-		return NULL;
-	}
-}
-
 BBString * bmx_sdl_video_SDL_GetCurrentVideoDriver() {
 	if (!SDL_GetCurrentVideoDriver()) {
 		return &bbEmptyString;
 	} else {
 		return bbStringFromUTF8String(SDL_GetCurrentVideoDriver());
-	}
-}
-
-// --------------------------------------------------------
-
-SDL_DisplayMode * bmx_sdl_video_DisplayMode_new(Uint32 format, int width, int height, int refreshRate) {
-	SDL_DisplayMode * mode = (SDL_DisplayMode*)calloc(1, sizeof(SDL_DisplayMode));
-	mode->format = format;
-	mode->w = width;
-	mode->h = height;
-	mode->refresh_rate = refreshRate;
-	return mode;
-}
-
-void bmx_sdl_video_DisplayMode_free(SDL_DisplayMode * mode) {
-	free(mode);
-}
-
-Uint32 bmx_sdl_video_DisplayMode_format(SDL_DisplayMode * mode) {
-	return mode->format;
-}
-
-int bmx_sdl_video_DisplayMode_width(SDL_DisplayMode * mode) {
-	return mode->w;
-}
-
-int bmx_sdl_video_DisplayMode_height(SDL_DisplayMode * mode) {
-	return mode->h;
-}
-
-int bmx_sdl_video_DisplayMode_refreshRate(SDL_DisplayMode * mode) {
-	return mode->refresh_rate;
-}
-
-void * bmx_sdl_video_DisplayMode_driverData(SDL_DisplayMode * mode) {
-	return mode->driverdata;
-}
-
-SDL_DisplayMode * bmx_sdl_video_GetClosestDisplayMode(SDL_DisplayMode * mode, int index) {
-	SDL_DisplayMode * closest = (SDL_DisplayMode*)calloc(1, sizeof(SDL_DisplayMode));
-	if (SDL_GetClosestDisplayMode(index, mode, closest) != NULL) {
-		return closest;
-	} else {
-		free(closest);
-		return NULL;
 	}
 }
 
@@ -249,12 +174,6 @@ SDL_Window * bmx_sdl_video_CreateWindow(BBString * title, int x, int y, int w, i
 	#endif
 	
 	return window;
-}
-
-SDL_DisplayMode * bmx_sdl_video_GetWindowDisplayMode(SDL_Window * window) {
-	SDL_DisplayMode * mode = (SDL_DisplayMode*)calloc(1, sizeof(SDL_DisplayMode));
-	int res = SDL_GetWindowDisplayMode(window, mode);
-	return mode;
 }
 
 void bmx_sdl_video_SetWindowTitle(SDL_Window * window, BBString * title) {

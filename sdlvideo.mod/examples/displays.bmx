@@ -28,12 +28,11 @@ For Local i:Int = 0 Until displayCount
 	Local modes:Int = display.GetNumDisplayModes()
 	
 	For Local m:Int = 0 Until modes
-	
-		Local mode:TSDLDisplayMode = display.GetDisplayMode(m)
-		If mode Then
-			Print "      : " + (mode.Width() + " x " + mode.Height() + "             ")[..20] + ..
-				(SDLGetPixelFormatName(mode.Format()) + "               ")[..30] + ..
-				mode.RefreshRate() + " hz"
+		Local mode:SDLDisplayMode
+		If Not display.GetDisplayMode(m, mode) Then
+			Print "      : " + (mode.width + " x " + mode.height + "             ")[..20] + ..
+				(SDLGetPixelFormatName(mode.format) + "               ")[..30] + ..
+				mode.refreshRate + " hz"
 		End If
 	Next
 	
