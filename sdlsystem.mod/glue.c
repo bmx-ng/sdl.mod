@@ -60,7 +60,7 @@ int bmx_SDL_GetDisplayHeight(int display) {
 int bmx_SDL_GetDisplayDepth(int display) {
 	SDL_DisplayMode mode;
 	SDL_GetCurrentDisplayMode(display, &mode);
-	return mode.format; // TODO - make this a proper bit depth number
+	return (mode.format >> 8) & 0xFF;
 }
 
 int bmx_SDL_GetDisplayhertz(int display) {
