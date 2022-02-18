@@ -36,6 +36,7 @@ ModuleInfo "CC_OPTS: -DSDL_dynapi_h_ -DSDL_DYNAMIC_API=0"
 
 ?win32
 Import "-lsetupapi"
+ModuleInfo "CC_OPTS: -DSDL_VIDEO_RENDER_D3D11=1 -DHAVE_D3D11_H"
 ?win32x86
 ModuleInfo "CC_OPTS: -mmmx -msse -msse2"
 
