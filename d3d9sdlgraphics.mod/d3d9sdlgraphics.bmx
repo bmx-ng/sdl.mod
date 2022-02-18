@@ -164,7 +164,7 @@ Type TD3D9SDLGraphics Extends TGraphics
 	Method Create:TD3D9SDLGraphics( width:Int,height:Int,depth:Int,hertz:Int,flags:Long,x:Int,y:Int)
 	
 		
-		_g = SDLGraphicsDriver().CreateGraphics( width, height, depth, hertz, flags | GRAPHICS_WIN32_DX, x, y )
+		_g = SDLGraphicsDriver().CreateGraphics( width, height, depth, hertz, flags, x, y )
 		
 		_hwnd = _g._context.window.GetHandle()
 		
