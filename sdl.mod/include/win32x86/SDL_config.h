@@ -249,9 +249,9 @@ typedef unsigned int uintptr_t;
 #ifndef SDL_VIDEO_RENDER_D3D
 #define SDL_VIDEO_RENDER_D3D    1
 #endif
-#if _MSC_VER >= 1911
-#define SDL_VIDEO_RENDER_D3D11  0
-#endif
+//#if _MSC_VER >= 1911
+//#define SDL_VIDEO_RENDER_D3D11  0
+//#endif
 
 /* Enable OpenGL support */
 #ifndef SDL_VIDEO_OPENGL
