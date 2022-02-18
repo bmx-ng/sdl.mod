@@ -180,20 +180,20 @@ Type TSDLSystemDriver Extends TSystemDriver
 		End If
 	End Method
 
-	Method DesktopWidth:Int() Override
-		Return bmx_SDL_GetDisplayWidth(0)
+	Method DesktopWidth:Int(display:Int) Override
+		Return bmx_SDL_GetDisplayWidth(display)
 	End Method
 	
-	Method DesktopHeight:Int() Override
-		Return bmx_SDL_GetDisplayHeight(0)
+	Method DesktopHeight:Int(display:Int) Override
+		Return bmx_SDL_GetDisplayHeight(display)
 	End Method
 	
-	Method DesktopDepth:Int() Override
-		Return bmx_SDL_GetDisplayDepth(0)
+	Method DesktopDepth:Int(display:Int) Override
+		Return bmx_SDL_GetDisplayDepth(display)
 	End Method
 	
-	Method DesktopHertz:Int() Override
-		Return bmx_SDL_GetDisplayhertz(0)
+	Method DesktopHertz:Int(display:Int) Override
+		Return bmx_SDL_GetDisplayhertz(display)
 	End Method
 
 	Function _eventFilter:Int(driver:TSDLSystemDriver, event:Int) { nomangle }
