@@ -467,15 +467,12 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 	End Method
 
 	Method GrabPixmap:TPixmap( x:Int,y:Int,w:Int,h:Int ) Override
-		rem
-		Local blend:Int=state_blend
+		Local blend:Int = state_blend
 		SetBlend SOLIDBLEND
-		Local p:TPixmap=CreatePixmap( w,h,PF_RGBA8888 )
-		glReadPixels x,GraphicsHeight()-h-y,w,h,GL_RGBA,GL_UNSIGNED_BYTE,p.pixels
-		p=YFlipPixmap( p )
+		Local p:TPixmap = CreatePixmap( w,h,PF_RGBA8888 )
+		renderer.ReadPixels(SDL_PIXELFORMAT_ABGR8888, p.pixels, p.pitch, x, y, w, h)
 		SetBlend blend
 		Return p
-		end rem
 	End Method
 	
 	Method SetResolution( width#,height# ) Override
