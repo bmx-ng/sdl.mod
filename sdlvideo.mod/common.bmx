@@ -426,4 +426,11 @@ Struct SDLDisplayMode
 	bbdoc: driver-specific data, initialize to 0
 	End Rem
 	Field driverdata:Byte Ptr
+
+	Rem
+	bbdoc: Returns the bits per pixel for the format
+	End Rem
+	Method BitsPerPixel:Int()
+		Return (format Shr 8) & $FF
+	End Method
 End Struct
