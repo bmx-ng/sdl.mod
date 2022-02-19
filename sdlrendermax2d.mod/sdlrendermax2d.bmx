@@ -41,6 +41,7 @@ Import SDL.SDLRender
 Private
 
 Global _driver:TSDLRenderMax2DDriver
+Global _preferredRenderer:Int = -1
 
 Function Pow2Size:Int( n:Int )
 	Local t:Int = 1
@@ -169,7 +170,7 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 			flags :| SDL_RENDERER_PRESENTVSYNC
 		End If
 
-		renderer = TSDLRenderer.Create(gfx._context.window, -1, flags)
+		renderer = TSDLRenderer.Create(gfx._context.window, _preferredRenderer, flags)
 		
 		t.MakeCurrent
 	End Method
@@ -500,6 +501,23 @@ End Function
 
 Local driver:TSDLRenderMax2DDriver=SDLRenderMax2DDriver()
 If driver SetGraphicsDriver driver
+
+Rem
+bbdoc: Defines the preferred renderer, by name.
+about: Available renderers vary by platform. If @renderer is not found, default will be used.
+End Rem
+Function SDLSetPreferredRenderer( renderer:String )
+	For Local i:int = 0 Until SDLGetNumRenderDrivers()
+		Local info:SDLRendererInfo
+		SDLGetRenderDriverInfo(i, info)
+		If info.GetName() = renderer Then
+			_preferredRenderer = i
+			Return
+		End If
+	Next
+	_preferredRenderer = -1
+End Function
+
 
 Rem
 bbdoc: Marks a renderer to be prioritized over others, by name.
