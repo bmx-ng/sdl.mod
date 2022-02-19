@@ -517,3 +517,20 @@ Function SDLSetPreferredRenderer( renderer:String )
 	Next
 	_preferredRenderer = -1
 End Function
+
+
+Rem
+bbdoc: Marks a renderer to be prioritized over others, by name.
+about: Available renderers vary by platform. If @renderer is not found or
+       cannot be initialized later then, normal default will be used.
+End Rem
+Function SDLPrioritizeRenderer( renderer:String, priority:ESDLHintPriority = ESDLHintPriority.SDL_HINT_DEFAULT)
+	For Local i:int = 0 Until SDLGetNumRenderDrivers()
+		Local info:SDLRendererInfo
+		SDLGetRenderDriverInfo(i, info)
+		If info.GetName() = renderer Then
+			SDLSetHintWithPriority("SDL_RENDER_DRIVER", renderer, priority)
+			Exit
+		End If
+	Next
+End Function

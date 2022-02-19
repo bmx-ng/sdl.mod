@@ -602,5 +602,17 @@ Function SDLIsTablet:Int()
 	Return SDL_IsTablet()
 End Function
 
+Rem
+bbdoc: Returns #True if the hint was set.
+End Rem
+Function SDLSetHintWithPriority:Int(name:String, value:string, priority:ESDLHintPriority)
+	Local n:Byte Ptr = name.ToUTF8String()
+	Local v:Byte Ptr = value.ToUTF8String()
+	Local result:int = SDL_SetHintWithPriority(n, v, priority)
+	MemFree n
+	MemFree v
+	Return result
+End Function
+
 ' shutdown all the subsystems
 atexit_(SDL_Quit)
