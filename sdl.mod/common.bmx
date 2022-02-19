@@ -111,6 +111,8 @@ Extern
 	Function SDL_HasClipboardText:Int()
 	Function bmx_SDL_GetClipboardText:String()
 	Function SDL_SetClipboardText:Int(Text:Byte Ptr)
+
+	Function SDL_SetHintWithPriority:Int(name:Byte Ptr, value:Byte Ptr, priority:ESDLHintPriority)
 	
 	Function SDL_Log(txt:Byte Ptr)
 	Function SDL_LogCritical(category:Int, txt:Byte Ptr)
@@ -354,4 +356,14 @@ Enum SDL_BlendFactor
     SDL_BLENDFACTOR_ONE_MINUS_DST_COLOR = $8  ' 1-dstR, 1-dstG, 1-dstB, 1-dstA
     SDL_BLENDFACTOR_DST_ALPHA           = $9  ' dstA, dstA, dstA, dstA
     SDL_BLENDFACTOR_ONE_MINUS_DST_ALPHA = $A  ' 1-dstA, 1-dstA, 1-dstA, 1-dstA
+End Enum
+
+
+Rem
+bbdoc: The different hint priorities defined by SDL.
+End Rem
+Enum ESDLHintPriority
+	SDL_HINT_DEFAULT  ' low priority, used for default values
+	SDL_HINT_NORMAL   ' medium priority
+	SDL_HINT_OVERRIDE ' high priority
 End Enum
