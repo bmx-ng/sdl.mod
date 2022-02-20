@@ -90,7 +90,7 @@ Type TSDLSystemDriver Extends TSystemDriver
 	End Method
 
 	Method RequestFile$( Text$,exts$,save:Int,file$ ) Override
-?Not haiku
+?Not haiku and Not ios
 		Local requestedFile:String
 		
 		Local res:Int
@@ -146,7 +146,7 @@ Type TSDLSystemDriver Extends TSystemDriver
 	End Method
 	
 	Method RequestDir$( Text$,path$ ) Override
-?Not haiku
+?Not haiku And Not ios
 		Local requestedDir:String
 		
 		Local res:Int

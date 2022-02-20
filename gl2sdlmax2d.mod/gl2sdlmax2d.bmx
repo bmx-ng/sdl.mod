@@ -19,6 +19,6 @@ ModuleInfo "History: Extended flags to Long"
 ModuleInfo "History: 1.00"
 ModuleInfo "History: Initial version."
 
-?Not nx
+?Not nx and not ios
 Import "main.bmx"
 ?
