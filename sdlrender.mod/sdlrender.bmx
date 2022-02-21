@@ -103,10 +103,10 @@ Type TSDLRenderer
 	End Method
 	
 	Rem
-	bbdoc: Getsthe current render target.
+	bbdoc: Gets the current render target or Null if no target is set
 	End Rem
-	Method GetTarget:TSDLSurface()
-		Return TSDLSurface._create(SDL_GetRenderTarget(rendererPtr))
+	Method GetTarget:TSDLTexture()
+		Return TSDLTexture._create(SDL_GetRenderTarget(rendererPtr))
 	End Method
 	
 	Rem
