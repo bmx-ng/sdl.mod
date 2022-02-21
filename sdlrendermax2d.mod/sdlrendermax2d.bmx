@@ -57,6 +57,180 @@ Function AdjustTexSize( width:Int Var, height:Int Var )
 	height = Pow2Size( height )
 End Function
 
+
+Type TSDLRenderRenderImageContext Extends TRenderImageContext
+	Field _gc:TSDLGraphics
+	Field _renderer:TSDLRenderer
+
+	Method Create:TSDLRenderRenderimageContext(gc:TGraphics, driver:TGraphicsDriver)
+		_gc = TSDLGraphics(gc)
+		_renderer = TSDLRenderMax2DDriver(driver).renderer
+
+		Return Self
+	EndMethod
+	
+	Method Destroy() override
+		'needed by interface
+	End Method
+	
+	Method GraphicsContext:TGraphics()
+		Return _gc
+	EndMethod
+
+	Method CreateRenderImage:TRenderImage(width:Int, height:Int, UseImageFiltering:Int)
+		Local renderimage:TSDLRenderRenderImage = New TSDLRenderRenderImage.CreateRenderImage(width, height)
+		renderimage.Init(_renderer, UseImageFiltering, Null)
+		Return renderimage
+	EndMethod
+
+	Method CreateRenderImageFromPixmap:TRenderImage(pixmap:TPixmap, UseImageFiltering:Int)
+		Local renderimage:TSDLRenderRenderImage = New TSDLRenderRenderImage.CreateRenderImage(pixmap.width, pixmap.height)
+		renderimage.Init(_renderer, UseImageFiltering, pixmap)
+		Return renderimage
+	EndMethod
+
+	Method DestroyRenderImage(renderImage:TRenderImage)
+		renderImage.DestroyRenderImage()
+	EndMethod
+
+	Method SetRenderImage(renderimage:TRenderimage)
+		If Not renderimage
+			_renderer.SetTarget(Null)
+		Else
+			renderimage.SetRenderImage()
+		EndIf
+	EndMethod
+
+	Method CreatePixmapFromRenderImage:TPixmap(renderImage:TRenderImage)
+		Return TSDLRenderRenderImage(renderImage).ToPixmap()
+	EndMethod
+EndType
+
+
+Type TSDLRenderRenderImageFrame Extends TSDLRenderImageFrame
+	Method Clear(r:Int=0, g:Int=0, b:Int=0, a:Float=0.0)
+		if not texture or not renderer then Return
+		
+		local oldTarget:TSDLTexture = renderer.GetTarget()
+		Local oldR:Byte, oldG:Byte, oldB:Byte, oldA:Byte
+		renderer.GetDrawColor(oldR, oldG, oldB, oldA)
+
+		renderer.SetTarget(texture)
+		renderer.SetDrawColor(Byte(r), Byte(g), Byte(b), Byte(a * 255))
+		renderer.Clear()
+		renderer.SetDrawColor(oldR, oldG, oldB, oldA)
+		
+		renderer.SetTarget(oldTarget)
+	End Method
+
+	Method CreateRenderTarget:TSDLRenderRenderImageFrame(renderer:TSDLRenderer, width:Int, height:Int, UseImageFiltering:Int, pixmap:TPixmap)
+		If pixmap
+			width = Min(pixmap.width, width)
+			height = Min(pixmap.height, height)
+
+			'other r2t backends compare to RGBA also for RGB888!
+			If pixmap.format <> PF_RGBA8888 And pixmap.format <> PF_RGB888 Then
+				pixmap = pixmap.Convert( PF_RGBA8888 )
+			EndIf
+		EndIf
+
+		self.renderer = renderer
+		self.pixmap = Null
+		self.surface = Null
+		'Ronny: Seems SDL wants ABGR here (RGBA leads to wrong colours) 
+		'       This way we avoid converting pixel data within BlitzMax
+		'self.texture = renderer.CreateTexture(SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height)
+		self.texture = renderer.CreateTexture(SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_TARGET, width, height)
+
+		'copy content of passed pixmap
+		If pixmap
+			'calling update() (or SDL_UpdateTexture()) is a "slow operation"
+			'and we might consider using the streamed-texture approach.
+			'see: https://wiki.libsdl.org/SDL_UpdateTexture
+			'but this comes with disadvantages too!
+			self.texture.update(pixmap.pixels, pixmap.pitch, 0,0, pixmap.width, pixmap.height)
+		Else
+			'clear to a default colour
+			Clear(0,0,0,0)
+		EndIf
+
+		'Ronny: should this now better use texture's width/height ?
+		self.uscale = 1.0 / width
+		self.vscale = 1.0 / height
+		'Ronny: needed?
+		self.u1 = width * self.uscale
+		self.v1 = height * self.vscale
+
+		Return Self
+	EndMethod
+
+	Method DestroyRenderTarget()
+		'TODO: something to destroy?
+	EndMethod
+
+	Method ToPixmap:TPixmap(width:Int, height:Int)
+		Local p:TPixmap = CreatePixmap(width, height, PF_RGBA8888)
+
+		'set to self as target
+		local oldTarget:TSDLTexture = renderer.GetTarget()
+		renderer.SetTarget(texture)
+		renderer.ReadPixels(SDL_PIXELFORMAT_ABGR8888, p.pixels, p.pitch, 0, 0, width, height)
+		renderer.SetTarget(oldTarget)
+		
+		Return p
+	EndMethod
+EndType
+
+Type TSDLRenderRenderImage Extends TRenderImage
+	Field _matrix:Float[16]
+
+	Method CreateRenderImage:TSDLRenderRenderImage(width:Int, height:Int)
+		Self.width = width		' TImage.width
+		Self.height = height	' TImage.height
+
+		_matrix = [	2.0/width, 0.0, 0.0, 0.0,..
+					0.0, 2.0/height, 0.0, 0.0,..
+					0.0, 0.0, 1.0, 0.0,..
+					-1-(1.0/width), -1-(1.0/height), 1.0, 1.0 ]
+
+		Return Self
+	EndMethod
+
+	Method DestroyRenderImage()
+		TSDLRenderRenderImageFrame(frames[0]).DestroyRenderTarget()
+	EndMethod
+
+	Method Init(renderer:TSDLRenderer, UseImageFiltering:Int, pixmap:TPixmap)
+		frames = New TSDLRenderRenderImageFrame[1]
+		frames[0] = New TSDLRenderRenderImageFrame.CreateRenderTarget(renderer, width, height, UseImageFiltering, pixmap)
+	EndMethod
+
+	Method Clear(r:Int=0, g:Int=0, b:Int=0, a:Float=0.0)
+		If frames[0] Then TSDLRenderRenderImageFrame(frames[0]).Clear(r, g, b, a)
+	End Method
+
+	Method Frame:TImageFrame(index:Int=0)
+		Return frames[0]
+	EndMethod
+
+	Method SetRenderImage()
+		if not frames[0] then return
+		
+		Local f:TSDLRenderImageFrame = TSDLRenderImageFrame(frames[0])
+		if not f or not f.renderer then return
+		f.renderer.SetTarget(f.texture)
+	EndMethod
+
+	Method ToPixmap:TPixmap()
+		Return TSDLRenderRenderImageFrame(frames[0]).ToPixmap(width, height)
+	EndMethod
+
+	Method SetViewport(x:Int, y:Int, width:Int, height:Int)
+		'SDL handles that already
+	EndMethod
+EndType
+
+
 Public
 
 Type TSDLRenderImageFrame Extends TImageFrame
@@ -183,6 +357,10 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		Return "SDLRenderer"
 	End Method
 
+	Method CreateRenderImageContext:Object(g:TGraphics) Override
+		Return new TSDLRenderRenderImageContext.Create(g, self)
+	End Method
+	
 	Method CreateFrameFromPixmap:TSDLRenderImageFrame( pixmap:TPixmap,flags:Int ) Override
 		Local frame:TSDLRenderImageFrame
 		frame=TSDLRenderImageFrame.CreateFromPixmap( pixmap,flags )
