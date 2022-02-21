@@ -103,10 +103,12 @@ Type TSDLRenderer
 	End Method
 	
 	Rem
-	bbdoc: Getsthe current render target.
+	bbdoc: Gets the current render target.
+	returns: The current render target or #Null for the default render target.
+	about: The default render target is the window for which the renderer was created, and is reported as #Null here.
 	End Rem
-	Method GetTarget:TSDLSurface()
-		Return TSDLSurface._create(SDL_GetRenderTarget(rendererPtr))
+	Method GetTarget:TSDLTexture()
+		Return TSDLTexture._create(SDL_GetRenderTarget(rendererPtr))
 	End Method
 	
 	Rem
@@ -341,7 +343,13 @@ Type TSDLRenderer
 	End Method
 	
 	Rem
-	bbdoc: Sets a texture as the current rendering target.
+	bbdoc: Sets a texture as the current rendering target. The texture must have been created with the #SDL_TEXTUREACCESS_TARGET flag.
+	returns: 0 on success or a negative error code on failure; call #SDLGetError() for more information.
+	about: Before using this method, you should check the SDL_RENDERER_TARGETTEXTURE bit in the flags of SDL_RendererInfo
+	to see if render targets are supported.
+
+	The default render target is the window for which the renderer was created.
+	To stop rendering to a texture and render to the window again, call this method with a #Null texture.
 	End Rem
 	Method SetTarget:Int(texture:TSDLTexture)
 		If texture Then

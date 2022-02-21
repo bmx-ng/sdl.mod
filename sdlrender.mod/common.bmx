@@ -124,48 +124,48 @@ End Extern
 
 
 Rem
-bbdoc: changes rarely, not lockable
+bbdoc: Changes rarely, not lockable
 End Rem
-Const SDL_TEXTUREACCESS_STATIC:Int = 0
+Const SDL_TEXTUREACCESS_STATIC:UInt = 0
 
 Rem
-bbdoc: changes frequently, lockable
+bbdoc: Changes frequently, lockable
 End Rem
-Const SDL_TEXTUREACCESS_STREAMING:Int = 1
+Const SDL_TEXTUREACCESS_STREAMING:UInt = 1
 
 Rem
-bbdoc: can be used as a render target
+bbdoc: Can be used as a render target
 End Rem
-Const SDL_TEXTUREACCESS_TARGET:Int = 2
+Const SDL_TEXTUREACCESS_TARGET:UInt = 2
 
 Rem
-bbdoc: do not flip
+bbdoc: Do not flip
 End Rem
 Const SDL_FLIP_NONE:Int = 0
 Rem
-bbdoc: flip horizontally
+bbdoc: Flip horizontally
 End Rem
 Const SDL_FLIP_HORIZONTAL:Int = 1
 
 Rem
-bbdoc: flip vertically
+bbdoc: Flip vertically
 End Rem
 Const SDL_FLIP_VERTICAL:Int = 2
 
 Rem
-bbdoc: the renderer is a software fallback
+bbdoc: The renderer is a software fallback
 End Rem
 Const SDL_RENDERER_SOFTWARE:Int = $01
 Rem
-bbdoc: the renderer uses hardware acceleration
+bbdoc: The renderer uses hardware acceleration
 End Rem
 Const SDL_RENDERER_ACCELERATED:Int = $02
 Rem
-bbdoc: present is synchronized with the refresh rate
+bbdoc: Present is synchronized with the refresh rate
 End Rem
 Const SDL_RENDERER_PRESENTVSYNC:Int = $04
 Rem
-bbdoc: the renderer supports rendering to texture
+bbdoc: The renderer supports rendering to texture
 End Rem
 Const SDL_RENDERER_TARGETTEXTURE:Int = $08
 
@@ -222,7 +222,7 @@ Struct SDLRendererInfo
 	Field maxTextureHeight:Int
 
 	Rem
-	bbdoc: Returns the name of the renderer
+	bbdoc: Returns the name of the renderer.
 	End Rem
 	Method GetName:String()
 		Return String.FromUTF8String(name)
