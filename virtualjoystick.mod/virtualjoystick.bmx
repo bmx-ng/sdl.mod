@@ -47,6 +47,30 @@ Type TVirtualJoystickDriver Extends TJoystickDriver
 		joysticks[port] = joystick
 	End Method
 
+	Method RemoveJoystick(joystick:TVirtualJoystick)
+		If joysticks.Length > 0 Then
+			For Local i:Int = 0 Until joysticks.Length
+				If joysticks[i] = joystick Then
+					Local joys:TVirtualJoystick[0]
+					If i > 0 Then
+						joys :+ joysticks[..i]
+					End If
+
+					If i < joysticks.Length - 1 Then
+						joys :+ joysticks[i + 1..]
+					End If
+
+					joysticks = joys
+				End If
+			Next
+
+			If currentJoystick = joystick Then
+				currentJoystick = Null
+				currentPort = -1
+			End If
+		End If
+	End Method
+
 	Method GetName:String() Override
 		Return "Virtual Joystick"
 	End Method
@@ -72,7 +96,7 @@ Type TVirtualJoystickDriver Extends TJoystickDriver
 	Method JoyAxisCaps:Int(port:Int) Override
 		SampleJoy port
 		If currentJoystick Then
-			Return currentJoystick.flags
+			Return currentJoystick.GetFlags()
 		End If
 	End Method
 	
@@ -170,6 +194,12 @@ Type TVirtualJoystickDriver Extends TJoystickDriver
 	End Method
 	
 	Method FlushJoy( port_mask:Int=~0 ) Override
+		For Local i:Int = 0 Until joysticks.length
+			Local joy:TVirtualJoystick = joysticks[i]
+			If joy And port_mask & i Then
+				joy.Flush()
+			End If
+		Next
 	End Method
 
 	Method SampleJoy(port:Int)
@@ -195,57 +225,68 @@ Type TVirtualJoystick
 
 	Field name:String
 	
-	' stick location
-	Field centerX:Int
-	Field centerY:Int
-	Field radius:Int
-	
-	Field radiusSqr:Int
-
-	' current knob location (based on user input) and radius
-	Field xPos:Int
-	Field yPos:Int
-	Field knobRadius:Int
-	Field touchId:Int = - 1
-	
+	Field stick:TVirtualStick
 	Field buttons:TVirtualButton[0]
 	Field buttoncaps:Int
+
+	Field virtualWidth:Int
+	Field virtualHeight:Int
 	
-	' active axis flags - combination of VS_AXIS_X and VS_AXIS_Y
-	Field flags:Int
-	
-	Method New()
+	Rem
+	bbdoc: Creates a new virtual joystick instance, using the specified configuration.
+	End Rem
+	Method New(name:String, x:Int, y:Int, stickRadius:Int, knobRadius:Int, flags:Int = VS_AXIS_XY)
 		_driver.AddJoystick(Self)
+
+		Self.name = name
+
+		stick = New TVirtualStick(x, y, stickRadius, knobRadius, flags)
+		
+		AddHook EmitEventHook, Hook, Self, 0
 	End Method
 	
 	Rem
 	bbdoc: Creates a new virtual joystick instance, using the specified configuration.
 	End Rem
-	Method Create:TVirtualJoystick(name:String, x:Int, y:Int, stickRadius:Int, knobRadius:Int, flags:Int = VS_AXIS_XY)
+	Method New(name:String)
+		_driver.AddJoystick(Self)
+
 		Self.name = name
-		Self.centerX = x
-		Self.centerY = y
-		Self.radius = stickRadius
-		Self.knobRadius = knobRadius
-		Self.flags = flags
-		
-		xPos = x
-		yPos = y
-		
-		radiusSqr = stickRadius * stickRadius
-		
+
 		AddHook EmitEventHook, Hook, Self, 0
-		Return Self
 	End Method
-	
+
+	Method SetVirtualResolution(w:Int, h:Int)
+		virtualWidth = w
+		virtualHeight = h
+	End Method
+
+	Method Flush()
+		For Local i:Int = 0 Until buttons.Length
+			buttons[i].hits = 0
+		Next
+	End Method
+
 	Rem
-	bbdoc: Adds a button at the specified location.
+	bbdoc: Adds a circle button at the specified location.
 	returns: The button id.
 	End Rem
 	Method AddButton:Int(x:Int, y:Int, radius:Int)
 		Local id:Int = buttons.length
 		buttons = buttons[..id + 1]
-		buttons[id] = New TVirtualButton.Create(x, y, radius)
+		buttons[id] = New TVirtualCircleButton(x, y, radius)
+		buttoncaps :| (1 Shl id)
+		Return id
+	End Method
+
+	Rem
+	bbdoc: Adds a rect button at the specified location.
+	returns: The button id.
+	End Rem
+	Method AddButton:Int(x:Int, y:Int, w:Int, h:Int)
+		Local id:Int = buttons.length
+		buttons = buttons[..id + 1]
+		buttons[id] = New TVirtualRectButton(x, y, w, h)
 		buttoncaps :| (1 Shl id)
 		Return id
 	End Method
@@ -266,38 +307,24 @@ Type TVirtualJoystick
 	Method OnEvent(event:TEvent)
 		Select event.id
 			Case EVENT_TOUCHDOWN
-				' only test stick if we aren't already tracking
-				If touchId = -1 Then
-					Local dist:Int = (centerX - event.x) * (centerX - event.x) + (centerY - event.y) * (centerY - event.y)
-					If dist < radiusSqr Then
-						touchId = event.data
-						xPos = event.x
-						yPos = event.y
-						Return
-					End If
+				Local x:Int = virtualWidth * (event.x / 10000.0)
+				Local y:Int = virtualHeight * (event.y / 10000.0)
+
+				If stick And stick.Down(event, x, y) Then
+					Return
 				End If
 				
 				' test buttons
 				For Local i:Int = 0 Until buttons.length
 					Local button:TVirtualButton = buttons[i]
 					
-					' only test button if we aren't already tracking
-					If button.touchId = -1 Then
-						Local dist:Int = (button.centerX - event.x) * (button.centerX - event.x) + (button.centerY - event.y) * (button.centerY - event.y)
-						If dist < button.radiusSqr Then
-							button.OnDown(event.data)
-							Return
-						End If
+					If button.Down(event, x, y) Then
+						Return
 					End If
-					
 				Next
 
 			Case EVENT_TOUCHUP
-				' match tracked touch?
-				If touchId = event.data Then
-					touchId = -1
-					xpos = centerX
-					yPos = centerY
+				If stick And stick.Up(event) Then
 					Return
 				End If
 			
@@ -305,38 +332,34 @@ Type TVirtualJoystick
 				For Local i:Int = 0 Until buttons.length
 					Local button:TVirtualButton = buttons[i]
 					
-					' match tracked touch?
-					If button.touchId = event.data Then
-						button.OnUp()
+					If button.Up(event) Then
 						Return
-					End If
-					
+					End If					
 				Next
 
 			Case EVENT_TOUCHMOVE
-				' match tracked touch?
-				If touchId = event.data Then
-					Local dist:Int = (centerX - event.x) * (centerX - event.x) + (centerY - event.y) * (centerY - event.y)
-					If dist < radiusSqr Then
-						xPos = event.x
-						yPos = event.y
-					Else
-						Local angle:Float = ATan2(event.y - centerY, event.x - centerX)
-						xPos = centerX + radius * Cos(angle)
-						yPos = centerY + radius * Sin(angle)
-					End If
-				End If
+				If stick Then
+					Local x:Int = virtualWidth * (event.x / 10000.0)
+					Local y:Int = virtualHeight * (event.y / 10000.0)
 
+					stick.Move(event, x, y)
+				End If
 		End Select
 	End Method
 	
+	Method GetFlags:Int()
+		If stick Then
+			Return stick.flags
+		End If
+	End Method
+
 	Rem
 	bbdoc: Reports the horizontal position of the joystick.
 	returns: Zero if the joystick is centered, -1 if Left, 1 if Right or a value in between.
 	End Rem
 	Method GetX:Float()
-		If flags & VS_AXIS_X Then
-			Return Float(xPos - centerX) / radius
+		If stick Then
+			Return stick.GetX()
 		End If
 	End Method
 	
@@ -345,8 +368,8 @@ Type TVirtualJoystick
 	returns: Zero if the joystick is centered, -1.0 if Up, 1.0 if Down or a value in between.
 	End Rem
 	Method GetY:Float()
-		If flags & VS_AXIS_Y Then
-			Return Float(yPos - centerY) / radius
+		If stick Then
+			Return stick.GetY()
 		End If
 	End Method
 	
@@ -356,7 +379,7 @@ Type TVirtualJoystick
 	End Rem
 	Method ButtonDown:Int(button:Int)
 		If button < buttons.length Then
-			Return buttons[button].down
+			Return buttons[button].isDown
 		End If
 	End Method
 	
@@ -370,6 +393,11 @@ Type TVirtualJoystick
 			Return buttons[button].Hit()
 		End If
 	End Method
+
+	Method Remove()
+		Free()
+		_driver.RemoveJoystick(Self)
+	End Method
 	
 	Method Free()
 		RemoveHook EmitEventHook, Hook, Self
@@ -377,34 +405,101 @@ Type TVirtualJoystick
 	
 End Type
 
-Type TVirtualButton
-
+Type TVirtualStick
+	' stick location
 	Field centerX:Int
 	Field centerY:Int
 	Field radius:Int
 	
 	Field radiusSqr:Int
+
+	' current knob location (based on user input) and radius
+	Field xPos:Int
+	Field yPos:Int
+	Field knobRadius:Int
+	Field touchId:Int = - 1
+
+	' active axis flags - combination of VS_AXIS_X and VS_AXIS_Y
+	Field flags:Int
+
+	Method New(x:Int, y:Int, stickRadius:Int, knobRadius:Int, flags:Int = VS_AXIS_XY)
+		Self.centerX = x
+		Self.centerY = y
+		Self.radius = stickRadius
+		Self.knobRadius = knobRadius
+		Self.flags = flags
+		
+		xPos = x
+		yPos = y
+		
+		radiusSqr = stickRadius * stickRadius
+	End Method
+
+	Method GetX:Float()
+		If flags & VS_AXIS_X Then
+			Return Float(xPos - centerX) / radius
+		End If
+	End Method
+
+	Method GetY:Float()
+		If flags & VS_AXIS_Y Then
+			Return Float(yPos - centerY) / radius
+		End If
+	End Method
+
+	Method Down:Int(event:TEvent, x:Int, y:Int)
+		' only test stick if we aren't already tracking
+		If touchId = -1 Then
+			Local dist:Int = (centerX - x) * (centerX - x) + (centerY - y) * (centerY - y)
+			If dist < radiusSqr Then
+				touchId = event.data
+				xPos = x
+				yPos = y
+				Return True
+			End If
+		End If
+	End Method
+
+	Method Up:Int(event:TEvent)
+		' match tracked touch?
+		If touchId = event.data Then
+			touchId = -1
+			xpos = centerX
+			yPos = centerY
+			Return True
+		End If
+	End Method
+
+	Method Move(event:TEvent, x:Int, y:Int)
+		' match tracked touch?
+		If touchId = event.data Then
+			Local dist:Int = (centerX - x) * (centerX - x) + (centerY - y) * (centerY - y)
+			If dist < radiusSqr Then
+				xPos = x
+				yPos = y
+			Else
+				Local angle:Float = ATan2(y - centerY, x - centerX)
+				xPos = centerX + radius * Cos(angle)
+				yPos = centerY + radius * Sin(angle)
+			End If
+		End If
+	End Method
+End Type
+
+Type TVirtualButton
 	
 	Field touchId:Int = -1
-	Field down:Int
+	Field isDown:Int
 	Field hits:Int
 
-	Method Create:TVirtualButton(x:Int, y:Int, radius:Int)
-		centerX = x
-		centerY = y
-		Self.radius = radius
-		radiusSqr = radius * radius
-		Return Self
-	End Method
-	
 	Method OnDown(id:Int)
 		touchId = id
-		down = True
+		isDown = True
 	End Method
 	
 	Method OnUp()
 		touchId = -1
-		down = False
+		isDown = False
 		hits :+ 1
 	End Method
 	
@@ -413,13 +508,86 @@ Type TVirtualButton
 		hits = 0
 		Return _hits
 	End Method
+
+	Method Up:Int(event:TEvent)
+		' match tracked touch?
+		If touchId = event.data Then
+			OnUp()
+			Return True
+		End If
+	End Method
+
+	Method Down:Int(event:TEvent, x:Int, y:Int) Abstract
+	Method GetType:EButtonType() Abstract
+End Type
+
+Type TVirtualCircleButton Extends TVirtualButton
+
+	Field centerX:Int
+	Field centerY:Int
+	Field radius:Int
 	
+	Field radiusSqr:Int
+
+	Method New(centerX:Int, centerY:Int, radius:Int)
+		Self.centerX = centerX
+		Self.centerY = centerY
+		Self.radius = radius
+		radiusSqr = radius * radius
+	End Method
+
+	Method Down:Int(event:TEvent, x:Int, y:Int) Override
+		' only test button if we aren't already tracking
+		If touchId = -1 Then
+			Local dist:Int = (centerX - x) * (centerX - x) + (centerY - y) * (centerY - y)
+			If dist < radiusSqr Then
+				OnDown(event.data)
+				Return True
+			End If
+		End If
+	End Method
+	
+	Method GetType:EButtonType() Override
+		Return EButtonType.Circle
+	End Method
+End Type
+
+Type TVirtualRectButton Extends TVirtualButton
+
+	Field x:Int
+	Field y:Int
+	Field x1:Int
+	Field y1:Int
+
+	Method New(x:Int, y:Int, w:Int, h:Int)
+		Self.x = x
+		Self.y = y
+		Self.x1 = x + w
+		Self.y1 = y + h
+	End Method
+
+	Method Down:Int(event:TEvent, x:Int, y:Int) Override
+		If touchId = -1 Then
+			If Self.x <= x And x1 >= x And Self.y <= y And y1 >= y Then
+				OnDown(event.data)
+				Return True
+			End If
+		End If
+	End Method
+
+	Method GetType:EButtonType() Override
+		Return EButtonType.Rect
+	End Method
 End Type
 
 Const VS_AXIS_X:Int = $001
 Const VS_AXIS_Y:Int = $002
 Const VS_AXIS_XY:Int = VS_AXIS_X | VS_AXIS_Y
 
+Enum EButtonType
+	Circle
+	Rect
+End Enum
 
 ' init driver
 _driver = New TVirtualJoystickDriver
