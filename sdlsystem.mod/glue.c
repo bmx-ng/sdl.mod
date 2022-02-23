@@ -29,7 +29,7 @@
 #include <brl.mod/keycodes.mod/keycodes.h>	//keycode enums
 
 /* System stuff */
-
+#define TOUCH_MULTIPLIER 10000
 static int mouse_button_map[] = {0, 1, 3, 2, 4, 5};
 
 int brl_event_EmitEvent( BBObject *event );
@@ -149,25 +149,19 @@ void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 			}
 		case SDL_FINGERMOTION:
 			{
-				SDL_DisplayMode mode;
-				SDL_GetWindowDisplayMode(SDL_GL_GetCurrentWindow(), &mode);
-				bbSDLSystemEmitEvent( BBEVENT_TOUCHMOVE, source, event->tfinger.fingerId, 0, event->tfinger.x * mode.w, event->tfinger.y * mode.h, &bbNullObject);
+				bbSDLSystemEmitEvent( BBEVENT_TOUCHMOVE, source, event->tfinger.fingerId, 0, event->tfinger.x * TOUCH_MULTIPLIER, event->tfinger.y * TOUCH_MULTIPLIER, &bbNullObject);
 				return;
 			}
 		case SDL_FINGERDOWN:
 		case SDL_FINGERUP:
 			{
-				SDL_DisplayMode mode;
-				SDL_GetWindowDisplayMode(SDL_GL_GetCurrentWindow(), &mode);
-				bbSDLSystemEmitEvent( (event->type == SDL_FINGERDOWN) ? BBEVENT_TOUCHDOWN : BBEVENT_TOUCHUP, source, event->tfinger.fingerId, 0, event->tfinger.x * mode.w, event->tfinger.y * mode.h, &bbNullObject );
+				bbSDLSystemEmitEvent( (event->type == SDL_FINGERDOWN) ? BBEVENT_TOUCHDOWN : BBEVENT_TOUCHUP, source, event->tfinger.fingerId, 0, event->tfinger.x * TOUCH_MULTIPLIER, event->tfinger.y * TOUCH_MULTIPLIER, &bbNullObject );
 				return;
 			}
 		case SDL_MULTIGESTURE:
 			{
-				SDL_DisplayMode mode;
-				SDL_GetWindowDisplayMode(SDL_GL_GetCurrentWindow(), &mode);
-				int x = event->mgesture.x * mode.w;
-				int y = event->mgesture.y * mode.h;
+				int x = event->mgesture.x * TOUCH_MULTIPLIER;
+				int y = event->mgesture.y * TOUCH_MULTIPLIER;
 				BBObject * gesture = sdl_sdlsystem_TSDLMultiGesture__getGesture(event->mgesture.touchId, x, y, event->mgesture.dTheta, event->mgesture.dDist, event->mgesture.numFingers);
 				bbSDLSystemEmitEvent(BBEVENT_MULTIGESTURE, source, event->mgesture.touchId, 0, x, y, gesture);
 				sdl_sdlsystem_TSDLMultiGesture__freeGesture(gesture);
