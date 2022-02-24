@@ -61,6 +61,7 @@ Type TVirtualJoystickDriver Extends TJoystickDriver
 					End If
 
 					joysticks = joys
+					Exit
 				End If
 			Next
 
