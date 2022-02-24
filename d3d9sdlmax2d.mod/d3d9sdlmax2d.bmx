@@ -450,7 +450,7 @@ Type TD3D9RenderImageFrame Extends TD3D9ImageFrame
 		For Local y:Int = 0 Until pixmap.height
 			Local srcptr:Byte Ptr = pixmap.pixels + y * pixmap.pitch
 			Local dstptr:Byte Ptr = lockedrect.pBits + y * lockedrect.Pitch
-			MemCopy dstptr, srcptr, pixmap.width * 4
+			MemCopy dstptr, srcptr, Size_T(pixmap.width * 4)
 		Next
 		stage.UnlockRect()
 
@@ -650,7 +650,7 @@ Type TD3D9RenderImage Extends TRenderImage
 			_d3ddev.SetRenderState(D3DRS_SCISSORTESTENABLE, False)
 		Else
 			_d3ddev.SetRenderState(D3DRS_SCISSORTESTENABLE, True)
-			Local rect[] = [x , y, x + width, y + height]
+			Local rect:Int[] = [x , y, x + width, y + height]
 			_d3ddev.SetScissorRect(rect)
 		EndIf
 
