@@ -358,7 +358,32 @@ Type TSDLRenderer
 			Return SDL_SetRenderTarget(rendererPtr, Null)
 		End If
 	End Method
-	
+
+	Rem
+	bbdoc: Gets logical coordinates of a point in the renderer when given real coordinates of point in the window.
+	about: Logical coordinates will differ from real coordinates when render is scaled and logical renderer size set.
+	End Rem
+	Method WindowToLogical(windowX:Int, windowY:Int, logicalX:Float Var, logicalY:Float Var)
+		SDL_RenderWindowToLogical(rendererPtr, windowX, windowY, logicalX, logicalY)
+	End Method
+
+	Rem
+	bbdoc: Gets real coordinates of a point in the window when given logical coordinates of point in the renderer.
+	about: Logical coordinates will differ from real coordinates when render is scaled and logical renderer size set.
+	End Rem
+	Method LogicalToWindow(logicalX:Float, logicalY:Float, windowX:Int Var, windowY:Int Var)
+		SDL_RenderLogicalToWindow(rendererPtr, logicalX, logicalY, windowX, windowY)
+	End Method
+
+	Rem
+	bbdoc: Toggles VSync of the renderer.
+	returns: 0 on success, or non-zero on failure.
+	about: @vsync is 1 for on, 0 for off. All other values are reserved.
+	End Rem
+	Method SetVSync:Int(vsync:Int)
+		Return SDL_RenderSetVSync(rendererPtr, vsync)
+	End Method
+
 	Rem
 	bbdoc: Destroys the rendering context for a window and free associated textures.
 	End Rem

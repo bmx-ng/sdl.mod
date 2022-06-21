@@ -93,6 +93,9 @@ Extern
 	Function SDL_RenderGeometry:Int(handle:Byte Ptr, texture:Byte Ptr, vertices:SDLVertex Ptr, numVertices:Int, indices:Int Ptr, numIndices:Int)
 	Function SDL_GetRendererInfo(handle:Byte Ptr, info:SDLRendererInfo Var)
 	Function SDL_GetRenderDriverInfo:Int(index:Int, info:SDLRendererInfo Var)
+	Function SDL_RenderWindowToLogical(handle:Byte Ptr, windowX:Int, windowY:Int, logicalX:Float Var, logicalY:Float Var)
+	Function SDL_RenderLogicalToWindow(handle:Byte Ptr, logicalX:Float, logicalY:Float, windowX:Int Var, windowY:Int Var)
+	Function SDL_RenderSetVSync:Int(handle:Byte Ptr, vsync:Int)
 
 	Function SDL_GetTextureAlphaMod:Int(handle:Byte Ptr, alpha:Byte Ptr)
 	Function SDL_GetTextureBlendMode:Int(handle:Byte Ptr, blendMode:Int Ptr)

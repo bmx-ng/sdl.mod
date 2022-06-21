@@ -245,6 +245,49 @@ Type TSDLJoystick
 	Method SetLED:Int(red:Byte, green:Byte, blue:Byte)
 		Return SDL_JoystickSetLED(joystickPtr, red, green, blue)
 	End Method
+
+	Rem
+	bbdoc: Queries whether the joystick has rumble support.
+	returns: #True if the joystick has rumble, #False otherwise.
+	End Rem
+	Method HasRumble:Int()
+		Return SDL_JoystickHasRumble(joystickPtr)
+	End Method
+
+	Rem
+	bbdoc: Queries whether the joystick has rumble support on triggers.
+	returns: #True if the joystick has trigger rumble, #False otherwise.
+	End Rem
+	Method HasRumbleTriggers:Int()
+		Return SDL_JoystickHasRumbleTriggers(joystickPtr)
+	End Method
+
+	Rem
+	bbdoc: Gets the implementation dependent name of a joystick.
+	returns: The name of the joystick. If no name can be found, this method returns #Null - call SDLGetError() for more information.
+	End Rem
+	Method Name:String()
+		Local n:Byte Ptr = SDL_JoystickName(joystickPtr)
+		If n Then
+			Return String.FromUTF8String(n)
+		End If
+	End Method
+
+	Rem
+	bbdoc: Gets the player index for the joystick.
+	returns: The player index, or -1 if it's not available.
+	about: For XInput controllers this returns the XInput user index. Many joysticks will not be able to supply this information.
+	End Rem
+	Method GetPlayerIndex:Int()
+		Return SDL_JoystickGetPlayerIndex(joystickPtr)
+	End Method
+
+	Rem
+	bbdoc: Sets the player index of the joystick.
+	End Rem
+	Method SetPlayerIndex(index:Int)
+		SDL_JoystickSetPlayerIndex(joystickPtr, index)
+	End Method
 	
 	Method Delete()
 		If joystickPtr Then

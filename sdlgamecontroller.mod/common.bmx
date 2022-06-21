@@ -56,6 +56,10 @@ Extern
 	Function SDL_GameControllerRumbleTriggers:Int(handle:Byte Ptr, leftRumble:Short, rightRumble:Short, durationMs:UInt)
 	Function SDL_GameControllerHasLED:Int(handle:Byte Ptr)
 	Function SDL_GameControllerSetLED:Int(handle:Byte Ptr, red:Byte, green:Byte, blue:Byte)
+	Function SDL_GameControllerHasRumble:Int(handle:Byte Ptr)
+	Function SDL_GameControllerHasRumbleTriggers:Int(handle:Byte Ptr)
+	Function SDL_GameControllerGetPlayerIndex:Int(handle:Byte Ptr)
+	Function SDL_GameControllerSetPlayerIndex(handle:Byte Ptr, index:Int)
 	
 End Extern
 

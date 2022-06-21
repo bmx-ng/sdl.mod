@@ -38,6 +38,11 @@ Extern
 	Function SDL_JoystickSetLED:Int(handle:Byte Ptr, red:Byte, green:Byte, blue:Byte)
 	Function SDL_JoystickCurrentPowerLevel:Int(handle:Byte Ptr)
 	Function SDL_JoystickGetHat:Byte(handle:Byte Ptr, hat:Int)
+	Function SDL_JoystickHasRumble:Int(handle:Byte Ptr)
+	Function SDL_JoystickHasRumbleTriggers:Int(handle:Byte Ptr)
+	Function SDL_JoystickName:Byte Ptr(handle:Byte Ptr)
+	Function SDL_JoystickGetPlayerIndex:Int(handle:Byte Ptr)
+	Function SDL_JoystickSetPlayerIndex(handle:Byte Ptr, index:Int)
 	
 End Extern
 

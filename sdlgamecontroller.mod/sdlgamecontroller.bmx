@@ -229,6 +229,38 @@ Type TSDLGameController
 	Method SDL_GameControllerSetLED:Int(red:Byte, green:Byte, blue:Byte)
 		Return SDL_GameControllerSetLED(controllerPtr, red, green, blue)
 	End Method
+
+	Rem
+	bbdoc: Queries whether the game controller has rumble support.
+	returns: #True, or #False if this controller does not have rumble support.
+	End Rem
+	Method HasRumble:Int()
+		Return SDL_GameControllerHasRumble(controllerPtr)
+	End Method
+
+	Rem
+	bbdoc: Queries whether the game controller has rumble support on triggers.
+	returns: #True, or #False if this controller does not have trigger rumble support.
+	End Rem
+	Method HasRumbleTriggers:Int()
+		Return SDL_GameControllerHasRumbleTriggers(controllerPtr)
+	End Method
+
+	Rem
+	bbdoc: Gets the player index of an opened game controller.
+	returns: The player index for the controller, or -1 if it's not available.
+	about: For XInput controllers this returns the XInput user index.
+	End Rem
+	Method GetPlayerIndex:Int(handle:Byte Ptr)
+		Return SDL_GameControllerGetPlayerIndex(controllerPtr)
+	End Method
+
+	Rem
+	bbdoc: Sets the player index of an opened game controller.
+	End Rem
+	Method SetPlayerIndex(index:Int)
+		SDL_GameControllerSetPlayerIndex(controllerPtr, index)
+	End Method
 	
 	Rem
 	bbdoc: Adds support for controllers that SDL is unaware of or to cause an existing controller to have a different binding.
