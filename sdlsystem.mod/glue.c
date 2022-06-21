@@ -199,7 +199,12 @@ void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 				case SDL_WINDOWEVENT_CLOSE:
 					bbSDLSystemEmitEvent(BBEVENT_WINDOWCLOSE, source, event->window.windowID, 0, 0, 0, &bbNullObject);
 					return;
-				
+				case SDL_WINDOWEVENT_DISPLAY_CHANGED:
+					bbSDLSystemEmitEvent(BBEVENT_WINDOWDISPLAYCHANGE, source, event->window.windowID, 0, 0, 0, &bbNullObject);
+					return;
+				case SDL_WINDOWEVENT_ICCPROF_CHANGED:
+					bbSDLSystemEmitEvent(BBEVENT_WINDOWICCPROFCHANGE, source, event->window.windowID, 0, 0, 0, &bbNullObject);
+					return;
 			}
 		case SDL_DISPLAYEVENT:
 			switch (event->display.event) {

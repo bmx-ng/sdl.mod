@@ -130,6 +130,8 @@ Extern
 	Function SDL_GetDesktopDisplayMode:Int(displayIndex:Int, mode:SDLDisplayMode Var)
 	Function SDL_GetCurrentDisplayMode:Int(displayIndex:Int, mode:SDLDisplayMode Var)
 	Function SDL_GetClosestDisplayMode:SDLDisplayMode Ptr(displayIndex:Int, mode:SDLDisplayMode Var, closest:SDLDisplayMode Var)
+	Function SDL_GetWindowICCProfile:Byte Ptr(handle:Byte Ptr, size:Size_T Var)
+	Function SDL_FlashWindow:Int(handle:Byte Ptr, operation:ESDLFlashOperation) 
 
 	Function SDL_GetGrabbedWindow:Byte Ptr()
 	Function SDL_IsScreenSaverEnabled:Int()
@@ -434,3 +436,12 @@ Struct SDLDisplayMode
 		Return (format Shr 8) & $FF
 	End Method
 End Struct
+
+Rem
+bbdoc: Window flash operation
+End Rem
+Enum ESDLFlashOperation
+	SDL_FLASH_CANCEL
+	SDL_FLASH_BRIEFLY
+	SDL_FLASH_UNTIL_FOCUSED
+End Enum

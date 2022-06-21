@@ -457,6 +457,22 @@ Type TSDLWindow
 		SDL_WarpMouseInWindow(windowPtr, x, y)
 	End Method
 
+	Rem
+	bbdoc: Gets the raw ICC profile data for the screen the window is currently on.
+	about: Data returned should be freed with #SDL_Free.
+	End Rem
+	Method GetICCProfile:Byte Ptr(size:Size_T Var)
+		Return SDL_GetWindowICCProfile(windowPtr, size)
+	End Method
+
+	Rem
+	bbdoc: Requests a window to demand attention from the user.
+	returns: 0 on success or a negative error code on failure; call #SDLGetError() for more information.
+	End Rem
+	Method Flash:Int(operation:ESDLFlashOperation)
+		Return SDL_FlashWindow(windowPtr, operation)
+	End Method
+
 End Type
 
 Rem
