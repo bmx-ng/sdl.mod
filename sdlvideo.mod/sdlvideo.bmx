@@ -26,8 +26,6 @@ bbdoc: SDL Video
 End Rem
 Module SDL.SDLVideo
 
-Import SDL.SDLSurface
-
 Import "common.bmx"
 
 Rem
@@ -459,10 +457,11 @@ Type TSDLWindow
 
 	Rem
 	bbdoc: Gets the raw ICC profile data for the screen the window is currently on.
-	about: Data returned should be freed with #SDL_Free.
 	End Rem
-	Method GetICCProfile:Byte Ptr(size:Size_T Var)
-		Return SDL_GetWindowICCProfile(windowPtr, size)
+	Method GetICCProfile:TICCProfile()
+		Local size:Size_T
+		Local data:Byte Ptr = SDL_GetWindowICCProfile(windowPtr, size)
+		Return New TICCProfile(data, size)
 	End Method
 
 	Rem
@@ -471,6 +470,33 @@ Type TSDLWindow
 	End Rem
 	Method Flash:Int(operation:ESDLFlashOperation)
 		Return SDL_FlashWindow(windowPtr, operation)
+	End Method
+
+	Rem
+	bbdoc: Sets the window to always be above the others.
+	about: This will add or remove the window's "SDL_WINDOW_ALWAYS_ON_TOP" flag. This will bring the window to the front and keep the window above the rest.
+	End Rem
+	Method SetAlwaysOnTop(onTop:Int)
+		SDL_SetWindowAlwaysOnTop(windowPtr, onTop)
+	End Method
+
+	Rem
+	bbdoc: Sets the window's keyboard grab mode.
+	about: Keyboard grab enables capture of system keyboard shortcuts like Alt+Tab or the Meta/Super key. Note that not all system keyboard shortcuts can be
+	captured by applications (one example is Ctrl+Alt+Del on Windows).
+
+	This is primarily intended for specialized applications such as VNC clients or VM frontends. Normal games should not use keyboard grab.
+
+	When keyboard grab is enabled, SDL will continue to handle Alt+Tab when the
+	window is full-screen to ensure the user is not trapped in your
+	application. If you have a custom keyboard shortcut to exit fullscreen
+	mode, you may suppress this behavior with `SDL_HINT_ALLOW_ALT_TAB_WHILE_GRABBED`.
+
+	If the caller enables a grab while another window is currently grabbed, the
+	other window loses its grab in favor of the caller's window.
+	End Rem
+	Method SetKeyboardGrab(grabbed:Int)
+		SDL_SetWindowKeyboardGrab(windowPtr, grabbed)
 	End Method
 
 End Type

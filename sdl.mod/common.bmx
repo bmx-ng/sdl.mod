@@ -131,6 +131,7 @@ Extern
 	Function SDL_IsTablet:Int()
 	
 	Function SDL_OpenURL:Int(url:Byte Ptr)
+	Function SDL_Free(data:Byte Ptr)
 End Extern
 
 

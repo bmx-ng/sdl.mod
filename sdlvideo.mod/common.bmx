@@ -21,6 +21,8 @@
 '
 SuperStrict
 
+Import SDL.SDLSurface
+
 ?win32x86
 Import "../../sdl.mod/sdl.mod/include/win32x86/*.h"
 
@@ -131,7 +133,9 @@ Extern
 	Function SDL_GetCurrentDisplayMode:Int(displayIndex:Int, mode:SDLDisplayMode Var)
 	Function SDL_GetClosestDisplayMode:SDLDisplayMode Ptr(displayIndex:Int, mode:SDLDisplayMode Var, closest:SDLDisplayMode Var)
 	Function SDL_GetWindowICCProfile:Byte Ptr(handle:Byte Ptr, size:Size_T Var)
-	Function SDL_FlashWindow:Int(handle:Byte Ptr, operation:ESDLFlashOperation) 
+	Function SDL_FlashWindow:Int(handle:Byte Ptr, operation:ESDLFlashOperation)
+	Function SDL_SetWindowAlwaysOnTop(handle:Byte Ptr, onTop:Int)
+	Function SDL_SetWindowKeyboardGrab(handle:Byte Ptr, grabbed:Int)
 
 	Function SDL_GetGrabbedWindow:Byte Ptr()
 	Function SDL_IsScreenSaverEnabled:Int()
@@ -445,3 +449,20 @@ Enum ESDLFlashOperation
 	SDL_FLASH_BRIEFLY
 	SDL_FLASH_UNTIL_FOCUSED
 End Enum
+
+Rem
+bbdoc: ICCProfile Data
+End Rem
+Type TICCProfile
+	Field data:Byte Ptr
+	Field size:Size_T
+
+	Method New(data:Byte Ptr, size:Size_T)
+		Self.data = data
+		Self.size = size
+	End Method
+
+	Method Delete()
+		SDL_Free(data)
+	End Method
+End Type
