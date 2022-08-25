@@ -74,47 +74,65 @@ Type TSDLJoystickDriver Extends TJoystickDriver
 	
 	Method JoyX#( port:Int=0 ) Override
 		SampleJoy port
-		Return SDL_JoystickGetAxis(currentJoystick.joystickPtr, JOY_X)/32767.0
+		Local c:Int=SDL_JoystickGetAxis(currentJoystick.joystickPtr, JOY_X)
+		If ( c Shr 15 ) Then c=-( c-1 )
+		Return c/32767.0
 	End Method
 	
 	Method JoyY#( port:Int=0 ) Override
 		SampleJoy port
-		Return SDL_JoystickGetAxis(currentJoystick.joystickPtr, JOY_Y)/32767.0
+		Local c:Int=SDL_JoystickGetAxis(currentJoystick.joystickPtr, JOY_Y)
+		If ( c Shr 15 ) Then c=-( c-1 )
+		Return c/32767.0
 	End Method
 	
 	Method JoyZ#( port:Int=0 ) Override
 		SampleJoy port
-		Return SDL_JoystickGetAxis(currentJoystick.joystickPtr, JOY_Z)/32767.0
+		Local c:Int=SDL_JoystickGetAxis(currentJoystick.joystickPtr, JOY_Z)
+		If ( c Shr 15 ) Then c=-( c-1 )
+		Return c/32767.0
 	End Method
 	
 	Method JoyR#( port:Int=0 ) Override
 		SampleJoy port
-		Return SDL_JoystickGetAxis(currentJoystick.joystickPtr, JOY_R)/32767.0
+		Local c:Int=SDL_JoystickGetAxis(currentJoystick.joystickPtr, JOY_R)
+		If ( c Shr 15 ) Then c=-( c-1 )
+		Return c/32767.0
 	End Method
 	
 	Method JoyU#( port:Int=0 ) Override
 		SampleJoy port
-		Return SDL_JoystickGetAxis(currentJoystick.joystickPtr, JOY_U)/32767.0
+		Local c:Int=SDL_JoystickGetAxis(currentJoystick.joystickPtr, JOY_U)
+		If ( c Shr 15 ) Then c=-( c-1 )
+		Return c/32767.0
 	End Method
 	
 	Method JoyV#( port:Int=0 ) Override
 		SampleJoy port
-		Return SDL_JoystickGetAxis(currentJoystick.joystickPtr, JOY_V)/32767.0
+		Local c:Int=SDL_JoystickGetAxis(currentJoystick.joystickPtr, JOY_V)
+		If ( c Shr 15 ) Then c=-( c-1 )
+		Return c/32767.0
 	End Method
 	
 	Method JoyYaw#( port:Int=0 ) Override
 		SampleJoy port
-		Return SDL_JoystickGetAxis(currentJoystick.joystickPtr, JOY_YAW)/32767.0
+		Local c:Int=SDL_JoystickGetAxis(currentJoystick.joystickPtr, JOY_YAW)
+		If ( c Shr 15 ) Then c=-( c-1 )
+		Return c/32767.0
 	End Method
 	
 	Method JoyPitch#( port:Int=0 ) Override
 		SampleJoy port
-		Return SDL_JoystickGetAxis(currentJoystick.joystickPtr, JOY_PITCH)/32767.0
+		Local c:Int=SDL_JoystickGetAxis(currentJoystick.joystickPtr, JOY_PITCH)
+		If ( c Shr 15 ) Then c=-( c-1 )
+		Return c/32767.0
 	End Method
 	
 	Method JoyRoll#( port:Int=0 ) Override
 		SampleJoy port
-		Return SDL_JoystickGetAxis(currentJoystick.joystickPtr, JOY_ROLL)/32767.0
+		Local c:Int=SDL_JoystickGetAxis(currentJoystick.joystickPtr, JOY_ROLL)
+		If ( c Shr 15 ) Then c=-( c-1 )
+		Return c/32767.0
 	End Method
 	
 	Method JoyHat#( port:Int=0 ) Override
@@ -133,35 +151,35 @@ Type TSDLJoystickDriver Extends TJoystickDriver
 	
 	Method JoyXDir:Int( port:Int=0 ) Override
 		Local t#=JoyX( port )
-		If t<.333333 Return -1
+		If t<-.333333 Return -1
 		If t>.333333 Return 1
 		Return 0
 	End Method
 
 	Method JoyYDir:Int( port:Int=0 ) Override
 		Local t#=JoyY( port )
-		If t<.333333 Return -1
+		If t<-.333333 Return -1
 		If t>.333333 Return 1
 		Return 0
 	End Method
 
 	Method JoyZDir:Int( port:Int=0 ) Override
 		Local t#=JoyZ( port )
-		If t<.333333 Return -1
+		If t<-.333333 Return -1
 		If t>.333333 Return 1
 		Return 0
 	End Method
 
 	Method JoyUDir:Int( port:Int=0 ) Override
 		Local t#=JoyU( port )
-		If t<.333333 Return -1
+		If t<-.333333 Return -1
 		If t>.333333 Return 1
 		Return 0
 	End Method
 
 	Method JoyVDir:Int( port:Int=0 ) Override
 		Local t#=JoyV( port )
-		If t<.333333 Return -1
+		If t<-.333333 Return -1
 		If t>.333333 Return 1
 		Return 0
 	End Method
