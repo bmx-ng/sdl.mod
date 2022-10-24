@@ -280,3 +280,53 @@ Extern
 	Function NFD_PickFolder:Int(defaultPath:Byte Ptr, outPath:Byte Ptr Ptr)
 	Function free_(buf:Byte Ptr)="void free(void *)!"
 End Extern
+
+Rem
+bbdoc: Start accepting Unicode text input events.
+about: This function will start accepting Unicode text input events in the focused SDL window,
+and start emitting #SDLTextInputEvent (SDL_TEXTINPUT) and #SDLTextEditingEvent (SDL_TEXTEDITING) events.
+
+Please use this function in pair with #SDLStopTextInput().
+
+On some platforms using this function activates the screen keyboard.
+End Rem
+Function SDLStartTextInput()
+	SDL_StartTextInput()
+End Function
+
+Rem
+bbdoc: Stop receiving any text input events.
+End Rem
+Function SDLStopTextInput()
+	SDL_StopTextInput()
+End Function
+
+Rem
+bbdoc: Returns if an IME Composite or Candidate window is currently shown.
+End Rem
+Function SDLIsTextInputShown:Int()
+	Return SDL_IsTextInputShown()
+End Function
+
+Rem
+bbdoc: Checks whether or not Unicode text input events are enabled.
+returns: #True if text input events are enabled else #False.
+End Rem
+Function SDLIsTextInputActive:Int()
+	Return SDL_IsTextInputActive()
+End Function
+
+Rem
+bbdoc: Dismisses the composition window/IME without disabling the subsystem.
+End Rem
+Function SDLClearComposition()
+	SDL_ClearComposition()
+End Function
+
+Rem
+bbdoc: Checks whether the platform has screen keyboard support.
+returns: #True if the platform has some screen keyboard support or #False if not.
+End Rem
+Function SDLHasScreenKeyboardSupport:Int()
+	Return SDL_HasScreenKeyboardSupport()
+End Function

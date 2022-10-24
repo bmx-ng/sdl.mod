@@ -87,6 +87,8 @@ Extern
 	Function SDL_HasAVX512F:Int()
 	Function SDL_HasARMSIMD:Int()
 	Function SDL_HasNEON:Int()
+	Function SDL_HasLSX:Int()
+	Function SDL_HasLASX:Int()
 
 	Function SDL_RWFromFile:Byte Ptr(file:Byte Ptr, _mode$z)
 	Function bmx_SDL_RWtell:Long(handle:Byte Ptr)
@@ -107,13 +109,12 @@ Extern
 	Function SDL_IsChromebook:Int()
 	Function SDL_IsDeXMode:Int()
 	Function SDL_AndroidBackButton()
+	Function SDL_AndroidSendMessage:Int(command:UInt, param:Int)
 ?
 	Function SDL_HasClipboardText:Int()
 	Function bmx_SDL_GetClipboardText:String()
 	Function SDL_SetClipboardText:Int(Text:Byte Ptr)
 
-	Function SDL_SetHintWithPriority:Int(name:Byte Ptr, value:Byte Ptr, priority:ESDLHintPriority)
-	
 	Function SDL_Log(txt:Byte Ptr)
 	Function SDL_LogCritical(category:Int, txt:Byte Ptr)
 	Function SDL_LogInfo(category:Int, txt:Byte Ptr)
@@ -132,6 +133,13 @@ Extern
 	
 	Function SDL_OpenURL:Int(url:Byte Ptr)
 	Function SDL_Free(data:Byte Ptr)
+	Function SDL_SetHintWithPriority:Int(name:Byte Ptr, value:Byte Ptr, priority:ESDLHintPriority)
+
+	Function bmx_SDL_RectEmpty:Int(rect:SSDLRect Var)
+	Function bmx_SDL_RectEquals:Int(a:SSDLRect Var, b:SSDLRect Var)
+	Function bmx_SDL_HasIntersection:Int(a:SSDLRect Var, b:SSDLRect Var)
+	Function bmx_SDL_IntersectRect:Int(a:SSDLRect Var, b:SSDLRect Var, result:SSDLRect Var)
+	Function bmx_SDL_UnionRect(a:SSDLRect Var, b:SSDLRect Var, result:SSDLRect Var)
 End Extern
 
 
@@ -338,7 +346,7 @@ Const SDL_PIXELFORMAT_BGRA32:UInt = SDL_PIXELFORMAT_ARGB8888
 Const SDL_PIXELFORMAT_ABGR32:UInt = SDL_PIXELFORMAT_RGBA8888
 ?
 
-Enum SDL_BlendOperation
+Enum ESDLBlendOperation
 	SDL_BLENDOPERATION_ADD              = $1   ' dst + src: supported by all renderers
     SDL_BLENDOPERATION_SUBTRACT         = $2   ' dst - src : supported by D3D9, D3D11, OpenGL, OpenGLES
     SDL_BLENDOPERATION_REV_SUBTRACT     = $3   ' src - dst : supported by D3D9, D3D11, OpenGL, OpenGLES
@@ -346,7 +354,7 @@ Enum SDL_BlendOperation
     SDL_BLENDOPERATION_MAXIMUM          = $5   ' max(dst, src) : supported by D3D11 
 End Enum
 
-Enum SDL_BlendFactor
+Enum ESDLBlendFactor
 	SDL_BLENDFACTOR_ZERO                = $1  ' 0, 0, 0, 0
     SDL_BLENDFACTOR_ONE                 = $2  ' 1, 1, 1, 1
     SDL_BLENDFACTOR_SRC_COLOR           = $3  ' srcR, srcG, srcB, srcA
@@ -368,3 +376,86 @@ Enum ESDLHintPriority
 	SDL_HINT_NORMAL   ' medium priority
 	SDL_HINT_OVERRIDE ' high priority
 End Enum
+
+Rem
+bbdoc: 
+End Rem
+Struct SSDLPoint
+	Field x:Int
+	Field y:Int
+
+	Method New(x:Int, y:Int)
+		Self.x = x
+		Self.y = y
+	End Method
+End Struct
+
+Rem
+bbdoc: 
+End Rem
+Struct SDLFPoint
+	Field x:Float
+	Field y:Float
+End Struct
+
+Rem
+bbdoc: A rectangle, with the origin at the upper left (integer).
+End Rem
+Struct SSDLRect
+	Field x:Int
+	Field y:Int
+	Field w:Int
+	Field h:Int
+
+	Method New(x:Int, y:Int, w:Int, h:Int)
+		Self.x = x
+		Self.y = y
+		Self.w = w
+		Self.h = h
+	End Method
+
+	Rem
+	bbdoc: 
+	End Rem
+	Method Empty:Int()
+		Return bmx_SDL_RectEmpty(Self)
+	End Method
+
+	Rem
+	bbdoc: Returns #True if the two rectangles are equal.
+	End Rem
+	Method Equals:Int(rect:SSDLRect Var)
+		Return bmx_SDL_RectEquals(Self, rect)
+	End Method
+
+	Rem
+	bbdoc: Determines whether two rectangles intersect.
+	End Rem
+	Method HasIntersection:Int(rect:SSDLRect Var)
+		Return bmx_SDL_HasIntersection(Self, rect)
+	End Method
+
+	Method IntersectRect:Int(rect:SSDLRect Var, result:SSDLRect Var)
+		Return bmx_SDL_IntersectRect(Self, rect, result)
+	End Method
+
+	Rem
+	bbdoc: 
+	End Rem
+	Method IntersectRectAndLine()
+	End Method
+
+	Rem
+	bbdoc: 
+	End Rem
+	Method UnionRect(rect:SSDLRect Var, result:SSDLRect Var)
+		bmx_SDL_UnionRect(Self, rect, result)
+	End Method
+
+	Rem
+	bbdoc: 
+	End Rem
+	Method EnclosePoints()
+	End Method
+   
+End Struct

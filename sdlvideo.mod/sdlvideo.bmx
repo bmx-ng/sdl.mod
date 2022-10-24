@@ -221,6 +221,14 @@ Type TSDLWindow
 	Method Hide()
 		SDL_HideWindow(windowPtr)
 	End Method
+
+	Rem
+	bbdoc: Checks whether the screen keyboard is shown for the window.
+	returns: #True if screen keyboard is shown or #False if not.
+	End Rem
+	Method IsScreenKeyboardShown:Int()
+		Return SDL_IsScreenKeyboardShown(windowPtr)
+	End Method
 	
 	Rem
 	bbdoc: Raises the window above other windows and sets the input focus.
@@ -819,5 +827,17 @@ Function SDLDisableScreenSaver()
 	SDL_DisableScreenSaver()
 End Function
 
+Rem
+bbdoc: 
+End Rem
+Function SDLGetPointDisplayIndex:Int(x:Int, y:Int)
+	Local point:SSDLPoint = New SSDLPoint(x, y)
+	Return SDL_GetPointDisplayIndex(point)
+End Function
 
-
+Rem
+bbdoc: 
+End Rem
+Function SDLGetPointDisplayIndex:Int(point:SSDLPoint Var)
+	Return SDL_GetPointDisplayIndex(point)
+End Function

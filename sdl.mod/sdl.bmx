@@ -53,6 +53,7 @@ Import "include/win32arm64/*.h"
 
 ?osx
 ModuleInfo "CC_OPTS: -mmmx -msse -msse2 -DTARGET_API_MAC_CARBON -DTARGET_API_MAC_OSX"
+ModuleInfo "CC_OPTS: -fobjc-arc"
 
 Import "include/macos/*.h"
 
@@ -336,6 +337,10 @@ End Rem
 Function SDLAndroidBackButton()
 	SDL_AndroidBackButton()
 End Function
+
+Function SDLAndroidSendMessage:Int(command:UInt, param:Int)
+	Return SDL_AndroidSendMessage(command, param)
+End Function
 ?
 Rem
 bbdoc: Return a flag indicating whether the clipboard exists and contains a text string that is non-empty.
@@ -355,8 +360,11 @@ Rem
 bbdoc: Puts text into the clipboard.
 returns: 0 on success or a negative error code on failure.
 End Rem
-Function SDLSetClipboardText:Int(Text:String)
-	Return SDL_SetClipboardText(Text.ToUTF8String())
+Function SDLSetClipboardText:Int(text:String)
+	Local s:Byte Ptr = text.ToUTF8String()
+	Local res:Int = SDL_SetClipboardText(s)
+	MemFree(s)
+	Return res
 End Function
 
 Rem
@@ -593,6 +601,24 @@ bbdoc: Returns #True if the CPU has NEON (ARM SIMD) features.
 End Rem
 Function SDLHasNEON:Int()
 	Return SDL_HasNEON()
+End Function
+
+Rem
+bbdoc: Determines whether the CPU has LSX (LOONGARCH SIMD) features.
+returns: #True if the CPU has LOONGARCH LSX features or #False if not.
+about: This always returns #False on CPUs that aren't using LOONGARCH instruction sets.
+End Rem
+Function SDLHasLSX:Int()
+	Return SDL_HasLSX()
+End Function
+
+Rem
+bbdoc: Determines whether the CPU has LASX (LOONGARCH SIMD) features.
+returns: #True if the CPU has LOONGARCH LASX features or #False if not.
+about: This always returns #False on CPUs that aren't using LOONGARCH instruction sets.
+End Rem
+Function SDLHasLASX:Int()
+	Return SDL_HasLASX()
 End Function
 
 Rem

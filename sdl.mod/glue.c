@@ -23,6 +23,7 @@
 
 #include "SDL.h"
 #include "SDL_rwops.h"
+#include "SDL_rect.h"
 
 #include <brl.mod/blitz.mod/blitz.h>
 
@@ -157,4 +158,26 @@ int bmx_SDL_AudioInit(BBString * name) {
 	int res = SDL_AudioInit(n);
 	bbMemFree(n);
 	return res;
+}
+
+/* ----------------------------------------------------- */
+
+int bmx_SDL_RectEmpty(const SDL_Rect *r) {
+	return SDL_RectEmpty(r);
+}
+
+int bmx_SDL_RectEquals(const SDL_Rect *a, const SDL_Rect *b) {
+	return SDL_RectEquals(a, b);
+}
+
+int bmx_SDL_HasIntersection(const SDL_Rect * A, const SDL_Rect * B) {
+	return SDL_HasIntersection(A, B);
+}
+
+int bmx_SDL_IntersectRect(const SDL_Rect * A, const SDL_Rect * B, SDL_Rect * result) {
+	return SDL_IntersectRect(A, B, result);
+}
+
+void bmx_SDL_UnionRect(const SDL_Rect * A, const SDL_Rect * B, SDL_Rect * result) {
+	SDL_UnionRect(A, B, result);
 }

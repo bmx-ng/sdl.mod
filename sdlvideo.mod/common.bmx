@@ -136,6 +136,8 @@ Extern
 	Function SDL_FlashWindow:Int(handle:Byte Ptr, operation:ESDLFlashOperation)
 	Function SDL_SetWindowAlwaysOnTop(handle:Byte Ptr, onTop:Int)
 	Function SDL_SetWindowKeyboardGrab(handle:Byte Ptr, grabbed:Int)
+	Function SDL_IsScreenKeyboardShown:Int(handle:Byte Ptr)
+	Function SDL_GetPointDisplayIndex:Int(point:SSDLPoint Var)
 
 	Function SDL_GetGrabbedWindow:Byte Ptr()
 	Function SDL_IsScreenSaverEnabled:Int()

@@ -70,6 +70,9 @@ Extern
 	Function SDL_StartTextInput()
 	Function SDL_StopTextInput()
 	Function SDL_IsTextInputActive:Int()
+	Function SDL_IsTextInputShown:Int()
+	Function SDL_ClearComposition()
+	Function SDL_HasScreenKeyboardSupport:Int()
 	
 	Function bmx_SDL_GetDisplayWidth:Int(display:Int)
 	Function bmx_SDL_GetDisplayHeight:Int(display:Int)
