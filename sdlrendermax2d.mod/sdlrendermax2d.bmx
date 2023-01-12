@@ -37,6 +37,7 @@ ModuleInfo "History: Initial release"
 Import BRL.Max2D
 Import SDL.SDLGraphics
 Import SDL.SDLRender
+Import BRL.Polygon
 
 Private
 
@@ -368,40 +369,39 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		renderer.Geometry(Null, vertices, vc, indices, ic)
 	End Method
 	
-	Method DrawPoly( xy#[],handle_x#,handle_y#,origin_x#,origin_y# ) Override
-		rem
+	Method DrawPoly( xy#[],handle_x#,handle_y#,origin_x#,origin_y#, indices:Int[] ) Override
+
 		If xy.length<6 Or (xy.length&1) Return
 		
-		DisableTex
-		glBegin GL_POLYGON
-		For Local i:Int=0 Until Len xy Step 2
-			Local x#=xy[i+0]+handle_x
-			Local y#=xy[i+1]+handle_y
-			glVertex2f x*ix+y*iy+origin_x,x*jx+y*jy+origin_y
+		If Not indices Then
+			indices = TriangulatePoly(xy)
+		End If
+		Local verts:Int = xy.Length / 2
+
+		Local v:Byte Ptr = StackAlloc(verts * SizeOf(SDLVertex))
+		Local vertPtr:SDLVertex Ptr = bmx_SDL_bptr_to_SDLVertexPtr(v)
+		Local vert:SDLVertex Ptr = vertPtr
+
+		For Local i:Int=0 Until verts
+			Local x:Float = xy[i * 2] + handle_x
+			Local y:Float = xy[i * 2 + 1] + handle_y
+
+			vert.position.x = x*ix+y*iy+origin_x
+			vert.position.y = x*jx+y*jy+origin_y
+			vert.color = _driver.drawColor
+
+			vert :+ 1
 		Next
-		glEnd
-		end rem
+
+		renderer.Geometry(Null, vertPtr, verts, indices, indices.Length)
 	End Method
 		
 	Method DrawPixmap( p:TPixmap,x:Int,y:Int ) Override
-		rem
-		Local blend:Int=state_blend
-		DisableTex
-		SetBlend SOLIDBLEND
-	
-		Local t:TPixmap=p
-		If t.format<>PF_RGBA8888 t=ConvertPixmap( t,PF_RGBA8888 )
 
-		glPixelZoom 1,-1
-		glRasterPos2i 0,0
-		glBitmap 0,0,0,0,x,-y,Null
-		glPixelStorei GL_UNPACK_ROW_LENGTH, t.pitch Shr 2
-		glDrawPixels t.width,t.height,GL_RGBA,GL_UNSIGNED_BYTE,t.pixels
-		glPixelStorei GL_UNPACK_ROW_LENGTH,0
-		glPixelZoom 1,1
-		
-		SetBlend blend
-		end rem
+		Local img:TImage = LoadImage(p, 0)
+
+		DrawImage(img, x, y)
+
 	End Method
 
 	Method DrawTexture( texture:TSDLTexture, u0#, v0#, u1#, v1#, x0#, y0#, x1#, y1#, tx#, ty#, img:TImageFrame = Null )

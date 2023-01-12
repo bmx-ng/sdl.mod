@@ -1341,7 +1341,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	End Method
 
-	Method DrawPoly( xy#[], handle_x#, handle_y#, origin_x#, origin_y# ) Override
+	Method DrawPoly( xy#[], handle_x#, handle_y#, origin_x#, origin_y#, indices:Int[] ) Override
 
 		If xy.length < 6 Or ( xy.length & 1 ) Then Return
 

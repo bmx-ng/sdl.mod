@@ -173,3 +173,6 @@ int bmx_SDL_UpdateYUVTexture(SDL_Texture * texture, Uint8 * yPlane, int yPitch, 
 	}
 }
 
+void * bmx_SDL_bptr_to_SDLVertexPtr(void * list) {
+	return list;
+}

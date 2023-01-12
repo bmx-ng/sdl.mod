@@ -123,6 +123,7 @@ Extern
 	Function bmx_SDL_UpdateTexture:Int(handle:Byte Ptr, pixels:Byte Ptr, pitch:Int, x:Int, y:Int, w:Int, h:Int)
 	Function bmx_SDL_UpdateYUVTexture:Int(handle:Byte Ptr, yPlane:Byte Ptr, yPitch:Int, uPlane:Byte Ptr, uPitch:Int, vPlane:Byte Ptr, vPitch:Int, x:Int, y:Int, w:Int, h:Int)
 
+	Function bmx_SDL_bptr_to_SDLVertexPtr:SDLVertex Ptr(b:Byte Ptr)
 End Extern
 
 
