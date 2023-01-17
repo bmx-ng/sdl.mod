@@ -43,6 +43,10 @@ Private
 
 Global _driver:TSDLRenderMax2DDriver
 Global _preferredRenderer:Int = -1
+Global _BackbufferRenderImageFrame:TSDLRenderImageFrame
+Global _CurrentRenderImageFrame:TSDLRenderImageFrame
+Global _ClipRect_BMaxViewport:Rect = New Rect
+
 
 Function Pow2Size:Int( n:Int )
 	Local t:Int = 1
@@ -62,7 +66,10 @@ Public
 
 Type TSDLRenderImageFrame Extends TImageFrame
 
+
 	Field u0:Float, v0:Float, u1:Float, v1:Float, uscale:Float, vscale:Float
+	Field width:Int
+	Field height:Int
 
 	Field pixmap:TPixmap
 	Field surface:TSDLSurface
@@ -100,23 +107,23 @@ Type TSDLRenderImageFrame Extends TImageFrame
 		Local tex_w:Int = src.width
 		Local tex_h:Int = src.height
 		
-		Local width:Int = Min( src.width, tex_w )
-		Local height:Int = Min( src.height, tex_h )
-		
 		If src.format <> PF_RGBA8888 And src.format <> PF_RGB888 Then
 			src = src.Convert( PF_RGBA8888 )
 		End If
 
 		'done!
 		Local frame:TSDLRenderImageFrame=New TSDLRenderImageFrame
+		frame.width = Min( src.width, tex_w )
+		frame.height = Min( src.height, tex_h )
+
 		frame.renderer = _driver.renderer
 		frame.pixmap = src
 		frame.surface = TSDLSurface.CreateRGBFrom(src.pixels, src.width, src.height, BitsPerPixel[src.format], src.pitch, $000000ff:UInt, $0000ff00:UInt, $00ff0000:UInt, $ff000000:UInt)
 		frame.texture = frame.renderer.CreateTextureFromSurface(frame.surface)
 		frame.uscale = 1.0 / tex_w
 		frame.vscale = 1.0 / tex_h
-		frame.u1 = width * frame.uscale
-		frame.v1 = height * frame.vscale
+		frame.u1 = frame.width * frame.uscale
+		frame.v1 = frame.height * frame.vscale
 		Return frame
 	End Function
 
@@ -160,11 +167,11 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		EndIf
 	
 		Local t:TMax2DGraphics=TMax2DGraphics(g)
-		Assert t And TSDLGraphics( t._graphics )
+		Assert t And TSDLGraphics( t._backendGraphics )
 
-		Local gfx:TSDLGraphics = TSDLGraphics( t._graphics )
+		Local gfx:TSDLGraphics = TSDLGraphics( t._backendGraphics )
 
-		SDLGraphicsDriver().SetGraphics gfx
+		SDLGraphicsDriver().SetGraphics( gfx )
 
 		Local flags:UInt
 		If gfx._context.flags & GRAPHICS_SWAPINTERVAL1 Then
@@ -172,6 +179,15 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		End If
 
 		renderer = TSDLRenderer.Create(gfx._context.window, _preferredRenderer, flags)
+
+		' Create default back buffer render image
+		Local BackBufferRenderImageFrame:TSDLRenderImageFrame = New TSDLRenderImageFrame
+		BackBufferRenderImageFrame.width = GraphicsWidth()
+		BackBufferRenderImageFrame.height = GraphicsHeight()
+	
+		' cache it
+		_BackBufferRenderImageFrame = BackBufferRenderImageFrame
+		_CurrentRenderImageFrame = _BackBufferRenderImageFrame
 		
 		t.MakeCurrent
 	End Method
@@ -185,9 +201,7 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 	End Method
 
 	Method CreateFrameFromPixmap:TSDLRenderImageFrame( pixmap:TPixmap,flags:Int ) Override
-		Local frame:TSDLRenderImageFrame
-		frame=TSDLRenderImageFrame.CreateFromPixmap( pixmap,flags )
-		Return frame
+		Return TSDLRenderImageFrame.CreateFromPixmap( pixmap,flags )
 	End Method
 
 	Method SetBlend( blend:Int ) Override
@@ -227,33 +241,23 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		renderer.SetDrawColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a)
 	End Method
 
-	Method SetColor( color:SColor8 ) Override
-		drawColor.r=color.r
-		drawColor.g=color.g
-		drawColor.b=color.b
-		renderer.SetDrawColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a)
-	End Method
-
-	Method SetClsColor( red:Int,green:Int,blue:Int ) Override
+	Method SetClsColor( red:Int,green:Int,blue:Int, alpha:Float) Override
 		clsColor.r = Min(Max(red,0),255)
 		clsColor.g = Min(Max(green,0),255)
 		clsColor.b = Min(Max(blue,0),255)
-		clsColor.a = 255
+		clsColor.a = alpha
 	End Method
 
-	Method SetClsColor( color:SColor8 ) Override
-		clsColor.r=color.r
-		clsColor.g=color.g
-		clsColor.b=color.b
-		clsColor.a = 255
-	End Method
-	
 	Method SetViewport( x:Int,y:Int,w:Int,h:Int ) Override
 		If x=0 And y=0 And w=GraphicsWidth() And h=GraphicsHeight()
 			renderer.SetClipRect()
 		Else
 			renderer.SetClipRect(x, y, w, h)
 		EndIf
+		_ClipRect_BMaxViewport.x = x
+		_ClipRect_BMaxViewport.y = y
+		_ClipRect_BMaxViewport.width = w
+		_ClipRect_BMaxViewport.height = h
 	End Method
 
 	Method SetTransform( xx:Float,xy:Float,yx:Float,yy:Float ) Override
@@ -479,7 +483,53 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 	Method SetResolution( width:Float,height:Float ) Override
 		renderer.SetLogicalSize(Int(width), Int(height))
 	End Method
+
+	Method CreateRenderImageFrame:TImageFrame(width:UInt, height:UInt, flags:Int) Override
+		Local frame:TSDLRenderImageFrame = New TSDLRenderImageFrame
+		frame.renderer = _driver.renderer
+'Ronny: TODO - still needed?
+		frame.pixmap = CreatePixmap( width, height, PF_RGBA8888 )
+
+		frame.surface = TSDLSurface.CreateRGB(width, height, 4, $000000ff:UInt, $0000ff00:UInt, $00ff0000:UInt, $ff000000:UInt)
+		frame.texture = frame.renderer.CreateTexture(SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height)
+
+		frame.uscale = 1.0 / width
+		frame.vscale = 1.0 / height
+		frame.u1 = width * frame.uscale
+		frame.v1 = height * frame.vscale
+		Return frame
+	EndMethod
 	
+	Method SetRenderImageFrame(RenderImageFrame:TImageFrame) Override
+		If RenderImageFrame = _CurrentRenderImageFrame
+			Return
+		EndIf
+		If not TSDLRenderImageFrame(RenderImageFrame) Then Return
+		
+		renderer.SetTarget(TSDLRenderImageFrame(RenderImageFrame).texture)
+		_CurrentRenderImageFrame = TSDLRenderImageFrame(RenderImageFrame)
+		
+		Local vp:Rect = _ClipRect_BMaxViewport
+		renderer.SetClipRect(vp.x, vp.y, vp.width, vp.height)
+		SetMatrixAndViewportToCurrentRenderImage()
+	EndMethod
+	
+	Method SetBackbuffer()
+		SetRenderImageFrame(_BackBufferRenderImageFrame)
+	EndMethod
+	
+
+	Method SetMatrixAndViewportToCurrentRenderImage()
+'Ronny: TODO - still needed?
+rem
+		glMatrixMode(GL_PROJECTION)
+		glLoadIdentity()
+		glOrtho(0, _CurrentRenderImageFrame.width, _CurrentRenderImageFrame.height, 0, -1, 1)
+		glMatrixMode(GL_MODELVIEW)
+		glLoadIdentity()
+		glViewport(0, 0, _CurrentRenderImageFrame.width, _CurrentRenderImageFrame.height)
+endrem
+	EndMethod
 End Type
 
 Rem

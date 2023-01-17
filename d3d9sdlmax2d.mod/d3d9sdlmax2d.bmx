@@ -398,7 +398,7 @@ Type TD3D9RenderImageFrame Extends TD3D9ImageFrame
 	Method Clear(d3ddev:IDirect3DDevice9, r:Int=0, g:Int=0, b:Int=0, a:Float=0.0)
 		If Not d3ddev Return
 
-		Local c:Int = (int(a*255) Shl 24) | (r Shl 16) | (g Shl 8) | b
+		Local c:Int = (Int(a*255) Shl 24) | (r Shl 16) | (g Shl 8) | b
 		d3ddev.Clear(0, Null, D3DCLEAR_TARGET, c, 0.0, 0)
 	End Method
 	
