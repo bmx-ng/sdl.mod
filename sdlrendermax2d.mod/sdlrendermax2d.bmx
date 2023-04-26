@@ -582,3 +582,16 @@ Function SDLPrioritizeRenderer( renderer:String, priority:ESDLHintPriority = ESD
 		End If
 	Next
 End Function
+
+
+Function SDLGetRendererNames:String[]()
+	Local result:String[] = New String[ SDLGetNumRenderDrivers() ]
+
+	For Local i:int = 0 Until SDLGetNumRenderDrivers()
+		Local info:SDLRendererInfo
+		SDLGetRenderDriverInfo(i, info)
+
+		result[i] = info.GetName()
+	Next
+	Return result
+End Function
