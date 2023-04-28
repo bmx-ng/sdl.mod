@@ -859,34 +859,25 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	'graphics driver overrides
 	Method GraphicsModes:TGraphicsMode[]() Override
-
 		Return SDLGraphicsDriver().GraphicsModes()
-
 	End Method
 
 	Method AttachGraphics:TMax2DGraphics( widget:Byte Ptr, flags:Long ) Override
-
 		Local g:TSDLGraphics = SDLGraphicsDriver().AttachGraphics( widget, flags )
 
 		If g Then Return TMax2DGraphics.Create( g, Self )
-
 	End Method
 	
 	Method CreateGraphics:TMax2DGraphics( width:Int, height:Int, depth:Int, hertz:Int, flags:Long, x:Int, y:Int ) Override
-
 		Local g:TSDLGraphics = SDLGraphicsDriver().CreateGraphics( width, height, depth, hertz, flags | SDL_GRAPHICS_GL, x, y )
 		
 		If g Then Return TMax2DGraphics.Create( g, Self )
-
 	End Method
 
 	Method SetGraphics( g:TGraphics ) Override
-
 		If Not g
-			TMax2DGraphics.ClearCurrent
-
-			SDLGraphicsDriver().SetGraphics Null
-			
+			TMax2DGraphics.ClearCurrent()
+			SDLGraphicsDriver().SetGraphics(Null)
 			inited = Null
 
 			Return
@@ -900,8 +891,8 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		SDLGraphicsDriver().SetGraphics(t._backendGraphics)
 
 		ResetGLContext(t)
-		t.MakeCurrent()
 
+		t.MakeCurrent()
 	End Method
 	
 	Method ResetGLContext( g:TGraphics )
@@ -937,34 +928,26 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		' cache it
 		_BackBufferRenderImageFrame = BackBufferRenderImageFrame
 		_CurrentRenderImageFrame = _BackBufferRenderImageFrame
-
 	End Method
 	
 	Method Flip:Int( sync:Int ) Override
-
 		Flush()
 
-		SDLGraphicsDriver().Flip sync
+		SDLGraphicsDriver().Flip(sync)
 ?ios
 		glViewport(0, 0, GraphicsWidth(), GraphicsHeight())
 ?
 	End Method
 
 	Method ToString:String() Override
-
 		Return "OpenGL"
-
 	End Method
-	
+
 	Method CreateFrameFromPixmap:TGLImageFrame( pixmap:TPixmap, flags:Int ) Override
-		Local frame:TGLImageFrame
-		frame = TGLImageFrame.CreateFromPixmap( pixmap, flags )
-		Return frame
-
+		Return TGLImageFrame.CreateFromPixmap( pixmap, flags )
 	End Method
-	
-	Method SetBlend( blend:Int ) Override
 
+	Method SetBlend( blend:Int ) Override
 		If state_blend = blend Return
 
 		?opengles
@@ -973,7 +956,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		End If
 		?
 
-		state_blend=blend
+		state_blend = blend
 
 		Select blend
 		Case MASKBLEND
@@ -1015,21 +998,16 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 			glDisable( GL_ALPHA_TEST )
 			?
 		End Select
-
 	End Method
 
 	Method SetAlpha( alpha:Float ) Override
-
 		If alpha > 1.0 Then alpha = 1.0
 		If alpha < 0.0 Then alpha = 0.0
 		color4f[3] = alpha
-
 	End Method
 
 	Method SetLineWidth( width:Float ) Override
-
 		glLineWidth( width )
-
 	End Method
 
 	Method SetColor( red:Int, green:Int, blue:Int ) Override
@@ -1058,12 +1036,10 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 	End Method
 
 	Method SetTransform( xx:Float, xy:Float, yx:Float, yy:Float ) Override
-
 		ix = xx
 		iy = xy
 		jx = yx
 		jy = yy
-
 	End Method
 
 	Method Cls() Override
@@ -1072,17 +1048,15 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		FlushTest( PRIMITIVE_CLS )
 
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT )
-
 	End Method
 
-	Method Plot( px:Float, py:Float ) Override
-
+	Method Plot( x:Float, y:Float ) Override
 		FlushTest( PRIMITIVE_DOT )
 
 		Local in:Int = vert_index * 2
 
-		vert_array[in + 0] = px
-		vert_array[in + 1] = py
+		vert_array[in + 0] = x
+		vert_array[in + 1] = y
 
 		in = vert_index * 4
 
@@ -1096,7 +1070,6 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 	End Method
 
 	Method DrawLine( x0:Float, y0:Float, x1:Float, y1:Float, tx:Float, ty:Float ) Override
-
 		FlushTest( PRIMITIVE_LINE )
 
 		Local in:Int = vert_index * 2
@@ -1120,11 +1093,9 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		col_array[in + 7] = color4f[3] 'alpha
 
 		vert_index :+ 2
-
 	End Method
 
 	Method DrawRect( x0:Float, y0:Float, x1:Float, y1:Float, tx:Float, ty:Float ) Override
-
 		FlushTest( PRIMITIVE_PLAIN_TRIANGLE )
 
 		Local in:Int = vert_index * 2
@@ -1162,11 +1133,9 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 		vert_index :+ 4
 		quad_index :+ 1
-
 	End Method
 
 	Method DrawOval( x0:Float, y0:Float, x1:Float, y1:Float, tx:Float, ty:Float ) Override
-
 		' TRIANGLE_FAN (no batching)
 		FlushTest( PRIMITIVE_TRIANGLE_FAN )
 
@@ -1213,11 +1182,9 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		Next
 
 		vert_index :+ segs + 2
-
 	End Method
 
 	Method DrawPoly( xy:Float[], handle_x:Float, handle_y:Float, origin_x:Float, origin_y:Float, indices:Int[] ) Override
-
 		If xy.length < 6 Or ( xy.length & 1 ) Then Return
 
 		' TRIANGLE_FAN (no batching)
@@ -1246,7 +1213,6 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 	End Method
 
 	Method DrawPixmap( p:TPixmap, x:Int, y:Int ) Override
-
 		Local blend:Int = state_blend
 		SetBlend( SOLIDBLEND )
 
@@ -1254,14 +1220,12 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		If t.format <> PF_RGBA8888 Then t = ConvertPixmap( t, PF_RGBA8888 )
 
 		Local img:TImage = LoadImage(t)
-		DrawImage img, x, y
+		DrawImage( img, x, y )
 
 		SetBlend( blend )
-
 	End Method
 
 	Method DrawTexture( name:Int, u0:Float, v0:Float, u1:Float, v1:Float, x0:Float, y0:Float, x1:Float, y1:Float, tx:Float, ty:Float, img:TImageFrame = Null )
-
 		FlushTest( PRIMITIVE_TEXTURED_TRIANGLE, name )
 
 		Local in:Int = vert_index * 2
@@ -1312,31 +1276,32 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		If img Then
 			imgCache.AddLast(img)
 		End If
-
 	End Method
 
 	Method GrabPixmap:TPixmap( x:Int, y:Int, w:Int, h:Int ) Override
-
 		Local blend:Int = state_blend
 		SetBlend( SOLIDBLEND )
 		Local p:TPixmap = CreatePixmap( w, h, PF_RGBA8888 )
+
+		'The default backbuffer in Max2D was opaque so overwrote any
+		'trash data of a freshly created pixmap. Potentially transparent
+		'backbuffers require a complete transparent pixmap to start with.
+		p.ClearPixels(0)
+
 		' flush everything to ensure there's something to read
 		Flush()
-		glReadPixels( x, GraphicsHeight() - h - y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, p.pixels )
+		If _CurrentRenderImageFrame and _CurrentRenderImageFrame <> _BackbufferRenderImageFrame
+			glReadPixels(x, _CurrentRenderImageFrame.height - h - y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, p.pixels)
+		Else
+			glReadPixels(x, _BackbufferRenderImageFrame.height - h - y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, p.pixels)
+		EndIf
 		p = YFlipPixmap( p )
 		SetBlend( blend )
 		Return p
-
 	End Method
 
 	Method SetResolution( width:Float, height:Float ) Override
-
 		u_pmatrix.SetOrthographic( 0, width, 0, height, -1, 1 )
-		'glMatrixMode( GL_PROJECTION )
-		'glLoadIdentity()
-		'glOrtho( 0, width, height, 0, -1, 1 )
-		'glMatrixMode( GL_MODELVIEW )
-
 	End Method
 
 	Method Init()
@@ -1576,18 +1541,12 @@ Private
 
 	Method SetMatrixAndViewportToCurrentRenderImage()
 		u_pmatrix.SetOrthographic( 0, _CurrentRenderImageFrame.width, 0, _CurrentRenderImageFrame.height, -1, 1 )
-		
-		'glMatrixMode(GL_PROJECTION)
-		'glLoadIdentity()
-		'glOrtho(0, _CurrentRenderImageFrame.width, _CurrentRenderImageFrame.height, 0, -1, 1)
-		'glMatrixMode(GL_MODELVIEW)
-		'glLoadIdentity()
 		glViewport(0, 0, _CurrentRenderImageFrame.width, _CurrentRenderImageFrame.height)
 	EndMethod
 
 	Method SetScissor(x:Int, y:Int, w:Int, h:Int)
 		Local ri:TImageFrame = _CurrentRenderImageFrame
-		If x =0  And y = 0 And w = _CurrentRenderImageFrame.width And h = _CurrentRenderImageFrame.height
+		If x = 0  And y = 0 And w = _CurrentRenderImageFrame.width And h = _CurrentRenderImageFrame.height
 			glDisable(GL_SCISSOR_TEST)
 		Else
 			glEnable(GL_SCISSOR_TEST)
