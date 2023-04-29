@@ -943,6 +943,10 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		Return "OpenGL"
 	End Method
 
+	Method ApiIdentifier:String() Override
+		Return "SDL.OpenGL (GL2SDL)"
+	End Method
+
 	Method CreateFrameFromPixmap:TGLImageFrame( pixmap:TPixmap, flags:Int ) Override
 		Return TGLImageFrame.CreateFromPixmap( pixmap, flags )
 	End Method

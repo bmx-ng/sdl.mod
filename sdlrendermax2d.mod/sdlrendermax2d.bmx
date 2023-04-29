@@ -200,6 +200,14 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		Return "SDLRenderer"
 	End Method
 
+	Method ApiIdentifier:String() Override
+		If renderer
+			Return "SDL." + renderer.GetInfo().GetName() + " (SDLRender)"
+		Else
+			Return "SDL.undefined (SDLRender)"
+		EndIf
+	End Method
+
 	Method CreateFrameFromPixmap:TSDLRenderImageFrame( pixmap:TPixmap,flags:Int ) Override
 		Return TSDLRenderImageFrame.CreateFromPixmap( pixmap,flags )
 	End Method
@@ -584,6 +592,10 @@ Function SDLPrioritizeRenderer( renderer:String, priority:ESDLHintPriority = ESD
 End Function
 
 
+Rem
+bbdoc: Get a list of available renderer drivers.
+about: Available renderers vary by platform.
+End Rem
 Function SDLGetRendererNames:String[]()
 	Local result:String[] = New String[ SDLGetNumRenderDrivers() ]
 
