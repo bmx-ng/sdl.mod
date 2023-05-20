@@ -37,7 +37,7 @@ ModuleInfo "History: Initial release"
 Import BRL.Max2D
 Import SDL.SDLGraphics
 Import SDL.SDLRender
-Import BRL.Polygon
+Import Math.Polygon
 
 Private
 
