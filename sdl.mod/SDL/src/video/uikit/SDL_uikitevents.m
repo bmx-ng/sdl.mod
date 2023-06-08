@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -108,8 +108,7 @@ static BOOL UIKit_EventPumpEnabled = YES;
 @end
 
 
-void
-SDL_iPhoneSetEventPump(SDL_bool enabled)
+void SDL_iPhoneSetEventPump(SDL_bool enabled)
 {
     UIKit_EventPumpEnabled = enabled;
 
@@ -121,8 +120,7 @@ SDL_iPhoneSetEventPump(SDL_bool enabled)
     [lifecycleObserver eventPumpChanged];
 }
 
-void
-UIKit_PumpEvents(_THIS)
+void UIKit_PumpEvents(_THIS)
 {
     if (!UIKit_EventPumpEnabled) {
         return;
@@ -313,6 +311,11 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
         if (SDL_GCMouseRelativeMode()) {
             SDL_SendMouseMotion(SDL_GetMouseFocus(), mouseID, 1, (int)deltaX, -(int)deltaY);
         }
+    };
+
+    mouse.mouseInput.scroll.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue)
+    {
+        SDL_SendMouseWheel(SDL_GetMouseFocus(), 0, xValue, yValue, SDL_MOUSEWHEEL_NORMAL);
     };
 
     dispatch_queue_t queue = dispatch_queue_create( "org.libsdl.input.mouse", DISPATCH_QUEUE_SERIAL );

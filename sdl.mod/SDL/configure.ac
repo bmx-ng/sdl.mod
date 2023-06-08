@@ -12,7 +12,7 @@ orig_CFLAGS="$CFLAGS"
 dnl Set various version strings - taken gratefully from the GTk sources
 # See docs/release_checklist.md
 SDL_MAJOR_VERSION=2
-SDL_MINOR_VERSION=25
+SDL_MINOR_VERSION=27
 SDL_MICRO_VERSION=0
 SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
 
@@ -62,6 +62,7 @@ AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_EGREP
+AC_PROG_FGREP
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 PKG_PROG_PKG_CONFIG
@@ -180,8 +181,8 @@ base_libdir=`echo \${libdir} | sed 's/.*\/\(.*\)/\1/; q'`
 dnl Function to find a library in the compiler search path
 find_lib()
 {
-    gcc_bin_path=[`$CC -print-search-dirs 2>/dev/null | fgrep programs: | sed 's/[^=]*=\(.*\)/\1/' | sed 's/:/ /g'`]
-    gcc_lib_path=[`$CC -print-search-dirs 2>/dev/null | fgrep libraries: | sed 's/[^=]*=\(.*\)/\1/' | sed 's/:/ /g'`]
+    gcc_bin_path=[`$CC -print-search-dirs 2>/dev/null | $FGREP programs: | sed 's/[^=]*=\(.*\)/\1/' | sed 's/:/ /g'`]
+    gcc_lib_path=[`$CC -print-search-dirs 2>/dev/null | $FGREP libraries: | sed 's/[^=]*=\(.*\)/\1/' | sed 's/:/ /g'`]
     env_lib_path=[`echo $LIBS $LDFLAGS $* | sed 's/-L[ ]*//g'`]
     if test "$cross_compiling" = yes; then
         host_lib_path=""
@@ -329,7 +330,7 @@ if test x$enable_libc = xyes; then
 dnl Check for C library headers
 dnl AC_CHECK_INCLUDES_DEFAULT is an autoconf-2.7x thing where AC_HEADER_STDC is deprecated.
     m4_ifdef([AC_CHECK_INCLUDES_DEFAULT], [AC_CHECK_INCLUDES_DEFAULT], [AC_HEADER_STDC])
-    AC_CHECK_HEADERS(sys/types.h stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h strings.h wchar.h inttypes.h stdint.h limits.h ctype.h math.h float.h iconv.h signal.h)
+    AC_CHECK_HEADERS(sys/types.h stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h strings.h wchar.h inttypes.h stdint.h limits.h ctype.h math.h float.h iconv.h signal.h linux/input.h)
 
 dnl Check for typedefs, structures, etc.
     AC_TYPE_SIZE_T
@@ -348,7 +349,7 @@ dnl Checks for library functions.
         AC_DEFINE(HAVE_MPROTECT, 1, [ ])
         ],[]),
     )
-    AC_CHECK_FUNCS(malloc calloc realloc free getenv setenv putenv unsetenv bsearch qsort abs bcopy memset memcmp memcpy memmove wcslen wcslcpy wcslcat _wcsdup wcsdup wcsstr wcscmp wcsncmp wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp strlen strlcpy strlcat _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtod strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval elf_aux_info poll _Exit)
+    AC_CHECK_FUNCS(malloc calloc realloc free getenv setenv putenv unsetenv bsearch qsort abs bcopy memset memcmp memcpy memmove wcslen wcslcpy wcslcat _wcsdup wcsdup wcsstr wcscmp wcsncmp wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp strlen strlcpy strlcat _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtod strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp strcasestr vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval elf_aux_info poll _Exit)
 
     AC_CHECK_LIB(m, pow, [LIBS="$LIBS -lm"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm"])
     AC_CHECK_FUNCS(acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf copysign copysignf cos cosf exp expf fabs fabsf floor floorf trunc truncf fmod fmodf log logf log10 log10f lround lroundf pow powf round roundf scalbn scalbnf sin sinf sqrt sqrtf tan tanf)
@@ -927,16 +928,8 @@ CheckOSS()
     AC_ARG_ENABLE(oss,
 [AS_HELP_STRING([--enable-oss], [support the OSS audio API [default=maybe]])],
                   , enable_oss=maybe)
-
-    # OpenBSD "has" OSS, but it's not really for app use. They want you to
-    #  use sndio instead. So on there, we default to disabled. You can force
-    #  it on if you really want, though.
     if test x$enable_oss = xmaybe; then
         enable_oss=yes
-        case "$host" in
-            *-*-openbsd*)
-                enable_oss=no;;
-        esac
     fi
 
     if test x$enable_audio = xyes -a x$enable_oss = xyes; then
@@ -949,16 +942,6 @@ CheckOSS()
               int arg = SNDCTL_DSP_SETFRAGMENT;
             ]])], [have_oss=yes],[])
         fi
-        if test x$have_oss != xyes; then
-            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-              #include <soundcard.h>
-            ]], [[
-              int arg = SNDCTL_DSP_SETFRAGMENT;
-            ]])], [
-            have_oss=yes
-            AC_DEFINE(SDL_AUDIO_DRIVER_OSS_SOUNDCARD_H, 1, [ ])
-            ],[])
-        fi
         AC_MSG_RESULT($have_oss)
         if test x$have_oss = xyes; then
             SUMMARY_audio="${SUMMARY_audio} oss"
@@ -968,7 +951,7 @@ CheckOSS()
 
             # We may need to link with ossaudio emulation library
             case "$host" in
-                *-*-openbsd*|*-*-netbsd*)
+                *-*-netbsd*)
                     EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lossaudio";;
             esac
         fi
@@ -1691,6 +1674,27 @@ dnl Haiku headers use multicharacter constants all over the place. Ignore these 
     fi
 }
 
+dnl See if GCC's -Wunused-local-typedefs is supported and disable it
+dnl  because it triggers on gcc 4.8.4 for compile time asserts inside
+dnl  of functions.
+CheckUnusedLocalTypedefs()
+{
+    AC_MSG_CHECKING(for GCC -Wunused-local-typedefs option)
+    have_gcc_unused_local_typedefs=no
+
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$save_CFLAGS -Wunused-local-typedefs"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    int x = 0;
+    ]],[])], [have_gcc_unused_local_typedefs=yes],[])
+    AC_MSG_RESULT($have_gcc_unused_local_typedefs)
+    CFLAGS="$save_CFLAGS"
+
+    if test x$have_gcc_unused_local_typedefs = xyes; then
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -Wno-unused-local-typedefs"
+    fi
+}
+
 dnl Check for Wayland
 CheckWayland()
 {
@@ -1804,6 +1808,14 @@ dnl See if libdecor is available
                     else
                         EXTRA_LDFLAGS="$EXTRA_LDFLAGS $DECOR_LIBS"
                     fi
+
+                    saved_cflags=$CFLAGS
+                    CFLAGS="$CFLAGS $DECOR_CFLAGS"
+                    AC_CHECK_DECLS([libdecor_frame_get_min_content_size, libdecor_frame_get_max_content_size], [libdecor_get_min_max=yes], [ ], [[#include <libdecor.h>]])
+                    if test x$libdecor_get_min_max = xyes; then
+                        AC_DEFINE(SDL_HAVE_LIBDECOR_GET_MIN_MAX, 1, [ ])
+                    fi
+                    CFLAGS="$saved_cflags"
                 fi
             fi
         fi
@@ -3081,7 +3093,7 @@ dnl This is used on Linux for glibc binary compatibility (Doh!)
             ;;
         *-*-openbsd*)
             pthread_cflags="-D_REENTRANT"
-            pthread_lib="-pthread"
+            pthread_lib="-lpthread"
             ;;
         *-*-solaris2.9)
             # From Solaris 9+, posix4's preferred name is rt.
@@ -3690,15 +3702,14 @@ CheckClockGettime()
 [AS_HELP_STRING([--enable-clock_gettime], [use clock_gettime() instead of gettimeofday() on UNIX [default=yes]])],
                   , enable_clock_gettime=yes)
     if test x$enable_clock_gettime = xyes; then
-        AC_CHECK_LIB(rt, clock_gettime, have_clock_gettime=yes)
+        AC_CHECK_LIB(c, clock_gettime, have_clock_gettime=yes)
         if test x$have_clock_gettime = xyes; then
-            AC_DEFINE(HAVE_CLOCK_GETTIME, 1, [ ])
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lrt"
+           AC_DEFINE(HAVE_CLOCK_GETTIME, 1, [ ])
         else
-            AC_CHECK_LIB(c, clock_gettime, have_clock_gettime=yes)
+            AC_CHECK_LIB(rt, clock_gettime, have_clock_gettime=yes)
             if test x$have_clock_gettime = xyes; then
-               AC_DEFINE(HAVE_CLOCK_GETTIME, 1, [ ])
-               EXTRA_LDFLAGS="$EXTRA_LDFLAGS"
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lrt"
+                AC_DEFINE(HAVE_CLOCK_GETTIME, 1, [ ])
             fi
         fi
     fi
@@ -3756,6 +3767,7 @@ CheckVirtualJoystick()
 
 dnl Do this on all platforms, before everything else (other things might want to override it).
 CheckWarnAll
+CheckUnusedLocalTypedefs
 CheckNoStrictAliasing
 
 dnl Do this for every platform, but for some it doesn't mean anything, but better to catch it here anyhow.
@@ -3918,13 +3930,15 @@ case "$host" in
         if test x$enable_joystick = xyes; then
           case $ARCH in
             linux)
-                AC_DEFINE(SDL_JOYSTICK_LINUX, 1, [ ])
-                SOURCES="$SOURCES $srcdir/src/joystick/linux/*.c"
-                SOURCES="$SOURCES $srcdir/src/joystick/steam/*.c"
-                have_joystick=yes
+                if test "x$ac_cv_header_linux_input_h" = xyes; then
+                    AC_DEFINE(SDL_JOYSTICK_LINUX, 1, [ ])
+                    SOURCES="$SOURCES $srcdir/src/joystick/linux/*.c"
+                    SOURCES="$SOURCES $srcdir/src/joystick/steam/*.c"
+                    have_joystick=yes
+                fi
             ;;
             freebsd)
-                if test x$use_input_events = xyes; then
+                if test x$use_input_events = xyes -a x$ac_cv_header_linux_input_h = xyes; then
                     AC_DEFINE(SDL_JOYSTICK_LINUX, 1, [ ])
                     SOURCES="$SOURCES $srcdir/src/joystick/linux/*.c"
                     SOURCES="$SOURCES $srcdir/src/joystick/steam/*.c"
@@ -4702,6 +4716,12 @@ else
 fi
 AC_SUBST([INSTALL_SDL2_CONFIG], [$enable_sdl2_config])
 
+AC_ARG_ENABLE([vendor-info],
+    [AS_HELP_STRING([--enable-vendor-info=STRING], [Add vendor info to SDL_REVISION])],
+    [enable_vendor_info="$enableval"], [enable_vendor_info=])
+AS_IF([test "$enable_vendor_info" = no], [enable_vendor_info=])
+AC_SUBST([SDL_VENDOR_INFO], [$enable_vendor_info])
+
 # Verify that we have all the platform specific files we need
 
 if test x$have_audio != xyes; then
@@ -4870,6 +4890,8 @@ AC_SUBST(SDL_CFLAGS)
 AC_SUBST(SDL_LIBS)
 AC_SUBST(SDL_STATIC_LIBS)
 AC_SUBST(SDL_RLD_FLAGS)
+PKGCONFIG_DEPENDS=""
+AC_SUBST(PKGCONFIG_DEPENDS)
 if test x$enable_shared = xyes; then
     PKGCONFIG_LIBS_PRIV="
 Libs.private:"
