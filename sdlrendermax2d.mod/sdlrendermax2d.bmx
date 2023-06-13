@@ -213,6 +213,7 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		If alpha>1.0 alpha=1.0
 		If alpha<0.0 alpha=0.0
 		drawColor.a=alpha*255
+		renderer.SetDrawColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a)
 	End Method
 
 	Method SetLineWidth( width# ) Override
