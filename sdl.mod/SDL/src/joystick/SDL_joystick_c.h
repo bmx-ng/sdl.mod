@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,8 +45,11 @@ extern SDL_bool SDL_JoysticksInitialized(void);
 /* Return whether the joystick system is shutting down */
 extern SDL_bool SDL_JoysticksQuitting(void);
 
+/* Return whether the joysticks are currently locked */
+extern SDL_bool SDL_JoysticksLocked(void);
+
 /* Make sure we currently have the joysticks locked */
-extern void SDL_AssertJoysticksLocked(void);
+extern void SDL_AssertJoysticksLocked(void) SDL_ASSERT_CAPABILITY(SDL_joystick_lock);
 
 /* Function to get the next available joystick instance ID */
 extern SDL_JoystickID SDL_GetNextJoystickInstanceID(void);
@@ -104,6 +107,7 @@ extern SDL_bool SDL_IsJoystickPS4(Uint16 vendor_id, Uint16 product_id);
 
 /* Function to return whether a joystick is a PS5 controller */
 extern SDL_bool SDL_IsJoystickPS5(Uint16 vendor_id, Uint16 product_id);
+extern SDL_bool SDL_IsJoystickDualSenseEdge(Uint16 vendor_id, Uint16 product_id);
 
 /* Function to return whether a joystick is a Nintendo Switch Pro controller */
 extern SDL_bool SDL_IsJoystickNintendoSwitchPro(Uint16 vendor_id, Uint16 product_id);
@@ -149,6 +153,7 @@ extern void SDL_PrivateJoystickAddTouchpad(SDL_Joystick *joystick, int nfingers)
 extern void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType type, float rate);
 extern void SDL_PrivateJoystickAdded(SDL_JoystickID device_instance);
 extern void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance);
+extern void SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick);
 extern int SDL_PrivateJoystickAxis(SDL_Joystick *joystick,
                                    Uint8 axis, Sint16 value);
 extern int SDL_PrivateJoystickBall(SDL_Joystick *joystick,

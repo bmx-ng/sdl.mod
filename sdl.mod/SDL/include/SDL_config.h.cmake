@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -72,6 +72,7 @@
 #cmakedefine HAVE_STRING_H 1
 #cmakedefine HAVE_SYS_TYPES_H 1
 #cmakedefine HAVE_WCHAR_H 1
+#cmakedefine HAVE_LINUX_INPUT_H 1
 #cmakedefine HAVE_PTHREAD_NP_H 1
 #cmakedefine HAVE_LIBUNWIND_H 1
 
@@ -139,6 +140,7 @@
 #cmakedefine HAVE_STRCASECMP 1
 #cmakedefine HAVE__STRNICMP 1
 #cmakedefine HAVE_STRNCASECMP 1
+#cmakedefine HAVE_STRCASESTR 1
 #cmakedefine HAVE_SSCANF 1
 #cmakedefine HAVE_VSSCANF 1
 #cmakedefine HAVE_VSNPRINTF 1
@@ -309,7 +311,6 @@
 #cmakedefine SDL_AUDIO_DRIVER_NAS_DYNAMIC @SDL_AUDIO_DRIVER_NAS_DYNAMIC@
 #cmakedefine SDL_AUDIO_DRIVER_NETBSD @SDL_AUDIO_DRIVER_NETBSD@
 #cmakedefine SDL_AUDIO_DRIVER_OSS @SDL_AUDIO_DRIVER_OSS@
-#cmakedefine SDL_AUDIO_DRIVER_OSS_SOUNDCARD_H @SDL_AUDIO_DRIVER_OSS_SOUNDCARD_H@
 #cmakedefine SDL_AUDIO_DRIVER_PAUDIO @SDL_AUDIO_DRIVER_PAUDIO@
 #cmakedefine SDL_AUDIO_DRIVER_PIPEWIRE @SDL_AUDIO_DRIVER_PIPEWIRE@
 #cmakedefine SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC @SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC@
@@ -331,6 +332,7 @@
 #cmakedefine SDL_INPUT_LINUXEV @SDL_INPUT_LINUXEV@
 #cmakedefine SDL_INPUT_LINUXKD @SDL_INPUT_LINUXKD@
 #cmakedefine SDL_INPUT_FBSDKBIO @SDL_INPUT_FBSDKBIO@
+#cmakedefine SDL_INPUT_WSCONS @SDL_INPUT_WSCONS@
 #cmakedefine SDL_JOYSTICK_ANDROID @SDL_JOYSTICK_ANDROID@
 #cmakedefine SDL_JOYSTICK_HAIKU @SDL_JOYSTICK_HAIKU@
 #cmakedefine SDL_JOYSTICK_WGI @SDL_JOYSTICK_WGI@
@@ -358,6 +360,7 @@
 #cmakedefine SDL_HAPTIC_XINPUT @SDL_HAPTIC_XINPUT@
 #cmakedefine SDL_HAPTIC_ANDROID @SDL_HAPTIC_ANDROID@
 #cmakedefine SDL_LIBUSB_DYNAMIC @SDL_LIBUSB_DYNAMIC@
+#cmakedefine SDL_UDEV_DYNAMIC @SDL_UDEV_DYNAMIC@
 
 /* Enable various sensor drivers */
 #cmakedefine SDL_SENSOR_ANDROID @SDL_SENSOR_ANDROID@
@@ -538,7 +541,9 @@
 #cmakedefine SDL_VIDEO_VITA_PVR @SDL_VIDEO_VITA_PVR@
 #cmakedefine SDL_VIDEO_VITA_PVR_OGL @SDL_VIDEO_VITA_PVR_OGL@
 
-#if !defined(_STDINT_H_) && (!defined(HAVE_STDINT_H) || !_HAVE_STDINT_H)
+#cmakedefine SDL_HAVE_LIBDECOR_GET_MIN_MAX @SDL_HAVE_LIBDECOR_GET_MIN_MAX@
+
+#if !defined(HAVE_STDINT_H) && !defined(_STDINT_H_)
 /* Most everything except Visual Studio 2008 and earlier has stdint.h now */
 #if defined(_MSC_VER) && (_MSC_VER < 1600)
 typedef signed __int8 int8_t;

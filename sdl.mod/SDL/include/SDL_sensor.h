@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -84,7 +84,7 @@ typedef enum
  * The accelerometer returns the current acceleration in SI meters per
  * second squared. This measurement includes the force of gravity, so
  * a device at rest will have an value of SDL_STANDARD_GRAVITY away
- * from the center of the earth.
+ * from the center of the earth, which is a positive Y value.
  *
  * values[0]: Acceleration on the x axis
  * values[1]: Acceleration on the y axis
@@ -282,7 +282,7 @@ extern DECLSPEC int SDLCALL SDL_SensorGetData(SDL_Sensor *sensor, float *data, i
  * \param num_values The number of values to write to data
  * \returns 0 or -1 if an error occurred.
  *
- * \since This function is available since SDL 2.26.1.
+ * \since This function is available since SDL 2.26.0.
  */
 extern DECLSPEC int SDLCALL SDL_SensorGetDataWithTimestamp(SDL_Sensor *sensor, Uint64 *timestamp, float *data, int num_values);
 
