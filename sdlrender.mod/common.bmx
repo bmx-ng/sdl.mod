@@ -21,6 +21,7 @@
 '
 SuperStrict
 
+Import SDL.SDLVideo
 
 ?win32x86
 Import "../../sdl.mod/sdl.mod/include/win32x86/*.h"
@@ -96,6 +97,7 @@ Extern
 	Function SDL_RenderWindowToLogical(handle:Byte Ptr, windowX:Int, windowY:Int, logicalX:Float Var, logicalY:Float Var)
 	Function SDL_RenderLogicalToWindow(handle:Byte Ptr, logicalX:Float, logicalY:Float, windowX:Int Var, windowY:Int Var)
 	Function SDL_RenderSetVSync:Int(handle:Byte Ptr, vsync:Int)
+	Function SDL_ComposeCustomBlendMode:Int(srcColorFactor:ESDLBlendFactor, dstColorFactor:ESDLBlendFactor, colorOperation:ESDLBlendOperation, srcAlphaFactor:ESDLBlendFactor, dstAlphaFactor:ESDLBlendFactor, alphaOperation:ESDLBlendOperation)
 
 	Function SDL_GetTextureAlphaMod:Int(handle:Byte Ptr, alpha:Byte Ptr)
 	Function SDL_GetTextureBlendMode:Int(handle:Byte Ptr, blendMode:Int Ptr)
