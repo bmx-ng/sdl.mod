@@ -296,9 +296,6 @@ void SDL_RunThread(SDL_Thread *thread)
     /* Run the function */
     *statusloc = userfunc(userdata);
 
-	/* unregister with BlitzMax */
-	bbThreadUnregister(bbThread);
-
     /* Clean up thread-local storage */
     SDL_TLSCleanup();
 

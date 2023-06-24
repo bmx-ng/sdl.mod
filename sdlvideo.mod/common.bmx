@@ -138,6 +138,8 @@ Extern
 	Function SDL_SetWindowKeyboardGrab(handle:Byte Ptr, grabbed:Int)
 	Function SDL_IsScreenKeyboardShown:Int(handle:Byte Ptr)
 	Function SDL_GetPointDisplayIndex:Int(point:SSDLPoint Var)
+	Function SDL_HasWindowSurface:Int(handle:Byte Ptr)
+	Function SDL_DestroyWindowSurface:Int(handle:Byte Ptr)
 
 	Function SDL_GetGrabbedWindow:Byte Ptr()
 	Function SDL_IsScreenSaverEnabled:Int()
