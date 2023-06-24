@@ -217,6 +217,9 @@ void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 				case SDL_DISPLAYEVENT_DISCONNECTED:
 					bbSDLSystemEmitEvent(BBEVENT_DISPLAYDISCONNECT, source, event->display.display, 0, 0, 0, &bbNullObject);
 				return;
+				case SDL_DISPLAYEVENT_MOVED:
+					bbSDLSystemEmitEvent(BBEVENT_DISPLAYMOVED, source, event->display.display, 0, 0, 0, &bbNullObject);
+				return;
 			}
 	}	
 	

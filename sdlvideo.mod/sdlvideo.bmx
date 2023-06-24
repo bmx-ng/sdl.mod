@@ -507,6 +507,22 @@ Type TSDLWindow
 		SDL_SetWindowKeyboardGrab(windowPtr, grabbed)
 	End Method
 
+	Rem
+	bbdoc: Returns whether the window has a surface associated with it.
+	returns: #True if the window has a surface, #False otherwise.
+	End Rem
+	Method HasSurface:Int()
+		Return SDL_HasWindowSurface(windowPtr)
+	End Method
+
+	Rem
+	bbdoc: Destroys the surface associated with the window.
+	returns: 0 on success, or a negative error code on failure; call #SDLGetError() for more information.
+	End Rem
+	Method DestroySurface:Int()
+		Return SDL_DestroyWindowSurface(windowPtr)
+	End Method
+
 End Type
 
 Rem
