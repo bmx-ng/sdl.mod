@@ -220,7 +220,7 @@ End Function
 
 Type TSDLStreamFactory Extends TStreamFactory
 
-	Method CreateStream:TStream( url:Object, proto$, path$, readable:Int, writeMode:Int ) Override
+	Method CreateStream:TStream( url:Object, proto:String, path:String, readable:Int, writeMode:Int ) Override
 		If proto="sdl" Then
 			Return TSDLStream.Create( path, readable, writeMode )
 		End If

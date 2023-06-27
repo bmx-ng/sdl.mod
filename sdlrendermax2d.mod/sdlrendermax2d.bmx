@@ -62,7 +62,7 @@ Public
 
 Type TSDLRenderImageFrame Extends TImageFrame
 
-	Field u0#, v0#, u1#, v1#, uscale#, vscale#
+	Field u0:Float, v0:Float, u1:Float, v1:Float, uscale:Float, vscale:Float
 
 	Field pixmap:TPixmap
 	Field surface:TSDLSurface
@@ -84,12 +84,12 @@ Type TSDLRenderImageFrame Extends TImageFrame
 		pixmap = Null
 	End Method
 	
-	Method Draw( x0#,y0#,x1#,y1#,tx#,ty#,sx#,sy#,sw#,sh# ) Override
+	Method Draw( x0:Float,y0:Float,x1:Float,y1:Float,tx:Float,ty:Float,sx:Float,sy:Float,sw:Float,sh:Float ) Override
 
-		Local u0# = sx * uscale
-		Local v0# = sy * vscale
-		Local u1# = ( sx + sw ) * uscale
-		Local v1# = ( sy + sh ) * vscale
+		Local u0:Float = sx * uscale
+		Local v0:Float = sy * vscale
+		Local u1:Float = ( sx + sw ) * uscale
+		Local v1:Float = ( sy + sh ) * vscale
 
 		_driver.DrawTexture( texture, u0, v0, u1, v1, x0, y0, x1, y1, tx, ty, Self )
 
@@ -128,7 +128,7 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 	Field clsColor:SDLColor = New SDLColor(0, 0, 0, 255)
 
 	Field renderer:TSDLRenderer
-	Field ix#,iy#,jx#,jy#
+	Field ix:Float,iy:Float,jx:Float,jy:Float
 	Field state_blend:Int
 
 	Method Create:TSDLRenderMax2DDriver()
@@ -180,7 +180,7 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		renderer.Present()
 	End Method
 	
-	Method ToString$() Override
+	Method ToString:String() Override
 		Return "SDLRenderer"
 	End Method
 
@@ -209,14 +209,14 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		End Select
 	End Method
 
-	Method SetAlpha( alpha# ) Override
+	Method SetAlpha( alpha:Float ) Override
 		If alpha>1.0 alpha=1.0
 		If alpha<0.0 alpha=0.0
 		drawColor.a=alpha*255
 		renderer.SetDrawColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a)
 	End Method
 
-	Method SetLineWidth( width# ) Override
+	Method SetLineWidth( width:Float ) Override
 		'glLineWidth width
 	End Method
 	
@@ -256,7 +256,7 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		EndIf
 	End Method
 
-	Method SetTransform( xx#,xy#,yx#,yy# ) Override
+	Method SetTransform( xx:Float,xy:Float,yx:Float,yy:Float ) Override
 		ix=xx
 		iy=xy
 		jx=yx
@@ -269,15 +269,15 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		renderer.SetDrawColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a)
 	End Method
 
-	Method Plot( x#,y# ) Override
+	Method Plot( x:Float,y:Float ) Override
 		renderer.DrawPoint(Int(x+.5),Int(y+.5))
 	End Method
 
-	Method DrawLine( x0#,y0#,x1#,y1#,tx#,ty# ) Override
+	Method DrawLine( x0:Float,y0:Float,x1:Float,y1:Float,tx:Float,ty:Float ) Override
 		renderer.DrawLine(Int(x0*ix+y0*iy+tx+.5), Int(x0*jx+y0*jy+ty+.5), Int(x1*ix+y1*iy+tx+.5), Int(x1*jx+y1*jy+ty+.5))
 	End Method
 
-	Method DrawRect( x0#,y0#,x1#,y1#,tx#,ty# ) Override
+	Method DrawRect( x0:Float,y0:Float,x1:Float,y1:Float,tx:Float,ty:Float ) Override
 		Local StaticArray vertices:SDLVertex[4]
 		Local vert:SDLVertex Ptr = vertices
 
@@ -314,7 +314,7 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		renderer.Geometry(Null, vertices, 4, indices, 6)
 	End Method
 	
-	Method DrawOval( x0#,y0#,x1#,y1#,tx#,ty# ) Override
+	Method DrawOval( x0:Float,y0:Float,x1:Float,y1:Float,tx:Float,ty:Float ) Override
 
 		Local StaticArray vertices:SDLVertex[50]
 		Local vert:SDLVertex Ptr = vertices
@@ -323,8 +323,8 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		Local StaticArray indices:Int[147]
 		local ic:int
 
-		Local xr#=(x1-x0)*.5
-		Local yr#=(y1-y0)*.5
+		Local xr:Float=(x1-x0)*.5
+		Local yr:Float=(y1-y0)*.5
 		local r:Float = (xr + yr) * 0.5
 
 		Local segs:Int = Min(49, 360 / acos(2 * (1 - 0.5 / r)^2 - 1))
@@ -341,9 +341,9 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		vc :+ 1
 		
 		For Local i:Int=0 Until segs
-			Local th#=i*360#/segs
-			Local x#=x0+Cos(th)*xr
-			Local y#=y0-Sin(th)*yr
+			Local th:Float=i*360:Float/segs
+			Local x:Float=x0+Cos(th)*xr
+			Local y:Float=y0-Sin(th)*yr
 
 			vert.position.x = x * ix + y * iy + tx
 			vert.position.y = x * jx + y * jy + ty
@@ -370,7 +370,7 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		renderer.Geometry(Null, vertices, vc, indices, ic)
 	End Method
 	
-	Method DrawPoly( xy#[],handle_x#,handle_y#,origin_x#,origin_y#, indices:Int[] ) Override
+	Method DrawPoly( xy:Float[],handle_x:Float,handle_y:Float,origin_x:Float,origin_y:Float, indices:Int[] ) Override
 
 		If xy.length<6 Or (xy.length&1) Return
 		
@@ -405,7 +405,7 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 
 	End Method
 
-	Method DrawTexture( texture:TSDLTexture, u0#, v0#, u1#, v1#, x0#, y0#, x1#, y1#, tx#, ty#, img:TImageFrame = Null )
+	Method DrawTexture( texture:TSDLTexture, u0:Float, v0:Float, u1:Float, v1:Float, x0:Float, y0:Float, x1:Float, y1:Float, tx:Float, ty:Float, img:TImageFrame = Null )
 
 		Local StaticArray vertices:SDLVertex[4]
 		Local vert:SDLVertex Ptr = vertices
@@ -476,7 +476,7 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		Return p
 	End Method
 	
-	Method SetResolution( width#,height# ) Override
+	Method SetResolution( width:Float,height:Float ) Override
 		renderer.SetLogicalSize(Int(width), Int(height))
 	End Method
 	

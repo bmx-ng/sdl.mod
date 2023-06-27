@@ -73,7 +73,7 @@ Type TSDLSystemDriver Extends TSystemDriver
 		End If
 	End Method
 
-	Method Notify( Text$,serious:Int ) Override
+	Method Notify( Text:String,serious:Int ) Override
 		Local res:Int = bmx_SDL_ShowSimpleMessageBox(Text, AppTitle, serious)
 		' failed to display message box?
 		If res Then
@@ -81,15 +81,15 @@ Type TSDLSystemDriver Extends TSystemDriver
 		End If
 	End Method
 	
-	Method Confirm:Int( Text$,serious:Int ) Override
+	Method Confirm:Int( Text:String,serious:Int ) Override
 		Return bmx_SDL_ShowMessageBox_confirm(Text, AppTitle, serious)
 	End Method
 	
-	Method Proceed:Int( Text$,serious:Int ) Override
+	Method Proceed:Int( Text:String,serious:Int ) Override
 		Return bmx_SDL_ShowMessageBox_proceed(Text, AppTitle, serious)
 	End Method
 
-	Method RequestFile$( Text$,exts$,save:Int,file$ ) Override
+	Method RequestFile:String( Text:String,exts:String,save:Int,file:String ) Override
 ?Not haiku and Not ios
 		Local requestedFile:String
 		
@@ -145,7 +145,7 @@ Type TSDLSystemDriver Extends TSystemDriver
 ?
 	End Method
 	
-	Method RequestDir$( Text$,path$ ) Override
+	Method RequestDir:String( Text:String,path:String ) Override
 ?Not haiku And Not ios
 		Local requestedDir:String
 		
@@ -171,7 +171,7 @@ Type TSDLSystemDriver Extends TSystemDriver
 ?
 	End Method
 
-	Method OpenURL:Int( url$ ) Override
+	Method OpenURL:Int( url:String ) Override
 		Local u:Byte Ptr = url.ToUTF8String()
 		Local res:Int = SDL_OpenURL(u)
 		MemFree(u)

@@ -7,12 +7,12 @@ Import brl.standardio
 
 Graphics 800, 600, 0, 60, GRAPHICS_BACKBUFFER|GRAPHICS_DEPTHBUFFER
 
-Global ax#, ay#,tim#
+Global ax:Float, ay:Float,tim:Float
 
 While Not AppTerminate()
 	Local wid:Int = GraphicsWidth()
 	Local hgt:Int = GraphicsHeight()
-	Local asp# = Float(wid)/Float(hgt)
+	Local asp:Float = Float(wid)/Float(hgt)
 	
 	glViewport 0,0,wid,hgt
 	glMatrixMode GL_PROJECTION
@@ -24,13 +24,13 @@ While Not AppTerminate()
 	glMatrixMode GL_MODELVIEW
 	glLoadIdentity
 	
-	Local global_ambient#[]=[0.6#, 0.5#,  0.3#, 1.0#]
-	Local light0pos#[]=     [0.0#, 5.0#, 10.0#, 1.0#]
-	Local light0ambient#[]= [0.5#, 0.5#,  0.5#, 1.0#]
-	Local light0diffuse#[]= [0.3#, 0.3#,  0.3#, 1.0#]
-	Local light0specular#[]=[0.8#, 0.8#,  0.8#, 1.0#]
+	Local global_ambient:Float[]=[0.6:Float, 0.5:Float,  0.3:Float, 1.0:Float]
+	Local light0pos:Float[]=     [0.0:Float, 5.0:Float, 10.0:Float, 1.0:Float]
+	Local light0ambient:Float[]= [0.5:Float, 0.5:Float,  0.5:Float, 1.0:Float]
+	Local light0diffuse:Float[]= [0.3:Float, 0.3:Float,  0.3:Float, 1.0:Float]
+	Local light0specular:Float[]=[0.8:Float, 0.8:Float,  0.8:Float, 1.0:Float]
 	
-	Local lmodel_ambient#[]=[ 0.2#,0.2#,0.2#,1.0#]
+	Local lmodel_ambient:Float[]=[ 0.2:Float,0.2:Float,0.2:Float,1.0:Float]
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT,lmodel_ambient)
 	
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient)
@@ -61,7 +61,7 @@ Wend
 
 
 
-Function DrawSizeCube(size#)
+Function DrawSizeCube(size:Float)
 	size=-size
 	'Front Face
 	glBegin(GL_TRIANGLE_STRIP)

@@ -78,7 +78,7 @@ Import "glue.c"
 Private
 
 Extern
-Function bmx_sdl_timer_start:Byte Ptr( hertz#,timer:TTimer )
+Function bmx_sdl_timer_start:Byte Ptr( hertz:Float,timer:TTimer )
 Function bmx_sdl_timer_stop( handle:Byte Ptr,timer:TTimer )
 Function bmx_sdl_timer_fire( id:Int, obj:Object, ticks:Int )
 End Extern
@@ -138,7 +138,7 @@ Type TSDLTimer Extends TTimer
 		Return n
 	End Method
 	
-	Function Create:TTimer( hertz#,event:TEvent=Null ) Override
+	Function Create:TTimer( hertz:Float,event:TEvent=Null ) Override
 		Local t:TSDLTimer =New TSDLTimer
 		Local handle:Byte Ptr=bmx_sdl_timer_start( hertz,t )
 		If Not handle Return Null
@@ -160,7 +160,7 @@ Type TSDLTimerFactory Extends TTimerFactory
 		Return "SDLTimer"
 	End Method
 	
-	Method Create:TTimer(hertz#,event:TEvent=Null) Override
+	Method Create:TTimer(hertz:Float,event:TEvent=Null) Override
 		Return TSDLTimer.Create( hertz,event )
 	End Method
 		
