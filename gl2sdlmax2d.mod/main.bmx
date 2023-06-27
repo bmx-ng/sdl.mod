@@ -21,7 +21,7 @@ Const GL_BGRA:Int = $80E1
 Const GL_CLAMP_TO_EDGE:Int = $812F
 Const GL_CLAMP_TO_BORDER:Int = $812D
 
-Global ix#, iy#, jx#, jy#
+Global ix:Float, iy:Float, jx:Float, jy:Float
 Global color4ub:Byte[4]
 
 Global state_blend:Int
@@ -543,7 +543,7 @@ Public
 
 Type TGLImageFrame Extends TImageFrame
 
-	Field u0#, v0#, u1#, v1#, uscale#, vscale#
+	Field u0:Float, v0:Float, u1:Float, v1:Float, uscale:Float, vscale:Float
 	Field name:Int, seq:Int
 
 	Method New()
@@ -560,14 +560,14 @@ Type TGLImageFrame Extends TImageFrame
 
 	End Method
 
-	Method Draw( x0#, y0#, x1#, y1#, tx#, ty#, sx#, sy#, sw#, sh# ) Override
+	Method Draw( x0:Float, y0:Float, x1:Float, y1:Float, tx:Float, ty:Float, sx:Float, sy:Float, sw:Float, sh:Float ) Override
 
 		Assert seq = GraphicsSeq Else "Image does not exist"
 
-		Local u0# = sx * uscale
-		Local v0# = sy * vscale
-		Local u1# = ( sx + sw ) * uscale
-		Local v1# = ( sy + sh ) * vscale
+		Local u0:Float = sx * uscale
+		Local v0:Float = sy * vscale
+		Local u1:Float = ( sx + sw ) * uscale
+		Local v1:Float = ( sy + sh ) * vscale
 
 		_driver.DrawTexture( name, u0, v0, u1, v1, x0, y0, x1, y1, tx, ty, Self )
 
@@ -1056,7 +1056,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 ?
 	End Method
 
-	Method ToString$() Override
+	Method ToString:String() Override
 
 		Return "OpenGL"
 
@@ -1128,7 +1128,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	End Method
 
-	Method SetAlpha( alpha# ) Override
+	Method SetAlpha( alpha:Float ) Override
 
 		If alpha > 1.0 Then alpha = 1.0
 		If alpha < 0.0 Then alpha = 0.0
@@ -1136,7 +1136,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	End Method
 
-	Method SetLineWidth( width# ) Override
+	Method SetLineWidth( width:Float ) Override
 
 		glLineWidth( width )
 
@@ -1182,7 +1182,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	End Method
 
-	Method SetTransform( xx#, xy#, yx#, yy# ) Override
+	Method SetTransform( xx:Float, xy:Float, yx:Float, yy:Float ) Override
 
 		ix = xx
 		iy = xy
@@ -1200,7 +1200,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	End Method
 
-	Method Plot( px#, py# ) Override
+	Method Plot( px:Float, py:Float ) Override
 
 		FlushTest( PRIMITIVE_DOT )
 
@@ -1220,7 +1220,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	End Method
 
-	Method DrawLine( x0#, y0#, x1#, y1#, tx#, ty# ) Override
+	Method DrawLine( x0:Float, y0:Float, x1:Float, y1:Float, tx:Float, ty:Float ) Override
 
 		FlushTest( PRIMITIVE_LINE )
 
@@ -1248,7 +1248,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	End Method
 
-	Method DrawRect( x0#, y0#, x1#, y1#, tx#, ty# ) Override
+	Method DrawRect( x0:Float, y0:Float, x1:Float, y1:Float, tx:Float, ty:Float ) Override
 
 		FlushTest( PRIMITIVE_PLAIN_TRIANGLE )
 
@@ -1290,13 +1290,13 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	End Method
 
-	Method DrawOval( x0#, y0#, x1#, y1#, tx#, ty# ) Override
+	Method DrawOval( x0:Float, y0:Float, x1:Float, y1:Float, tx:Float, ty:Float ) Override
 
 		' TRIANGLE_FAN (no batching)
 		FlushTest( PRIMITIVE_TRIANGLE_FAN )
 
-		Local xr# = ( x1 - x0 ) * 0.5
-		Local yr# = ( y1 - y0 ) * 0.5
+		Local xr:Float = ( x1 - x0 ) * 0.5
+		Local yr:Float = ( y1 - y0 ) * 0.5
 		Local segs:Int = Abs( xr ) + Abs( yr )
 
 		segs = Max( segs, 12 ) &~ 3
@@ -1312,9 +1312,9 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		Local off:Int = 2
 
 		For Local i:Int = 0 To segs
-			Local th# = i * 360# / segs
-			Local x# = x0 + Cos( th ) * xr
-			Local y# = y0 - Sin( th ) * yr
+			Local th:Float = i * 360:Float / segs
+			Local x:Float = x0 + Cos( th ) * xr
+			Local y:Float = y0 - Sin( th ) * yr
 			vert_array[in + off    ] = x * ix + y * iy + tx
 			vert_array[in + off + 1] = x * jx + y * jy + ty
 			off :+ 2
@@ -1341,7 +1341,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	End Method
 
-	Method DrawPoly( xy#[], handle_x#, handle_y#, origin_x#, origin_y#, indices:Int[] ) Override
+	Method DrawPoly( xy:Float[], handle_x:Float, handle_y:Float, origin_x:Float, origin_y:Float, indices:Int[] ) Override
 
 		If xy.length < 6 Or ( xy.length & 1 ) Then Return
 
@@ -1351,8 +1351,8 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		Local in:Int = vert_index * 2
 
 		For Local i:Int = 0 Until xy.length Step 2
-			Local x# = handle_x + xy[i]
-			Local y# = handle_y + xy[i + 1]
+			Local x:Float = handle_x + xy[i]
+			Local y:Float = handle_y + xy[i + 1]
 			vert_array[in + i    ] = x * ix + y * iy + origin_x
 			vert_array[in + i + 1] = x * jx + y * jy + origin_y
 		Next
@@ -1385,7 +1385,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	End Method
 
-	Method DrawTexture( name:Int, u0#, v0#, u1#, v1#, x0#, y0#, x1#, y1#, tx#, ty#, img:TImageFrame = Null )
+	Method DrawTexture( name:Int, u0:Float, v0:Float, u1:Float, v1:Float, x0:Float, y0:Float, x1:Float, y1:Float, tx:Float, ty:Float, img:TImageFrame = Null )
 
 		FlushTest( PRIMITIVE_TEXTURED_TRIANGLE, name )
 
@@ -1454,7 +1454,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 
 	End Method
 
-	Method SetResolution( width#, height# ) Override
+	Method SetResolution( width:Float, height:Float ) Override
 
 		u_pmatrix.SetOrthographic( 0, width, 0, height, -1, 1 )
 		'glMatrixMode( GL_PROJECTION )

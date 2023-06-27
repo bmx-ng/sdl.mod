@@ -74,7 +74,7 @@ Type TSDLFreeAudioDriver Extends TFreeAudioAudioDriver
 		Return res <> -1
 	End Method
 
-	Function Create:TFreeAudioAudioDriver( name$,Mode:Int ) Override
+	Function Create:TFreeAudioAudioDriver( name:String,Mode:Int ) Override
 		Local t:TSDLFreeAudioDriver = New TSDLFreeAudioDriver
 		t._name=name
 		t._mode=Mode

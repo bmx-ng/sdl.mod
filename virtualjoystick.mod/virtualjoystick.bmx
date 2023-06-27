@@ -115,53 +115,53 @@ Type TVirtualJoystickDriver Extends TJoystickDriver
 		End If
 	End Method
 	
-	Method JoyX#( port:Int=0 ) Override
+	Method JoyX:Float( port:Int=0 ) Override
 		SampleJoy port
 		If currentJoystick Then
 			Return currentJoystick.GetX()
 		End If
 	End Method
 	
-	Method JoyY#( port:Int=0 ) Override
+	Method JoyY:Float( port:Int=0 ) Override
 		SampleJoy port
 		If currentJoystick Then
 			Return currentJoystick.GetY()
 		End If
 	End Method
 	
-	Method JoyZ#( port:Int=0 ) Override
+	Method JoyZ:Float( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method JoyR#( port:Int=0 ) Override
+	Method JoyR:Float( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method JoyU#( port:Int=0 ) Override
+	Method JoyU:Float( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method JoyV#( port:Int=0 ) Override
+	Method JoyV:Float( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method JoyYaw#( port:Int=0 ) Override
+	Method JoyYaw:Float( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method JoyPitch#( port:Int=0 ) Override
+	Method JoyPitch:Float( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method JoyRoll#( port:Int=0 ) Override
+	Method JoyRoll:Float( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method JoyHat#( port:Int=0 ) Override
+	Method JoyHat:Float( port:Int=0 ) Override
 		Return 0
 	End Method
 	
-	Method JoyWheel#( port:Int=0 ) Override
+	Method JoyWheel:Float( port:Int=0 ) Override
 		Return 0
 	End Method
 	
@@ -169,14 +169,14 @@ Type TVirtualJoystickDriver Extends TJoystickDriver
 	End Method
 	
 	Method JoyXDir:Int( port:Int=0 ) Override
-		Local t#=JoyX( port )
+		Local t:Float=JoyX( port )
 		If t<.333333 Return -1
 		If t>.333333 Return 1
 		Return 0
 	End Method
 
 	Method JoyYDir:Int( port:Int=0 ) Override
-		Local t#=JoyY( port )
+		Local t:Float=JoyY( port )
 		If t<.333333 Return -1
 		If t>.333333 Return 1
 		Return 0
