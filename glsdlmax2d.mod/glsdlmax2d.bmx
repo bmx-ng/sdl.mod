@@ -436,7 +436,10 @@ Type TGLSDLRenderImageFrame Extends TGLImageFrame
 	
 Private
 	Method Delete()
-		glDeleteFramebuffers(1, Varptr FBO) ' gl ignores 0
+		'remove framebuffer if used
+		if FBO <> 0
+			glDeleteFramebuffers(1, Varptr FBO) ' gl ignores 0
+		EndIf
 	End Method
 
 	Method New()
