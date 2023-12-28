@@ -257,11 +257,12 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 	End Method
 
 	Method SetViewport( x:Int,y:Int,w:Int,h:Int ) Override
-		If x=0 And y=0 And w=GraphicsWidth() And h=GraphicsHeight()
-			renderer.SetClipRect()
-		Else
-			renderer.SetClipRect(x, y, w, h)
-		EndIf
+		'calculate clip based on virtual resolution
+		'as the renderer already scales, we use the backup'd original
+		'viewport values and not the precalculated ones of Max2D
+		Local g:TMax2DGraphics = TMax2DGraphics.Current()
+		renderer.SetClipRect(g.viewport_x, g.viewport_y, g.viewport_w, g.viewport_h)
+
 		_ClipRect_BMaxViewport.x = x
 		_ClipRect_BMaxViewport.y = y
 		_ClipRect_BMaxViewport.width = w
