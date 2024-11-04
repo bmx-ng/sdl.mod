@@ -291,7 +291,7 @@ void SDL_RunThread(SDL_Thread *thread)
     thread->threadid = SDL_ThreadID();
 
 	/* register with BlitzMax */
-	BBThread * bbThread = bbThreadRegister(SDL_ThreadID());
+	BBThread * bbThread = bbThreadRegister((bb_thread_t)SDL_ThreadID());
 
     /* Run the function */
     *statusloc = userfunc(userdata);
