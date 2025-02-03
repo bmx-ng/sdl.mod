@@ -11,6 +11,7 @@ Import Pub.OpenGLES
 ?
 
 Private
+Global glewIsInit:Int
 
 Struct Rect
 	Method New (X:Int, Y:Int, width:Int, height:Int)
@@ -367,13 +368,22 @@ Type TGL2SDLRenderImageFrame Extends TGLImageFrame
 	EndMethod
 	
 	Function Create:TGL2SDLRenderImageFrame(width:UInt, height:UInt, flags:Int)
+		' Need this to enable frame buffer objects - glGenFramebuffers
+		If Not glewIsInit
+			GlewInit()
+			glewIsInit = True
+		EndIf
+	
 		' store so that we can restore once the fbo is created
 		Local ScissorTestEnabled:Int = GlIsEnabled(GL_SCISSOR_TEST)
 		glDisable(GL_SCISSOR_TEST)
 		
 		Local TextureName:Int
 		glGenTextures(1, Varptr TextureName)
-		glBindTexture(GL_TEXTURE_2D, TextureName)
+		' inform engine about TextureName being GL_TEXTURE_2D target 
+		' do not just call glBindTexture directly!
+		BindTex(TextureName)
+		'glBindTexture(GL_TEXTURE_2D, TextureName)
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Null)
 		
 		If flags & FILTEREDIMAGE
@@ -923,6 +933,13 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		u_pmatrix = New TMatrix
 		u_pmatrix.SetOrthographic( 0, gw, 0, gh, -1, 1 )
 
+		' Need glew to enable "glBlendFuncSeparate" (required for
+		' alpha blending on non-opaque backgrounds like render images)
+		If Not glewIsInit
+			GlewInit()
+			glewIsInit = True
+		EndIf
+
 		' Create default back buffer render image - the FBO will be value 0 which is the default for the existing backbuffer
 		Local BackBufferRenderImageFrame:TGL2SDLRenderImageFrame = New TGL2SDLRenderImageFrame
 		BackBufferRenderImageFrame.width = gw
@@ -983,7 +1000,11 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 			?
 		Case ALPHABLEND
 			glEnable( GL_BLEND )
-			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA )
+			' simple alphablend:
+			'glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA )
+			' more advanced blend function allows blending on a non-opaque
+			' "background" (eg. render image)
+			glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
 			?Not opengles
 			glDisable( GL_ALPHA_TEST )
 			?
@@ -1446,7 +1467,11 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 				?
 			Case ALPHABLEND
 				glEnable( GL_BLEND )
-				glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA )
+				' simple alphablend:
+				'glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA )
+				' more advanced blend function allows blending on a non-opaque
+				' "background" (eg. render image)
+				glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
 				?Not opengles
 				glDisable( GL_ALPHA_TEST )
 				?
@@ -1544,8 +1569,6 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 	EndMethod
 	
 Private
-	Field _glewIsInitialised:Int = False
-
 	Method SetMatrixAndViewportToCurrentRenderImage()
 		u_pmatrix.SetOrthographic( 0, _CurrentRenderImageFrame.width, 0, _CurrentRenderImageFrame.height, -1, 1 )
 		glViewport(0, 0, _CurrentRenderImageFrame.width, _CurrentRenderImageFrame.height)
