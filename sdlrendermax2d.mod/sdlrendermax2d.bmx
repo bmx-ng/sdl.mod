@@ -45,6 +45,7 @@ Global _driver:TSDLRenderMax2DDriver
 Global _preferredRenderer:Int = -1
 Global _BackbufferRenderImageFrame:TSDLRenderImageFrame
 Global _CurrentRenderImageFrame:TSDLRenderImageFrame
+Global _CurrentRenderImageContainer:TRenderImage
 Global _ClipRect_BMaxViewport:Rect = New Rect
 
 
@@ -188,7 +189,8 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		' cache it
 		_BackBufferRenderImageFrame = BackBufferRenderImageFrame
 		_CurrentRenderImageFrame = _BackBufferRenderImageFrame
-		
+		_CurrentRenderImageContainer = Null
+				
 		t.MakeCurrent
 	End Method
 
@@ -269,7 +271,7 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		_ClipRect_BMaxViewport.height = h
 	End Method
 
-	Method SetTransform( xx:Float,xy:Float,yx:Float,yy:Float ) Override
+	Method SetTransform( xx:Float, xy:Float, yx:Float, yy:Float ) Override
 		ix=xx
 		iy=xy
 		jx=yx
@@ -512,21 +514,37 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 	Method SetRenderImageFrame(RenderImageFrame:TImageFrame) Override
 		If RenderImageFrame = _CurrentRenderImageFrame
 			Return
+		ElseIf renderImageFrame = Null
+			renderImageFrame = _BackBufferRenderImageFrame
 		EndIf
 		If not TSDLRenderImageFrame(RenderImageFrame) Then Return
 		
 		renderer.SetTarget(TSDLRenderImageFrame(RenderImageFrame).texture)
 		_CurrentRenderImageFrame = TSDLRenderImageFrame(RenderImageFrame)
+		'unset render image container (re-assign in SetRenderImage if called from there!)
+		_CurrentRenderImageContainer = Null
 		
 		Local vp:Rect = _ClipRect_BMaxViewport
 		renderer.SetClipRect(vp.x, vp.y, vp.width, vp.height)
 		SetMatrixAndViewportToCurrentRenderImage()
 	EndMethod
-	
-	Method SetBackbuffer()
-		SetRenderImageFrame(_BackBufferRenderImageFrame)
-	EndMethod
-	
+
+	Method GetRenderImageFrame:TImageFrame() Override
+		' Return Null if currently rendering to the backbuffer
+		If _BackBufferRenderImageFrame = _CurrentRenderImageFrame
+			Return Null
+		Else
+			Return _CurrentRenderImageFrame
+		EndIf
+	End Method
+
+	Method SetRenderImageContainer(renderImageContainer:Object) Override
+		_CurrentRenderImageContainer = TRenderImage(renderImageContainer)
+	End Method
+
+	Method GetRenderImageContainer:Object() Override
+		Return _CurrentRenderImageContainer
+	End Method
 
 	Method SetMatrixAndViewportToCurrentRenderImage()
 'Ronny: TODO - still needed?
