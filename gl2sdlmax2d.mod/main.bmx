@@ -1581,14 +1581,18 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 '		glBufferData( GL_ELEMENT_ARRAY_BUFFER, element_index * 12, element_array, GL_DYNAMIC_DRAW )
 '
 '	End Method
+	
+	Method CanUpdateRenderImages:Int() Override
+		Return True
+	End Method
 
 	Method CreateRenderImageFrame:TImageFrame(width:UInt, height:UInt, flags:Int) Override
 		Return TGL2SDLRenderImageFrame.Create(width, height, flags)
 	End Method
 	
-	Method SetRenderImageFrame(RenderImageFrame:TImageFrame) Override		
+	Method SetRenderImageFrame:Int(RenderImageFrame:TImageFrame) Override		
 		If RenderImageFrame = _CurrentRenderImageFrame
-			Return
+			Return True
 		ElseIf renderImageFrame = Null
 			renderImageFrame = _BackBufferRenderImageFrame
 		EndIf
@@ -1603,6 +1607,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 		Local vp:Rect = _GLScissor_BMaxViewport
 		SetScissor(vp.x, vp.y, vp.width, vp.height)
 		SetMatrixAndViewportToCurrentRenderImage()
+		Return True
 	End Method
 
 	Method GetRenderImageFrame:TImageFrame() Override

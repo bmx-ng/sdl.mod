@@ -494,7 +494,11 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 	Method SetResolution( width:Float,height:Float ) Override
 		renderer.SetLogicalSize(Int(width), Int(height))
 	End Method
-
+	
+	Method CanUpdateRenderImages:Int() Override
+		Return True
+	End Method
+	
 	Method CreateRenderImageFrame:TImageFrame(width:UInt, height:UInt, flags:Int) Override
 		Local frame:TSDLRenderImageFrame = New TSDLRenderImageFrame
 		frame.renderer = _driver.renderer
@@ -511,9 +515,9 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		Return frame
 	EndMethod
 	
-	Method SetRenderImageFrame(RenderImageFrame:TImageFrame) Override
+	Method SetRenderImageFrame:Int(RenderImageFrame:TImageFrame) Override
 		If RenderImageFrame = _CurrentRenderImageFrame
-			Return
+			Return True
 		ElseIf renderImageFrame = Null
 			renderImageFrame = _BackBufferRenderImageFrame
 		EndIf
@@ -527,6 +531,7 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		Local vp:Rect = _ClipRect_BMaxViewport
 		renderer.SetClipRect(vp.x, vp.y, vp.width, vp.height)
 		SetMatrixAndViewportToCurrentRenderImage()
+		Return True
 	EndMethod
 
 	Method GetRenderImageFrame:TImageFrame() Override
