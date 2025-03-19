@@ -22,10 +22,23 @@ ModuleInfo "History: Port to bmx-ng."
 
 Import BRL.Max2D
 Import SDL.D3D9SDLGraphics
+Import BRL.Threads
+Import "RenderImageManager.cpp"
+
+Extern
+	Function RenderImageManager_AddRenderImage(o:Object)
+	Function RenderImageManager_RemoveRenderImage(o:Object)
+	Function RenderImageManager_ResetIterator()
+	Function RenderImageManager_GetNextValue:Int(o:Object Ptr)
+End Extern
 
 Const LOG_ERRS:Int=True'False
 
 Private
+
+' Set this to true for some debug information relating to render image management during device loss/reset
+' - also uncomment the #define OUTPUT_DEBUG_INFO in the RenderImageManager.cpp file
+Const OutputRenderImageListDebugInfo:Int = False
 
 Global _gw:Int,_gh:Int,_gd:Int,_gr:Int,_gf:Long,_gx:Int,_gy:Int
 Global _color:Int
@@ -49,6 +62,7 @@ Global _BackbufferRenderImageFrame:TD3D9RenderImageFrame
 Global _CurrentRenderImageFrame:TD3D9RenderImageFrame
 Global _CurrentRenderImageContainer:Object
 Global _D3D9Scissor_BMaxViewport:Rect = New Rect
+Global _Lock:TMutex = CreateMutex()
 
 Function Pow2Size:Int( n:Int )
 	Local t:Int=1
@@ -248,7 +262,10 @@ Type TD3D9RenderImageFrame Extends TD3D9ImageFrame
 	Field _width:UInt, _height:UInt
 
 	Method Delete()
+		LockMutex(_Lock)
 		ReleaseNow()
+		RenderImageManager_RemoveRenderImage(Self)
+		UnlockMutex(_Lock)
 	End Method
 	
 	Method ReleaseNow()
@@ -330,6 +347,14 @@ Private
 				Return
 			EndIf
 		EndIf
+        
+        ' the _surface will be null during a device lost state
+        ' - the data will have been persisted before entering the device loss state
+        ' - which releases the surface - no surface here means the data is persisted
+        ' - in the pixmap
+        If Not Self._surface 
+			Return
+		EndIf
 
 		' copy renderimage data into offscreen surface
 		If _d3dDev.GetRenderTargetData(Self._surface, Self._offscreenSurface) < 0
@@ -408,7 +433,7 @@ Private
 		replacementSurface.Release_()
 	End Method
 	
-	Method RenderTargetToPixmap:TPixmap()	
+	Method RenderTargetToPixmap:TPixmap()
 		' use a staging surface to get the texture contents
 		Local StagingSurface:IDirect3DSurface9
 		If _d3ddev.CreateOffscreenPlainSurface(_width, _height, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, StagingSurface, Null) < 0
@@ -779,17 +804,10 @@ Type TD3D9SDLMax2DDriver Extends TMax2dDriver
 		EndIf
 
 		Local dstsurf:IDirect3DSurface9
-		If _d3dDev.GetRenderTarget(0, dstsurf) < 0
-			d3derr "GetRenderTarget failed~n"
+		If _d3dDev.GetBackBuffer(0, 0, 0, Varptr dstsurf) < 0
+			d3derr "GetBackBuffer failed~n"
 			Return
 		EndIf
-		
-		Rem
-		Local desc:D3DSURFACE_DESC
-		If dstsurf.GetDesc(desc) < 0
-			d3derr "GetDesc failed~n"
-		EndIf
-		End Rem
 
 		' limit pixmap / surface rect size
 		Local lockedWidth:Int = Min(pixmap.width, _gw - x)
@@ -884,22 +902,31 @@ Type TD3D9SDLMax2DDriver Extends TMax2dDriver
 		BackBufferRenderImageFrame._height = _gh
 		_d3dDev.GetBackBuffer(0, 0, 0, Varptr BackBufferRenderImageFrame._surface)
 	
-		' cache it
+		' if the current target is the old back buffer then reset it to the new one.
+		'   this covers initial startup when both are set to null
+		'   and when recovering from a device loss/reset
+		If _CurrentRenderImageFrame = _BackBufferRenderImageFrame
+			_CurrentRenderImageFrame = BackBufferRenderImageFrame
+		EndIf
+
 		_BackBufferRenderImageFrame = BackBufferRenderImageFrame
-		_CurrentRenderImageFrame = _BackBufferRenderImageFrame
 		_CurrentRenderImageContainer = Null
-		
+?debug
+		If OutputRenderImageListDebugInfo WriteStdout("Adding back buffer render image instance~n")
+?
 		AddToRenderImageList(BackBufferRenderImageFrame)
 	End Method
-	
+
 	Method AddToRenderImageList(RenderImage:TD3D9RenderImageFrame)
-		_RenderImageList.AddLast(RenderImage)
+		LockMutex(_Lock)
+		RenderImageManager_AddRenderImage(RenderImage)
+		UnlockMutex(_Lock)
 	End Method
 	
 	Method RemoveFromRenderImageList(RenderImage:TD3D9RenderImageFrame)
-		If(_RenderImageList.Contains(RenderImage))
-			_RenderImageList.Remove(RenderImage)
-		EndIf
+		LockMutex(_Lock)
+		RenderImageManager_RemoveRenderImage(RenderImage)
+		UnlockMutex(_Lock)
 	End Method
 
 	Method CreateRenderImageFrame:TImageFrame(width:UInt, height:UInt, flags:Int) Override
@@ -942,29 +969,39 @@ Type TD3D9SDLMax2DDriver Extends TMax2dDriver
 	Method GetRenderImageContainer:Object() Override
 		Return _CurrentRenderImageContainer
 	EndMethod
-		
+	
 	Function OnDeviceLost(obj:Object)
-		Local Driver:TD3D9SDLMax2DDriver = TD3D9SDLMax2DDriver(obj)
-		Local RenderImageList:TList = Driver._RenderImageList
-		
-		For Local RenderImage:TD3D9RenderImageFrame = EachIn RenderImageList
+		LockMutex(_Lock)
+
+		RenderImageManager_ResetIterator()
+		Local RenderImage:TD3D9RenderImageFrame
+		While RenderImageManager_GetNextValue(Varptr RenderImage)
 			RenderImage.OnDeviceLost()
-		Next
-		Driver.RemoveFromRenderImageList(_BackBufferRenderImageFrame)
-	EndFunction
+		Wend
+		UnlockMutex(_Lock)
+	End Function
 	
 	Function OnDeviceReset(obj:Object)
-		Local Driver:TD3D9SDLMax2DDriver = TD3D9SDLMax2DDriver(obj)
-		Local RenderImageList:TList = Driver._RenderImageList
+		Local driver:TD3D9SDLMax2DDriver = TD3D9SDLMax2DDriver(obj)
+		LockMutex(_Lock)
+		
+		RenderImageManager_ResetIterator()
+		Local RenderImage:TD3D9RenderImageFrame
+		While RenderImageManager_GetNextValue(Varptr RenderImage)
+			If RenderImage = _backbufferrenderimageframe
+?debug
+				If OutputRenderImageListDebugInfo WriteStdout "Removing back buffer render image~n"
+?
+				RenderImageManager_RemoveRenderImage(RenderImage)
+			Else
+				RenderImage.OnDeviceReset()
+			EndIf
+		Wend
+		UnlockMutex(_Lock)
+	End Function
 
-		For Local RenderImage:TD3D9RenderImageFrame = EachIn RenderImageList
-			RenderImage.OnDeviceReset()
-		Next
-	EndFunction
 		
 Private
-	Field _RenderImageList:TList = New TList
-	
 	Method SetMatrixAndViewportToCurrentRenderImage()
 		Local width:Float = _CurrentRenderImageFrame._width
 		Local height:Float = _CurrentRenderImageFrame._height

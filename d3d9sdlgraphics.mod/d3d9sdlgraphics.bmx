@@ -76,7 +76,7 @@ Function OpenD3DDevice:Int( hwnd:Byte Ptr,width:Int,height:Int,depth:Int,hertz:I
 	pp.SwapEffect = (D3DSWAPEFFECT_DISCARD * fullscreen) + (D3DSWAPEFFECT_COPY * windowed)
 	pp.hDeviceWindow = hwnd
 	pp.Windowed = windowed
-	pp.Flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER
+	pp.flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER
 	pp.FullScreen_RefreshRateInHz = hertz * fullscreen
 	pp.PresentationInterval = D3DPRESENT_INTERVAL_ONE	'IMMEDIATE
 	
@@ -291,10 +291,24 @@ Type TD3D9SDLGraphics Extends TGraphics
 	EndMethod
 	
 	Method AddDeviceLostCallback(fnOnDeviceLostCallback(obj:Object), obj:Object)
+		' do not add duplicate callbacks
+		For Local callback:TD3D9SDLDeviceStateCallback = EachIn _onDeviceLostCallbacks
+			If callback._fnCallback = fnOnDeviceLostCallback And callback._obj = obj
+				Return
+			EndIf
+		Next
+		
 		_onDeviceLostCallbacks.AddLast(New TD3D9SDLDeviceStateCallback.Create(fnOnDeviceLostCallback, obj))
 	EndMethod
 	
 	Method AddDeviceResetCallback(fnOnDeviceResetCallback(obj:Object), obj:Object)
+		' do not add duplicate callbacks
+		For Local callback:TD3D9SDLDeviceStateCallback = EachIn _onDeviceResetCallbacks
+			If callback._fnCallback = fnOnDeviceResetCallback  And callback._obj = obj
+				Return
+			EndIf
+		Next
+		
 		_onDeviceResetCallbacks.AddLast(New TD3D9SDLDeviceStateCallback.Create(fnOnDeviceResetCallback, obj))
 	EndMethod
 	
@@ -471,9 +485,9 @@ Type TD3D9SDLGraphicsDriver Extends TGraphicsDriver
 			EndIf
 			
 			Local Mode:TGraphicsMode=New TGraphicsMode
-			Mode.width=d3dmode.Width
-			Mode.height=d3dmode.Height
-			Mode.hertz=d3dmode.RefreshRate
+			Mode.width=d3dmode.width
+			Mode.height=d3dmode.height
+			Mode.hertz=d3dmode.refreshRate
 			Mode.depth=32
 			_modes[j]=Mode
 			j:+1
