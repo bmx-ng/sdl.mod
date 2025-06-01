@@ -71,6 +71,13 @@ Type TSDLRenderer
 	Function GetRenderer:TSDLRenderer(window:TSDLWindow)
 		Return _create(SDL_GetRenderer(window.windowPtr))
 	End Function
+
+	Rem
+	bbdoc: Get the window associated with the renderer.
+	End Rem
+	Method GetWindow:TSDLWindow()
+		Return TSDLWindow._create(SDL_RenderGetWindow(rendererPtr))
+	End Method
 	
 	Rem
 	bbdoc: Creates a texture for a rendering context.

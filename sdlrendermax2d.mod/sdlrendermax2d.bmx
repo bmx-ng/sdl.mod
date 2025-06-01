@@ -192,6 +192,14 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		t.MakeCurrent
 	End Method
 
+	Method GetWindow:TSDLWindow()
+		Return SDLGraphicsDriver().GetSDLWindow()
+	End Method
+
+	Method GetRenderer:TSDLRenderer()
+		Return renderer
+	End Method
+
 	Method Flip:Int( sync:Int ) Override
 		renderer.Present()
 	End Method

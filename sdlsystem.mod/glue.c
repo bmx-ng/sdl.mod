@@ -69,7 +69,7 @@ int bmx_SDL_GetDisplayhertz(int display) {
 	return mode.refresh_rate;
 }
 
-void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
+static void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 	int data = 0;
 	int mods = 0;
 	int i = 0;
@@ -225,17 +225,113 @@ void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 	
 }
 
+typedef void (*EventCallback)(void * userdata, SDL_Event *event, int *ignoreKeyboard, int *ignoreMouse);
+
+typedef struct EventCallbackNode {
+    EventCallback              cb;
+	void * userdata;
+	int priority;
+    struct EventCallbackNode  *next;
+} EventCallbackNode;
+
+static EventCallbackNode *bmx_eventCallbacks = NULL;
+
+void bmx_SDL_AddEventCallback(EventCallback callback, void *userdata, int priority) {
+    EventCallbackNode *node = malloc(sizeof(EventCallbackNode));
+    node->cb       = callback;
+    node->userdata = userdata;
+    node->priority = priority;
+
+    // empty list or higher than head?
+    if (!bmx_eventCallbacks || priority > bmx_eventCallbacks->priority) {
+        node->next = bmx_eventCallbacks;
+        bmx_eventCallbacks = node;
+    }
+    else {
+        // find the insertion point
+        EventCallbackNode *cur = bmx_eventCallbacks;
+        while (cur->next && cur->next->priority >= priority) {
+            cur = cur->next;
+        }
+        node->next = cur->next;
+        cur->next = node;
+    }
+}
+
+void bmx_SDL_RemoveEventCallback(EventCallback callback) {
+    EventCallbackNode **walk = &bmx_eventCallbacks;
+    while (*walk) {
+        if ((*walk)->cb == callback) {
+            EventCallbackNode *toFree = *walk;
+            *walk = toFree->next;
+            free(toFree);
+            return;    // stop after first match
+        }
+        walk = &((*walk)->next);
+    }
+}
+
+static int isKeyboardEvent(const SDL_Event *event) {
+    return event->type == SDL_KEYDOWN
+        || event->type == SDL_KEYUP
+        || event->type == SDL_TEXTINPUT
+        || event->type == SDL_TEXTEDITING;
+}
+
+static int isMouseEvent(const SDL_Event *event) {
+    return event->type == SDL_MOUSEBUTTONDOWN
+        || event->type == SDL_MOUSEBUTTONUP
+        || event->type == SDL_MOUSEMOTION
+        || event->type == SDL_MOUSEWHEEL
+		|| event->type == SDL_FINGERMOTION
+		|| event->type == SDL_FINGERDOWN
+		|| event->type == SDL_FINGERUP;
+}
+
+static void bmx_SDL_handleEvent(SDL_Event * event) {
+	if (bmx_eventCallbacks) {
+		int eatKeyboard = 0;
+		int eatMouse    = 0;
+
+		int keyboardEvent = isKeyboardEvent(event);
+		int mouseEvent = isMouseEvent(event);
+
+		for (EventCallbackNode *n = bmx_eventCallbacks; n; n = n->next) {
+			// if already eaten, skip this handler
+			if (eatKeyboard && keyboardEvent) continue;
+			if (eatMouse && mouseEvent) continue;
+
+			int callbackAteKeyboard = 0;
+			int callbackAteMouse = 0;
+			n->cb(n->userdata, event, &callbackAteKeyboard, &callbackAteMouse);
+
+			// once any handler “eats” a keyboard/mouse event,
+			// lower-priority ones will be skipped above
+			if (callbackAteKeyboard) eatKeyboard = 1;
+			if (callbackAteMouse) eatMouse = 1;
+		}
+
+		if ((keyboardEvent && eatKeyboard) || (mouseEvent && eatMouse)) {
+			return; // event has been handled, no need to emit
+		}
+
+		bmx_SDL_EmitSDLEvent(event, &bbNullObject);
+	} else {
+		bmx_SDL_EmitSDLEvent(event, &bbNullObject);
+	}
+}
+
 void bmx_SDL_Poll() {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
-		bmx_SDL_EmitSDLEvent(&event, &bbNullObject);
+		bmx_SDL_handleEvent(&event);
 	}
 }
 
 void bmx_SDL_WaitEvent() {
 	SDL_Event event;
 	if (SDL_WaitEvent(&event)) {
-		bmx_SDL_EmitSDLEvent(&event, &bbNullObject);
+		bmx_SDL_handleEvent(&event);
 	}
 }
 

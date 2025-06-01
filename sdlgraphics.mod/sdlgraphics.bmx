@@ -289,6 +289,12 @@ Type TSDLGraphicsDriver Extends TGraphicsDriver
 		End If
 	End Method
 
+	Method GetSDLWindow:TSDLWindow()
+		If _currentContext Then
+			Return _currentContext.window
+		End If
+	End Method
+
 End Type
 
 Rem

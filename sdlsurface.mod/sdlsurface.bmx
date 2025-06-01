@@ -37,7 +37,7 @@ Type TSDLSurface
 
 	Field surfacePtr:Byte Ptr
 	
-	Function _create:TSDLSurface(surfacePtr:Byte Ptr)
+	Function _create:TSDLSurface(surfacePtr:Byte Ptr) { nomangle }
 		If surfacePtr Then
 			Local this:TSDLSurface = New TSDLSurface
 			this.surfacePtr = surfacePtr
