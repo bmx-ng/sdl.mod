@@ -67,6 +67,7 @@ Extern
 	Function SDL_DestroyRenderer(handle:Byte Ptr)
 	Function SDL_CreateTexture:Byte Ptr(handle:Byte Ptr, format:UInt, access:Int, width:Int, height:Int)
 	Function SDL_CreateTextureFromSurface:Byte Ptr(handle:Byte Ptr, surface:Byte Ptr)
+	Function SDL_RenderGetWindow:Byte Ptr(handle:Byte Ptr)
 	Function SDL_RenderClear:Int(handle:Byte Ptr)
 	Function SDL_RenderDrawLine:Int(handle:Byte Ptr, x1:Int, y1:Int, x2:Int, y2:Int)
 	Function SDL_RenderDrawLines:Int(handle:Byte Ptr, points:Int Ptr, count:Int)
