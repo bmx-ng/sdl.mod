@@ -28,7 +28,7 @@ Module SDL.SDLJoystick
 
 Import SDL.SDL
 Import Pub.Joystick
-Import BRL.Map
+Import Collections.IntMap
 
 Import "common.bmx"
 
