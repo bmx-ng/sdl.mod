@@ -2,9 +2,13 @@ SuperStrict
 
 Module SDL.macosmfi
 
-?macos
+?macosx64
 ModuleInfo "CC_OPTS: -mmmx -msse -msse2 -DTARGET_API_MAC_CARBON -DTARGET_API_MAC_OSX"
 ModuleInfo "CC_OPTS: -fobjc-arc"
+?macosarm64
+ModuleInfo "CC_OPTS: -DTARGET_API_MAC_CARBON -DTARGET_API_MAC_OSX"
+ModuleInfo "CC_OPTS: -fobjc-arc"
+?macos
 ModuleInfo "CC_OPTS: -DSDL_dynapi_h_ -DSDL_DYNAMIC_API=0"
 
 Import "../sdl.mod/include/macos/*.h"

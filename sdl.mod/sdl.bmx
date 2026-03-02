@@ -51,10 +51,13 @@ Import "include/win32x64/*.h"
 ModuleInfo "CC_OPTS: -DHAVE_GCC_ATOMICS"
 Import "include/win32arm64/*.h"
 
-?osx
+?macosx64
 ModuleInfo "CC_OPTS: -mmmx -msse -msse2 -DTARGET_API_MAC_CARBON -DTARGET_API_MAC_OSX"
 ModuleInfo "CC_OPTS: -fobjc-arc"
-
+?macosarm64
+ModuleInfo "CC_OPTS: -DTARGET_API_MAC_CARBON -DTARGET_API_MAC_OSX"
+ModuleInfo "CC_OPTS: -fobjc-arc"
+?osx
 Import "include/macos/*.h"
 
 Import "-framework AudioUnit"
