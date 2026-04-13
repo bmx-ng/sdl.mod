@@ -1,4 +1,4 @@
-' Copyright (c) 2014-2022 Bruce A Henderson
+' Copyright (c) 2014-2026 Bruce A Henderson
 '
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -48,6 +48,9 @@ Type TSDLSystemDriver Extends TSystemDriver
 	Method New()
 		SDL_Init(SDL_INIT_EVENTS)
 		bmx_SDL_SetEventFilter(Self)
+?osx
+		bmx_SDL_RegisterCallbacks()
+?
 		OnEnd(SDL_Quit)
 	End Method
 
@@ -279,6 +282,7 @@ Extern
 	Function NFD_SaveDialog:Int(filterList:Byte Ptr, defaultPath:Byte Ptr, outPath:Byte Ptr Ptr)
 	Function NFD_PickFolder:Int(defaultPath:Byte Ptr, outPath:Byte Ptr Ptr)
 	Function free_(buf:Byte Ptr)="void free(void *)!"
+	Function bmx_SDL_RegisterCallbacks()
 End Extern
 
 Rem
