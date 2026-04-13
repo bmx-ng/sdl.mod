@@ -59,6 +59,10 @@ Import "../../sdl.mod/sdl.mod/SDL/include/*.h"
 
 Import "glue.c"
 
+?osx
+Import "macos_glue.m"
+?
+
 Extern
 
 	
