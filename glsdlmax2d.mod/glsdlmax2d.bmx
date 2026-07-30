@@ -468,7 +468,10 @@ Type TGLSDLRenderImageFrame Extends TGLImageFrame
 		
 		Return RenderTarget
 	End Function
-	
+
+Method New()
+	End Method
+
 Private
 	Method Delete()
 		If Not seq Then Return
@@ -477,9 +480,6 @@ Private
 		'delete FBO deferred
 		DeleteFBO( FBO, seq )
 		FBO = 0
-	End Method
-
-	Method New()
 	End Method
 EndType
 
