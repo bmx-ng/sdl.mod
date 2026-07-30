@@ -107,13 +107,13 @@ static void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 				if (event->key.repeat) {
 					bbSDLSystemEmitEvent( BBEVENT_KEYREPEAT,source,data,mods,0,0,&bbNullObject );
 					if (i) {
-						bbSDLSystemEmitEvent( BBEVENT_KEYCHAR,source,i,0,0,0,&bbNullObject );
+						bbSDLSystemEmitEvent( BBEVENT_KEYCHAR,source,i,mods,0,0,&bbNullObject );
 					}
 					return;
 				}
 				bbSDLSystemEmitEvent( (event->type == SDL_KEYDOWN) ? BBEVENT_KEYDOWN : BBEVENT_KEYUP,source,data,mods,0,0,&bbNullObject );
 				if (i) {
-					bbSDLSystemEmitEvent( BBEVENT_KEYCHAR,source,i,0,0,0,&bbNullObject );
+					bbSDLSystemEmitEvent( BBEVENT_KEYCHAR,source,i,mods,0,0,&bbNullObject );
 				}
 			}
 			return;
@@ -122,7 +122,7 @@ static void bmx_SDL_EmitSDLEvent( SDL_Event *event, BBObject *source ) {
 			{
 				BBString * s = bbStringFromUTF8String(event->text.text);
 				while (i < s->length) {
-					bbSDLSystemEmitEvent( BBEVENT_KEYCHAR,source,s->buf[i],0,0,0,&bbNullObject );
+					bbSDLSystemEmitEvent( BBEVENT_KEYCHAR,source,s->buf[i],mods,0,0,&bbNullObject );
 					i++;
 				}
 				return;
