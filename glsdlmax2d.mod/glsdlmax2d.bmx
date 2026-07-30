@@ -469,7 +469,7 @@ Type TGLSDLRenderImageFrame Extends TGLImageFrame
 		Return RenderTarget
 	End Function
 	
-Private
+Internal
 	Method Delete()
 		If Not seq Then Return
 		If Not FBO Then Return
