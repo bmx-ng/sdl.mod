@@ -48,21 +48,10 @@ Import BRL.Threads
 
 Private
 
-Struct Rect
-	Method New (X:Int, Y:Int, width:Int, height:Int)
-		Self.X = X
-		Self.Y = Y
-		Self.width = width
-		Self.height = height
-	EndMethod
-	
-	Field X:Int, Y:Int
-	Field width:Int, height:Int
-EndStruct
-
 Global _driver:TGLMax2DDriver
 Global _BackbufferRenderImageFrame:TGLSDLRenderImageFrame
 Global _CurrentRenderImageFrame:TGLSDLRenderImageFrame
+Global _CurrentRenderImageContainer:TRenderImage
 Global _GLScissor_BMaxViewport:Rect = New Rect
 
 'Naughty!
@@ -401,7 +390,7 @@ Type TGLSDLRenderImageFrame Extends TGLImageFrame
 	Method Draw( x0:Float, y0:Float, x1:Float, y1:Float, tx:Float, ty:Float, sx:Float, sy:Float, sw:Float, sh:Float ) Override
 		Assert seq=GraphicsSeq Else "Image does not exist"
 
-		' Note for a TGLRenderImage the V texture coordinate is flipped compared to the regular TImageFrame.Draw method
+		' Note for a TGLSDLRenderImageFrame the V texture coordinate is flipped compared to the regular TImageFrame.Draw method
 		Local u0:Float = sx * uscale
 		Local v0:Float = (sy + sh) * vscale
 		Local u1:Float = (sx + sw) * uscale
@@ -553,6 +542,7 @@ Type TGLMax2DDriver Extends TMax2DDriver
 		' cache it
 		_BackBufferRenderImageFrame = BackBufferRenderImageFrame
 		_CurrentRenderImageFrame = _BackBufferRenderImageFrame
+		_CurrentRenderImageContainer = Null
 	End Method
 	
 	Method Flip:Int( sync:Int ) Override
@@ -644,7 +634,7 @@ Type TGLMax2DDriver Extends TMax2DDriver
 		SetScissor(x, y, w, h)
 	End Method
 
-	Method SetTransform( xx:Float,xy:Float,yx:Float,yy:Float ) Override
+	Method SetTransform( xx:Float, xy:Float, yx:Float, yy:Float ) Override
 		ix = xx
 		iy = xy
 		jx = yx
@@ -759,28 +749,50 @@ Type TGLMax2DDriver Extends TMax2DDriver
 		glOrtho( 0, width, height, 0, -1, 1 )
 		glMatrixMode( GL_MODELVIEW )
 	End Method
+	
+	Method CanUpdateRenderImages:Int() Override
+		Return True
+	End Method
 
 	Method CreateRenderImageFrame:TImageFrame(width:UInt, height:UInt, flags:Int) Override
 		Return TGLSDLRenderImageFrame.Create(width, height, flags)
-	EndMethod
+	End Method
 	
-	Method SetRenderImageFrame(RenderImageFrame:TImageFrame) Override
+	Method SetRenderImageFrame:Int(RenderImageFrame:TImageFrame) Override
 		If RenderImageFrame = _CurrentRenderImageFrame
-			Return
+			Return True
+		ElseIf renderImageFrame = Null
+			renderImageFrame = _BackBufferRenderImageFrame
 		EndIf
-		
+
 		glBindFrameBuffer(GL_FRAMEBUFFER, TGLSDLRenderImageFrame(RenderImageFrame).FBO)
 		_CurrentRenderImageFrame = TGLSDLRenderImageFrame(RenderImageFrame)
-		
+		'unset render image container (re-assign in SetRenderImage if called from there!)
+		_CurrentRenderImageContainer = Null
+
 		Local vp:Rect = _GLScissor_BMaxViewport
 		SetScissor(vp.x, vp.y, vp.width, vp.height)
 		SetMatrixAndViewportToCurrentRenderImage()
-	EndMethod
-	
-	Method SetBackbuffer()
-		SetRenderImageFrame(_BackBufferRenderImageFrame)
-	EndMethod
-	
+		Return True
+	End Method
+
+	Method GetRenderImageFrame:TImageFrame() Override
+		' Return Null if currently rendering to the backbuffer
+		If _BackBufferRenderImageFrame = _CurrentRenderImageFrame
+			Return Null
+		Else
+			Return _CurrentRenderImageFrame
+		EndIf
+	End Method
+
+	Method SetRenderImageContainer(renderImageContainer:Object) Override
+		_CurrentRenderImageContainer = TRenderImage(renderImageContainer)
+	End Method
+
+	Method GetRenderImageContainer:Object() Override
+		Return _CurrentRenderImageContainer
+	End Method
+
 Private
 	Method SetMatrixAndViewportToCurrentRenderImage()
 		glMatrixMode(GL_PROJECTION)
@@ -789,7 +801,7 @@ Private
 		glMatrixMode(GL_MODELVIEW)
 		glLoadIdentity()
 		glViewport(0, 0, _CurrentRenderImageFrame.width, _CurrentRenderImageFrame.height)
-	EndMethod
+	End Method
 
 	Method SetScissor(x:Int, y:Int, w:Int, h:Int)
 		Local ri:TImageFrame = _CurrentRenderImageFrame
@@ -799,7 +811,7 @@ Private
 			glEnable(GL_SCISSOR_TEST)
 			glScissor(x, _CurrentRenderImageFrame.height - y - h, w, h)
 		EndIf
-	EndMethod
+	End Method
 End Type
 
 Rem

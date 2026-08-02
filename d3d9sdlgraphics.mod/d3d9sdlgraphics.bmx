@@ -76,7 +76,7 @@ Function OpenD3DDevice:Int( hwnd:Byte Ptr,width:Int,height:Int,depth:Int,hertz:I
 	pp.SwapEffect = (D3DSWAPEFFECT_DISCARD * fullscreen) + (D3DSWAPEFFECT_COPY * windowed)
 	pp.hDeviceWindow = hwnd
 	pp.Windowed = windowed
-	pp.Flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER
+	pp.flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER
 	pp.FullScreen_RefreshRateInHz = hertz * fullscreen
 	pp.PresentationInterval = D3DPRESENT_INTERVAL_ONE	'IMMEDIATE
 	
@@ -132,7 +132,7 @@ Function OpenD3DDevice:Int( hwnd:Byte Ptr,width:Int,height:Int,depth:Int,hertz:I
 		'Failed! Try mixed vertex processing...
 		tflags=D3DCREATE_MIXED_VERTEXPROCESSING|cflags
 		If _d3d.CreateDevice( 0,D3DDEVTYPE_HAL,hwnd,tflags,pp,_d3dDev )<0
-	
+
 			'Failed! Try software vertex processing...	
 			tflags=D3DCREATE_SOFTWARE_VERTEXPROCESSING|cflags
 			If _d3d.CreateDevice( 0,D3DDEVTYPE_HAL,hwnd,tflags,pp,_d3dDev )<0
@@ -182,7 +182,7 @@ Function CloseD3DDevice()
 End Function
 
 Function ResetD3DDevice()
-	If _graphics 
+	If _graphics
 		_graphics.OnDeviceLost()
 	EndIf
 	If _d3dOccQuery
@@ -197,10 +197,9 @@ Function ResetD3DDevice()
 		Throw "_d3dDev.Reset failed. Code: " + result
 	EndIf
 
-	If _graphics 
+	If _graphics
 		_graphics.OnDeviceReset()
 	EndIf
-
 	If _d3ddev.CreateQuery(9,_d3dOccQuery)<0
 		_d3dOccQuery = Null
 		DebugLog "Cannot create Occlussion Query!"
@@ -263,7 +262,7 @@ Type TD3D9SDLGraphics Extends TGraphics
 			width=rect[2]-rect[0]
 			height=rect[3]-rect[1]
 		EndIf
-		
+
 		If Not OpenD3DDevice( _hwnd,width,height,depth,hertz,flags )
 			DestroyWindow _hwnd
 			Return Null
@@ -291,10 +290,24 @@ Type TD3D9SDLGraphics Extends TGraphics
 	EndMethod
 	
 	Method AddDeviceLostCallback(fnOnDeviceLostCallback(obj:Object), obj:Object)
+		' do not add duplicate callbacks
+		For Local callback:TD3D9SDLDeviceStateCallback = EachIn _onDeviceLostCallbacks
+			If callback._fnCallback = fnOnDeviceLostCallback And callback._obj = obj
+				Return
+			EndIf
+		Next
+		
 		_onDeviceLostCallbacks.AddLast(New TD3D9SDLDeviceStateCallback.Create(fnOnDeviceLostCallback, obj))
 	EndMethod
 	
 	Method AddDeviceResetCallback(fnOnDeviceResetCallback(obj:Object), obj:Object)
+		' do not add duplicate callbacks
+		For Local callback:TD3D9SDLDeviceStateCallback = EachIn _onDeviceResetCallbacks
+			If callback._fnCallback = fnOnDeviceResetCallback  And callback._obj = obj
+				Return
+			EndIf
+		Next
+		
 		_onDeviceResetCallbacks.AddLast(New TD3D9SDLDeviceStateCallback.Create(fnOnDeviceResetCallback, obj))
 	EndMethod
 	
@@ -327,7 +340,7 @@ Type TD3D9SDLGraphics Extends TGraphics
 			callback._fnCallback(callback._obj)
 		Next
 	EndMethod
-		
+	
 	Method GetDirect3DDevice:IDirect3DDevice9()
 		Return _d3dDev
 	End Method
@@ -376,7 +389,6 @@ Type TD3D9SDLGraphics Extends TGraphics
 
 			EndIf
 		Case D3DERR_DEVICENOTRESET
-
 			ResetD3DDevice
 
 		End Select
@@ -429,7 +441,6 @@ Type TD3D9SDLGraphics Extends TGraphics
 	End Method
 	
 	Field _hwnd:Byte Ptr
-	
 	Field _width:Int
 	Field _height:Int
 	Field _depth:Int
@@ -464,24 +475,22 @@ Type TD3D9SDLGraphicsDriver Extends TGraphicsDriver
 		Local n:Int=_d3d.GetAdapterModeCount( D3DADAPTER_DEFAULT,D3DFMT_X8R8G8B8 )
 		_modes=New TGraphicsMode[n]
 		Local j:Int
+
 		Local d3dmode:D3DDISPLAYMODE' = New D3DDISPLAYMODE
 		For Local i:Int=0 Until n
 			If _d3d.EnumAdapterModes( D3DADAPTER_DEFAULT,D3DFMT_X8R8G8B8,i,d3dmode )<0
 				Continue
 			EndIf
-			
+
 			Local Mode:TGraphicsMode=New TGraphicsMode
-			Mode.width=d3dmode.Width
-			Mode.height=d3dmode.Height
-			Mode.hertz=d3dmode.RefreshRate
+			Mode.width=d3dmode.width
+			Mode.height=d3dmode.height
+			Mode.hertz=d3dmode.refreshRate
 			Mode.depth=32
 			_modes[j]=Mode
 			j:+1
 		Next
 		_modes=_modes[..j]
-
-		'RONNY: Listen event
-		AddHook (EmitEventHook, DeviceResetHook, Self, 0)
 	
 '		Local name:Short Ptr = _wndClass.ToWString()
 '		'register wndclass
@@ -496,18 +505,6 @@ Type TD3D9SDLGraphicsDriver Extends TGraphicsDriver
 
 		Return Self
 	End Method
-	
-	Function DeviceResetHook:Object(id:Int, data:Object, context:Object)
-		Local ev:TEvent = TEvent(data)
-		If Not ev Then Return data
-		
-'		Select ev.id
-'			Case SDL_RENDER_DEVICE_RESET
-'				Throw "Device Reset!"
-'		End Select
-		
-		Return data
-	End Function
 	
 	Method GraphicsModes:TGraphicsMode[]() Override
 		Return _modes
@@ -550,11 +547,11 @@ Type TD3D9SDLGraphicsDriver Extends TGraphicsDriver
 	Method GetDirect3D:IDirect3D9()
 		Return _d3d
 	End Method
-	
+
 	Method ToString:String() Override
 		Return "TD3D9SDLGraphicsDriver"
 	End Method
-	
+
 End Type
 
 Function D3D9SDLGraphicsDriver:TD3D9SDLGraphicsDriver()
