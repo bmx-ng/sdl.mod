@@ -839,7 +839,7 @@ Type TGL2Max2DDriver Extends TMax2DDriver
 	' pre-built element arrays
 
 	Field TRI_INDS:Short Ptr = Short Ptr( MemAlloc(2 * BATCHSIZE * 3) )
-	Field QUAD_INDS:Short Ptr = Int Ptr( MemAlloc(2 * BATCHSIZE * 6) )
+	Field QUAD_INDS:Short Ptr = Short Ptr( MemAlloc(2 * BATCHSIZE * 6) )
 
 	' vertex attribute arrays
 
