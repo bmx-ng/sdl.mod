@@ -561,7 +561,7 @@ Type TSDLGLContext
 	returns: 0 on success or a negative error code on failure.
 	End Rem
 	Function GetAttribute:Int(attr:Int, value:Int Var)
-		Return SDL_GL_GetAttribute(attr:Int, Varptr value)
+		Return SDL_GL_GetAttribute(attr, Varptr value)
 	End Function
 	
 	Rem
