@@ -286,6 +286,7 @@ Const SDL_HINT_AUTO_UPDATE_SENSORS:String = "SDL_AUTO_UPDATE_SENSORS"
 
 Rem
 bbdoc: A hint that specifies whether SDL should not use version 4 of the bitmap header when saving BMPs.
+about:
 Values
 ```
 0   version 4 of the bitmap header will be used when saving BMPs (default)
@@ -447,7 +448,7 @@ Const SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT:String = "SDL_GAMECONTROLLER
 
 Rem
 bbdoc: If set, game controller face buttons report their values according to their labels instead of their positional layout.
-
+about:
 For example, on Nintendo Switch controllers, normally you'd get:
 ```
     (Y)
@@ -1460,7 +1461,7 @@ Const SDL_HINT_WINDOWS_INTRESOURCE_ICON_SMALL:String = "SDL_WINDOWS_INTRESOURCE_
 
 Rem
 bbdoc: A hint to tell SDL not to generate window-close events for Alt+F4 on Windows.
-
+about:
 Values
 ```
 0   SDL will generate a window-close event when it sees Alt+F4.
