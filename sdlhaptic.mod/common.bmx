@@ -175,7 +175,7 @@ Extern
 	Function bmx_sdl_haptic_SDLHapticRamp_GetFadeLevel:Short(handle:Byte Ptr)
 
 	Function bmx_sdl_haptic_SDLHapticLeftRight_new:Byte Ptr()
-	Function bmx_sdl_haptic_SDLHapticLeftRight_SetLength(handle:Byte Ptr, value:Int)
+	Function bmx_sdl_haptic_SDLHapticLeftRight_SetLength(handle:Byte Ptr, value:UInt)
 	Function bmx_sdl_haptic_SDLHapticLeftRight_SetLargeMagnitude(handle:Byte Ptr, value:Short)
 	Function bmx_sdl_haptic_SDLHapticLeftRight_SetSmallMagnitude(handle:Byte Ptr, value:Short)
 
