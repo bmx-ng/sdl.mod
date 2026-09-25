@@ -505,10 +505,10 @@ Type TSDLRenderMax2DDriver Extends TMax2DDriver
 		Local frame:TSDLRenderImageFrame = New TSDLRenderImageFrame
 		frame.renderer = _driver.renderer
 'Ronny: TODO - still needed?
-		frame.pixmap = CreatePixmap( width, height, PF_RGBA8888 )
+		frame.pixmap = CreatePixmap( Int(width), Int(height), PF_RGBA8888 )
 
-		frame.surface = TSDLSurface.CreateRGB(width, height, 4, $000000ff:UInt, $0000ff00:UInt, $00ff0000:UInt, $ff000000:UInt)
-		frame.texture = frame.renderer.CreateTexture(SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height)
+		frame.surface = TSDLSurface.CreateRGB(Int(width), Int(height), 4, $000000ff:UInt, $0000ff00:UInt, $00ff0000:UInt, $ff000000:UInt)
+		frame.texture = frame.renderer.CreateTexture(SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, Int(width), Int(height))
 
 		frame.uscale = 1.0 / width
 		frame.vscale = 1.0 / height
