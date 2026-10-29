@@ -113,7 +113,7 @@ Type TD3D9ImageFrame Extends TImageFrame
 		Local pool:Int=D3DPOOL_MANAGED
 		
 		'_texture = New IDirect3DTexture9
-		If _d3dDev.CreateTexture( pow2width,pow2height,levels,usage,format,pool,_texture,Null )<0
+		If _d3dDev.CreateTexture( UInt(pow2width),UInt(pow2height),levels,usage,format,pool,_texture,Null )<0
 			d3derr "Unable to create texture~n"
 			_texture = Null
 			Return Null
@@ -755,7 +755,7 @@ Type TD3D9SDLMax2DDriver Extends TMax2dDriver
 		EndIf
 
 		Local dstsurf:IDirect3DSurface9
-		If _d3dDev.CreateOffscreenPlainSurface( width,height,D3DFMT_X8R8G8B8,D3DPOOL_SYSTEMMEM,dstsurf,Null )<0
+		If _d3dDev.CreateOffscreenPlainSurface( UInt(width),UInt(height),D3DFMT_X8R8G8B8,D3DPOOL_SYSTEMMEM,dstsurf,Null )<0
 			d3derr "CreateOffscreenPlainSurface failed~n"
 		EndIf
 		
